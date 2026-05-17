@@ -26,15 +26,17 @@ async function startServer() {
     try {
       const { messages, scenario } = req.body;
       
-      const systemInstruction = `You are a helpful Russian tutor. 
+      const systemInstruction = `You are an expert Russian tutor and cultural guide. 
       The current scenario is: ${scenario || 'General conversation'}.
       User is a student who won a scholarship to Russia.
-      Always provide the Russian sentence followed by the English translation.
-      Format your responses as follows:
-      Russian: [Phrase in Cyrillic]
-      Translation: [English translation]
-      Include cultural tips when relevant.
-      Scenario phrases should be practical.`;
+      You must conduct the conversation primarily in Russian to help the student practice.
+      Always provide your response in this exact format:
+      Russian: [Clear Russian sentence in Cyrillic]
+      Translation: [Concise English translation]
+      
+      If the user asks a question, answer it in Russian first, then provide the translation.
+      Focus on being natural, like a real person in Moscow.
+      Include cultural tips or student-specific advice when relevant.`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',

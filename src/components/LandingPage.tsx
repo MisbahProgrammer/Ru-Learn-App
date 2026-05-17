@@ -10,15 +10,26 @@ export function LandingPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <header className="absolute top-0 left-0 right-0 z-20 px-8 py-6 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
+        <div className="flex items-center gap-2 text-white font-bold text-xl uppercase tracking-widest">
+          <GraduationCap className="text-orange-500" />
+          <span>Russian Scholar</span>
+        </div>
+        <Button onClick={signIn} variant="ghost" className="text-white hover:bg-white/10 rounded-full px-6">
+          Sign In
+        </Button>
+      </header>
+
       {/* Hero Section */}
-      <section className="relative h-[80vh] flex items-center overflow-hidden bg-black text-white px-8">
-        <div className="absolute inset-0 z-0 opacity-60">
+      <section className="relative min-h-[90vh] md:min-h-screen flex items-center overflow-hidden bg-black text-white px-8 pt-20">
+        <div className="absolute inset-0 z-0">
           <img 
             src={CITY_IMAGES[0].url} 
             alt="Moscow" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover opacity-60"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
         </div>
 
         <div className="relative z-10 max-w-2xl">
@@ -28,27 +39,28 @@ export function LandingPage() {
             transition={{ duration: 0.8 }}
           >
             <div className="flex items-center gap-2 mb-6">
-              <GraduationCap className="text-orange-400 w-8 h-8" />
-              <span className="text-xs uppercase tracking-[0.3em] font-semibold text-orange-400">
+              <div className="bg-orange-500 w-2 h-2 rounded-full animate-pulse" />
+              <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-orange-400">
                 For Open Doors & Scholarship Winners
               </span>
             </div>
             <h1 className="text-5xl md:text-8xl font-light tracking-tighter leading-[0.9] mb-8">
-              Master <span className="italic font-serif">Russian</span> Before You Land.
+              Master <span className="italic font-serif">Russian</span> <br className="hidden sm:block"/>
+              Before You Land.
             </h1>
             <p className="text-base md:text-lg text-neutral-300 font-light max-w-md mb-10 leading-relaxed">
-              Tailored for scholars heading to Russia this September. 1 week free, then just $1/month to master real-world scenarios.
+              Tailored for scholar achievers heading to Russia this September. 1 week free, then just $1/month to master real-world scenarios.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 mb-10">
               <Button 
                 onClick={signIn}
-                className="bg-white text-black hover:bg-neutral-200 h-14 px-8 rounded-full text-base md:text-lg font-medium transition-all hover:scale-105 active:scale-95 w-full sm:w-auto"
+                className="bg-orange-500 text-white hover:bg-orange-600 h-14 px-8 rounded-full text-base md:text-lg font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-orange-500/20"
               >
                 Start Your Free Week
               </Button>
               <Button 
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/10 h-14 px-8 rounded-full text-base md:text-lg font-light backdrop-blur-sm w-full sm:w-auto"
+                className="border-white/30 text-white hover:bg-white/10 h-14 px-8 rounded-full text-base md:text-lg font-light backdrop-blur-sm"
               >
                 Learn More
               </Button>
@@ -57,8 +69,8 @@ export function LandingPage() {
         </div>
 
         <div className="absolute bottom-12 right-12 text-right hidden md:block">
-          <p className="text-xs uppercase tracking-widest text-neutral-400 mb-1">Current Location</p>
-          <p className="text-lg font-serif italic text-white">{CITY_IMAGES[0].name}</p>
+          <p className="text-[10px] uppercase tracking-[0.4em] text-neutral-400 mb-2">CURRENT LOCATION</p>
+          <p className="text-3xl font-serif italic text-white tracking-tight">{CITY_IMAGES[0].name}</p>
         </div>
       </section>
 

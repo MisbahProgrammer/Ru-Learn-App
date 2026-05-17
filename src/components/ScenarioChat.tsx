@@ -214,23 +214,23 @@ export function ScenarioChat() {
                       : 'bg-white border border-neutral-200 rounded-tl-none shadow-sm'
                   }`}>
                     {m.russian ? (
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-start gap-4">
-                          <p className={`text-xl font-medium tracking-wide ${m.role === 'user' ? 'text-white' : 'text-neutral-900'}`}>{m.russian}</p>
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            className="h-6 w-6 text-orange-500 hover:bg-orange-50"
-                            onClick={() => speakRussian(m.russian!)}
-                          >
-                            <Volume2 className="w-3 h-3" />
-                          </Button>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between items-start gap-4">
+                            <p className={`text-2xl md:text-3xl font-medium tracking-wide leading-relaxed ${m.role === 'user' ? 'text-white' : 'text-neutral-900'}`}>{m.russian}</p>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="h-8 w-8 text-orange-500 hover:bg-orange-50 shrink-0"
+                              onClick={() => speakRussian(m.russian!)}
+                            >
+                              <Volume2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className={`h-[1px] w-full my-1 ${m.role === 'user' ? 'bg-white/10' : 'bg-neutral-100'}`} />
+                          <p className={`text-xs md:text-sm italic font-light opacity-80 ${m.role === 'user' ? 'text-white/70' : 'text-neutral-500'}`}>
+                            {m.translation}
+                          </p>
                         </div>
-                        <div className={`h-[1px] w-full ${m.role === 'user' ? 'bg-white/20' : 'bg-neutral-100'}`} />
-                        <p className={`text-sm italic font-light ${m.role === 'user' ? 'text-white/70' : 'text-neutral-500'}`}>
-                          {m.translation}
-                        </p>
-                      </div>
                     ) : (
                       <div className="prose prose-sm max-w-none prose-neutral">
                         <ReactMarkdown>{m.parts[0].text}</ReactMarkdown>

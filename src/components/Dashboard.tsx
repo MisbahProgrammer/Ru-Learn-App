@@ -107,7 +107,7 @@ export function Dashboard() {
       </header>
 
       {/* Navigation Sidebar / Mobile Nav */}
-      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+      <main className="flex flex-col md:flex-row flex-1 overflow-hidden">
         <Tabs defaultValue="home" className="flex-1 flex flex-col md:flex-row h-full" onValueChange={setActiveTab}>
           {/* Desktop Sidebar */}
           <div className="hidden md:flex w-64 border-r border-neutral-200 p-4 flex-col gap-2 bg-neutral-50/50">
