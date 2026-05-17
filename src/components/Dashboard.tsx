@@ -55,49 +55,53 @@ export function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen bg-white">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 bg-white sticky top-0 z-50">
+      <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-neutral-200 bg-white sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200 px-3 py-1 font-bold">
+          <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200 px-2 md:px-3 py-0.5 md:py-1 font-bold text-[10px] md:text-xs">
             MASTER RUSSIAN
           </Badge>
-          <div className="h-4 w-[1px] bg-neutral-200 mx-2" />
-          <span className="text-sm font-medium text-neutral-500 uppercase tracking-widest leading-none">
+          <div className="hidden sm:block h-4 w-[1px] bg-neutral-200 mx-2" />
+          <span className="hidden sm:block text-[10px] md:text-sm font-medium text-neutral-500 uppercase tracking-widest leading-none">
             Scholar Portal
           </span>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           {!isPremium && (
-            <Badge variant="secondary" className="flex items-center gap-1 py-1">
-              <Star className="w-3 h-3 text-orange-500 fill-orange-500" />
-              {trialDaysLeft > 0 ? `${trialDaysLeft} days left in trial` : 'Trial Ended'}
+            <Badge variant="secondary" className="flex items-center gap-1 py-0.5 md:py-1 text-[10px] md:text-xs px-2">
+              <Star className="w-2.5 h-2.5 md:w-3 md:h-3 text-orange-500 fill-orange-500" />
+              {trialDaysLeft > 0 ? (
+                <span className="whitespace-nowrap">{trialDaysLeft}d left</span>
+              ) : (
+                <span>Expired</span>
+              )}
             </Badge>
           )}
           {isPremium && (
-            <Badge className="bg-orange-500 text-white flex items-center gap-1 py-1">
-              <Crown className="w-3 h-3 fill-white" />
+            <Badge className="bg-orange-500 text-white flex items-center gap-1 py-0.5 md:py-1 text-[10px] md:text-xs px-2">
+              <Crown className="w-2.5 h-2.5 md:w-3 md:h-3 fill-white" />
               PREMIUM
             </Badge>
           )}
           
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || ''} />
-                  <AvatarFallback>{user?.displayName?.charAt(0) || <User />}</AvatarFallback>
+                  <AvatarFallback className="bg-neutral-100 text-neutral-600">{user?.displayName?.charAt(0) || <User />}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end">
+            <DropdownMenuContent className="w-56" align="end" sideOffset={8}>
               <div className="flex flex-col space-y-1 p-2">
-                <p className="text-sm font-medium leading-none">{user?.displayName}</p>
-                <p className="text-xs leading-none text-neutral-500">{user?.email}</p>
+                <p className="text-sm font-medium leading-none truncate">{user?.displayName}</p>
+                <p className="text-xs leading-none text-neutral-500 truncate">{user?.email}</p>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={signOut}>
+              <DropdownMenuItem onClick={signOut} className="text-red-600 focus:text-red-700 focus:bg-red-50">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>

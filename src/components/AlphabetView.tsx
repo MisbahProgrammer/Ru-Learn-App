@@ -16,28 +16,28 @@ export function AlphabetView() {
 
   return (
     <div className="flex flex-col h-full bg-neutral-50/50">
-      <div className="p-8 pb-4">
-        <div className="flex items-center justify-between mb-8">
+      <div className="p-4 md:p-8 md:pb-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-8">
           <div>
-            <h2 className="text-3xl font-light tracking-tight">Cyrillic <span className="font-serif italic font-medium text-orange-600">Alphabet</span></h2>
-            <p className="text-neutral-500 font-light max-w-lg">
-              Mastering the alphabet is your first step. Each letter below includes clear pronunciation and an example word.
+            <h2 className="text-2xl md:text-3xl font-light tracking-tight">Cyrillic <span className="font-serif italic font-medium text-orange-600">Alphabet</span></h2>
+            <p className="text-neutral-500 font-light max-w-lg text-sm md:text-base">
+              Mastering the alphabet is your first step. Each letter below includes clear pronunciation.
             </p>
           </div>
-          <div className="relative w-64">
+          <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <Input 
               placeholder="Filter letters..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 h-10 rounded-xl bg-white border-neutral-200"
+              className="pl-10 h-10 md:h-11 rounded-xl bg-white border-neutral-200 w-full"
             />
           </div>
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-8 pt-0">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 h-max pb-8">
+      <ScrollArea className="flex-1 px-4 md:px-8 pt-0 pb-20 md:pb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 h-max">
           {filteredAlphabet.map((item) => (
             <div 
               key={item.letter}

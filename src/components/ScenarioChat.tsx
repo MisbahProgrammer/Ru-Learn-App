@@ -172,18 +172,18 @@ export function ScenarioChat() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-neutral-50 overflow-hidden relative pb-20 md:pb-0">
+    <div className="flex flex-col h-full bg-neutral-50 overflow-hidden relative pb-32 md:pb-0">
       {/* Scenario Header */}
-      <div className="p-4 border-b border-neutral-200 bg-white flex items-center gap-4 sticky top-0 z-10">
-        <Button variant="ghost" size="icon" onClick={() => setSelectedScenario(null)} className="rounded-full">
+      <div className="p-3 md:p-4 border-b border-neutral-200 bg-white/80 backdrop-blur-md flex items-center gap-3 md:gap-4 sticky top-0 z-20">
+        <Button variant="ghost" size="icon" onClick={() => setSelectedScenario(null)} className="rounded-full h-8 w-8 md:h-10 md:w-10">
            <ArrowLeft className="w-4 h-4" />
         </Button>
-        <div>
-          <h3 className="font-bold text-sm tracking-tight">{selectedScenario.title}</h3>
-          <p className="text-[10px] uppercase tracking-widest text-orange-600 font-bold">Live AI Practice</p>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-xs md:text-sm tracking-tight truncate">{selectedScenario.title}</h3>
+          <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-orange-600 font-bold">Live AI Practice</p>
         </div>
         
-        <div className="ml-auto flex items-center gap-2">
+        <div className="hidden sm:flex ml-auto items-center gap-2">
            <div className="bg-orange-50 text-orange-600 p-2 rounded-lg flex items-center gap-2 text-xs font-semibold px-4 border border-orange-100">
              <Info className="w-3 h-3" />
              {selectedScenario.culturalTip}
@@ -191,8 +191,8 @@ export function ScenarioChat() {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-6">
-        <div className="max-w-3xl mx-auto space-y-6">
+      <ScrollArea className="flex-1 px-4 md:px-6 py-4">
+        <div className="max-w-3xl mx-auto space-y-4 md:space-y-6">
           <AnimatePresence>
             {messages.map((m, i) => (
               <motion.div
@@ -268,7 +268,7 @@ export function ScenarioChat() {
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="p-4 md:p-6 bg-white border-t border-neutral-200 fixed bottom-16 left-0 right-0 md:relative md:bottom-0 z-30">
+      <div className="p-3 md:p-6 bg-white/80 backdrop-blur-md border-t border-neutral-200 fixed bottom-16 md:bottom-0 left-0 right-0 md:relative z-40">
         <div className="max-w-3xl mx-auto">
           <div className="relative flex items-center gap-2 md:gap-3">
              <div className="relative flex-1 group">
@@ -277,24 +277,24 @@ export function ScenarioChat() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                  className="h-12 md:h-14 pl-4 md:pl-6 pr-12 md:pr-14 rounded-xl md:rounded-2xl bg-neutral-50 border-neutral-200 focus:bg-white transition-all shadow-inner"
+                  className="h-10 md:h-14 pl-4 md:pl-6 pr-10 md:pr-14 rounded-xl md:rounded-2xl bg-neutral-100/50 border-neutral-200 focus:bg-white transition-all shadow-inner text-sm md:text-base"
                 />
                 <Button 
                   size="icon" 
-                  className={`absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl transition-all ${
+                  className={`absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 md:h-12 md:w-12 rounded-lg md:rounded-xl transition-all ${
                     isRecording 
                       ? 'bg-red-500 animate-pulse hover:bg-red-600' 
                       : 'bg-orange-500 hover:bg-orange-600'
                   }`}
                   onClick={toggleRecording}
                 >
-                  {isRecording ? <MicOff className="w-3 h-3 md:w-4 md:h-4" /> : <Mic className="w-3 h-3 md:w-4 md:h-4" />}
+                  {isRecording ? <MicOff className="w-3 h-3 md:w-5 md:h-5" /> : <Mic className="w-3 h-3 md:w-5 md:h-5" />}
                 </Button>
              </div>
              
              <Button 
                size="icon" 
-               className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-neutral-900 hover:bg-black text-white shrink-0 shadow-lg active:scale-95 transition-all"
+               className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-neutral-900 hover:bg-black text-white shrink-0 shadow-lg active:scale-95 transition-all"
                onClick={() => handleSend()}
                disabled={!input.trim() || loading}
              >
@@ -302,9 +302,9 @@ export function ScenarioChat() {
              </Button>
           </div>
           
-          <div className="mt-2 md:mt-4 flex items-center justify-center gap-6">
-            <p className="text-[8px] md:text-[10px] text-neutral-400 flex items-center gap-1">
-              <Sparkles className="w-2 h-2 md:w-3 md:h-3 text-orange-500" />
+          <div className="mt-2 hidden md:flex items-center justify-center gap-6">
+            <p className="text-[10px] text-neutral-400 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-orange-500" />
               Practice everyday Russian for your scholarship journey.
             </p>
           </div>
