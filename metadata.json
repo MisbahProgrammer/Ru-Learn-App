@@ -1,0 +1,6 @@
+{
+  "name": "Russian Open Doors Master",
+  "description": "Master Russian language for scholarship winners with AI tutors and voice scenarios.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

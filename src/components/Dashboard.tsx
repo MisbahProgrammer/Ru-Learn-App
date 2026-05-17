@@ -1,0 +1,304 @@
+import React, { useState } from 'react';
+import { useAuth } from '../App';
+import { Button } from './ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { ScrollArea } from './ui/scroll-area';
+import { Badge } from './ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { 
+  BookOpen, 
+  MessageSquare, 
+  Star, 
+  LogOut, 
+  AlertCircle, 
+  CheckCircle2, 
+  Crown,
+  Plane,
+  Home,
+  User
+} from 'lucide-react';
+import { ALPHABET, SCENARIOS, CITY_IMAGES } from '../constants';
+import { AlphabetView } from './AlphabetView';
+import { ScenarioChat } from './ScenarioChat';
+import { format, differenceInDays, addDays } from 'date-fns';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { toast } from 'sonner';
+
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "./ui/dropdown-menu";
+
+export function Dashboard() {
+  const { user, profile, signOut, isTrialValid, isPremium } = useAuth();
+  const [activeTab, setActiveTab] = useState('home');
+
+  const trialDaysLeft = 7 - differenceInDays(new Date(), new Date(profile?.trialStartDate || new Date()));
+  const showTrialWarning = !isPremium && trialDaysLeft <= 2;
+
+  const handleUpgrade = async () => {
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, 'users', user.uid), {
+        isPremium: true,
+        premiumUntil: addDays(new Date(), 30).toISOString()
+      });
+      toast.success('Welcome to Premium Scholar! Your $1 payment was successful.');
+    } catch (e: any) {
+      toast.error('Failed to upgrade: ' + e.message);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-screen">
+      {/* Header */}
+      <header className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 bg-white sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200 px-3 py-1 font-bold">
+            MASTER RUSSIAN
+          </Badge>
+          <div className="h-4 w-[1px] bg-neutral-200 mx-2" />
+          <span className="text-sm font-medium text-neutral-500 uppercase tracking-widest leading-none">
+            Scholar Portal
+          </span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {!isPremium && (
+            <Badge variant="secondary" className="flex items-center gap-1 py-1">
+              <Star className="w-3 h-3 text-orange-500 fill-orange-500" />
+              {trialDaysLeft > 0 ? `${trialDaysLeft} days left in trial` : 'Trial Ended'}
+            </Badge>
+          )}
+          {isPremium && (
+            <Badge className="bg-orange-500 text-white flex items-center gap-1 py-1">
+              <Crown className="w-3 h-3 fill-white" />
+              PREMIUM
+            </Badge>
+          )}
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || ''} />
+                  <AvatarFallback>{user?.displayName?.charAt(0) || <User />}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end">
+              <div className="flex flex-col space-y-1 p-2">
+                <p className="text-sm font-medium leading-none">{user?.displayName}</p>
+                <p className="text-xs leading-none text-neutral-500">{user?.email}</p>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+
+      {/* Navigation Sidebar / Mobile Nav */}
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+        <Tabs defaultValue="home" className="flex-1 flex flex-col md:flex-row h-full" onValueChange={setActiveTab}>
+          {/* Desktop Sidebar */}
+          <div className="hidden md:flex w-64 border-r border-neutral-200 p-4 flex-col gap-2 bg-neutral-50/50">
+            <TabsList className="bg-transparent flex-col justify-start h-auto w-full p-0">
+              <TabsTrigger value="home" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
+                <Home className="w-4 h-4" /> Home
+              </TabsTrigger>
+              <TabsTrigger value="alphabet" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
+                <BookOpen className="w-4 h-4" /> Alphabet
+              </TabsTrigger>
+              <TabsTrigger value="scenarios" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
+                <MessageSquare className="w-4 h-4" /> Scenarios
+              </TabsTrigger>
+              <TabsTrigger value="premium" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
+                <Crown className="w-4 h-4" /> Premium Plan
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="mt-auto p-4 bg-orange-50 rounded-2xl border border-orange-100">
+              <h4 className="text-xs font-bold text-orange-900 mb-1 flex items-center gap-1">
+                <Plane className="w-3 h-3" /> TRAVEL TIP
+              </h4>
+              <p className="text-[10px] text-orange-800 leading-tight">
+                Don't forget to install the "Yandex" app for maps and taxis when you land in Moscow.
+              </p>
+            </div>
+          </div>
+
+          {/* Mobile Bottom Navigation */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-2 py-3 flex justify-around z-50">
+            <TabsList className="bg-transparent h-auto p-0 flex flex-row w-full justify-around">
+               <TabsTrigger value="home" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
+                 <Home className="w-5 h-5" /> Home
+               </TabsTrigger>
+               <TabsTrigger value="alphabet" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
+                 <BookOpen className="w-5 h-5" /> Alphabet
+               </TabsTrigger>
+               <TabsTrigger value="scenarios" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
+                 <MessageSquare className="w-5 h-5" /> Chat
+               </TabsTrigger>
+               <TabsTrigger value="premium" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
+                 <Crown className="w-5 h-5" /> Premium
+               </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* Tab Contents */}
+          <div className="flex-1 h-full overflow-hidden flex flex-col bg-white">
+            <TabsContent value="home" className="flex-1 p-4 md:p-8 m-0 pb-24 md:pb-8 overflow-auto">
+              <div className="max-w-4xl mx-auto space-y-8 md:space-y-12">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-light tracking-tight mb-2">Welcome back, <span className="font-serif italic">{user?.displayName?.split(' ')[0]}</span>.</h1>
+                  <p className="text-neutral-500 text-sm md:text-base">Your journey to Russia starts here. You're part of the {profile?.scholarshipType || 'Scholar'} class.</p>
+                </div>
+
+                {!isTrialValid && !isPremium && (
+                  <Card className="border-orange-200 bg-orange-50">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-orange-900">
+                        <AlertCircle className="w-5 h-5 text-orange-600" />
+                        Trial Period Ended
+                      </CardTitle>
+                      <CardDescription className="text-orange-800">
+                        Your 7-day free trial has expired. To continue practicing voice scenarios and AI tutoring, please upgrade to the $1 Premium Scholar plan.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button onClick={() => setActiveTab('premium')} className="bg-orange-600 hover:bg-orange-700">Upgrade for $1/month</Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <Card className="hover:border-neutral-300 transition-colors cursor-pointer group" onClick={() => setActiveTab('alphabet')}>
+                     <CardHeader>
+                       <CardTitle className="flex items-center gap-2">
+                        <div className="p-2 bg-neutral-100 rounded-lg group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors">
+                          <BookOpen className="w-5 h-5" />
+                        </div>
+                        Alphabet Master
+                       </CardTitle>
+                       <CardDescription>Learn the sounds and letters of the Cyrillic alphabet.</CardDescription>
+                     </CardHeader>
+                   </Card>
+                   
+                   <Card className="hover:border-neutral-300 transition-colors cursor-pointer group" onClick={() => setActiveTab('scenarios')}>
+                     <CardHeader>
+                       <CardTitle className="flex items-center gap-2">
+                        <div className="p-2 bg-neutral-100 rounded-lg group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors">
+                          <MessageSquare className="w-5 h-5" />
+                        </div>
+                        Voice Scenarios
+                       </CardTitle>
+                       <CardDescription>Practice real conversations for taxi, hotel, and dining.</CardDescription>
+                     </CardHeader>
+                   </Card>
+                </div>
+
+                <div>
+                  <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-neutral-400 mb-6">Discover Russia</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {CITY_IMAGES.map((city) => (
+                      <div key={city.name} className="relative aspect-square rounded-2xl overflow-hidden group">
+                        <img src={city.url} alt={city.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent flex flex-col justify-end p-4">
+                          <h4 className="text-white font-bold text-lg">{city.name}</h4>
+                          <p className="text-white/60 text-[10px] uppercase tracking-widest">{city.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="alphabet" className="flex-1 m-0 overflow-hidden">
+               <AlphabetView />
+            </TabsContent>
+
+            <TabsContent value="scenarios" className="flex-1 m-0 overflow-hidden">
+               {(isPremium || isTrialValid) ? (
+                 <ScenarioChat />
+               ) : (
+                 <div className="flex flex-col items-center justify-center h-full p-8 text-center max-w-sm mx-auto">
+                    <Crown className="w-12 h-12 text-orange-500 mb-6" />
+                    <h2 className="text-2xl font-bold mb-4">Premium Access Required</h2>
+                    <p className="text-neutral-500 mb-8 leading-relaxed">
+                      Interactive AI scenarios and real-time voice practice are restricted to Premium Scholar members after the trial ends.
+                    </p>
+                    <Button onClick={() => setActiveTab('premium')} className="bg-orange-600 hover:bg-orange-700 w-full rounded-xl">Subscribe for $1</Button>
+                 </div>
+               )}
+            </TabsContent>
+
+            <TabsContent value="premium" className="flex-1 p-4 md:p-8 m-0 pb-24 md:pb-8 overflow-auto">
+               <div className="max-w-2xl mx-auto space-y-8 md:space-y-12">
+                 <div className="text-center">
+                   <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Premium Scholar Plan</h1>
+                   <p className="text-neutral-500 text-sm">Supporting your education journey with affordable access.</p>
+                 </div>
+
+                 <Card className="border-2 border-orange-500 shadow-xl overflow-hidden relative">
+                    <div className="absolute top-4 right-4 animate-bounce">
+                       <Crown className="text-orange-500 w-8 h-8" />
+                    </div>
+                    <CardHeader className="text-center pb-10 pt-16">
+                      <CardTitle className="text-3xl mb-2 font-serif">Scholar Elite</CardTitle>
+                      <CardDescription>One simple price for everything.</CardDescription>
+                      <div className="mt-8 flex items-baseline justify-center gap-1">
+                        <span className="text-6xl font-bold">$1</span>
+                        <span className="text-neutral-400 text-xl">/month</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="px-10 pb-16 space-y-6">
+                       <div className="space-y-4">
+                         <div className="flex items-center gap-3">
+                           <CheckCircle2 className="w-5 h-5 text-green-500" />
+                           <span className="font-light">Unlimited AI Voice Tutor Chat</span>
+                         </div>
+                         <div className="flex items-center gap-3">
+                           <CheckCircle2 className="w-5 h-5 text-green-500" />
+                           <span className="font-light">All Current & Future Scenarios</span>
+                         </div>
+                         <div className="flex items-center gap-3">
+                           <CheckCircle2 className="w-5 h-5 text-green-500" />
+                           <span className="font-light">High Quality Voice Pronunciation</span>
+                         </div>
+                         <div className="flex items-center gap-3">
+                           <CheckCircle2 className="w-5 h-5 text-green-500" />
+                           <span className="font-light">Detailed Cultural & Context Guides</span>
+                         </div>
+                       </div>
+
+                       {isPremium ? (
+                         <div className="p-4 bg-green-50 text-green-800 rounded-xl flex items-center gap-3 justify-center font-bold">
+                           <CheckCircle2 className="w-5 h-5" />
+                           YOU ARE ENROLLED
+                         </div>
+                       ) : (
+                         <Button onClick={handleUpgrade} className="w-full h-16 bg-neutral-900 hover:bg-black rounded-2xl text-xl font-bold transition-transform hover:scale-[1.02]">
+                           Activate Plan for $1
+                         </Button>
+                       )}
+                       <p className="text-center text-[10px] text-neutral-400">Secure payment. Cancel subscription anytime from this panel.</p>
+                    </CardContent>
+                 </Card>
+               </div>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </main>
+    </div>
+  );
+}

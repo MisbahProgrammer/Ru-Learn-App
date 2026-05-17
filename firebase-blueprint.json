@@ -1,0 +1,25 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User subscription and progress data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "trialStartDate": { "type": "string", "format": "date-time" },
+        "isPremium": { "type": "boolean" },
+        "premiumUntil": { "type": "string", "format": "date-time" },
+        "scholarshipType": { "type": "string", "enum": ["Open Doors", "Other"] }
+      },
+      "required": ["uid", "email", "trialStartDate", "isPremium"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User documents containing subscription status"
+    }
+  }
+}
