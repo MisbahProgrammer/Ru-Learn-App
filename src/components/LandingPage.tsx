@@ -1,7 +1,7 @@
 import React from 'react';
-import { useAuth } from '../App';
-import { Button } from './ui/button';
-import { CITY_IMAGES } from '../constants';
+import { useAuth } from '@/App';
+import { Button } from '@/components/ui/button';
+import { CITY_IMAGES } from '@/constants';
 import { motion } from 'motion/react';
 import { GraduationCap, Plane, Languages, MessageSquare, CheckCircle2 } from 'lucide-react';
 
