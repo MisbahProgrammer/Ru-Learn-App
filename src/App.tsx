@@ -2,9 +2,9 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, User as FirebaseUser } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import { Toaster } from './components/ui/sonner';
-import { LandingPage } from './components/LandingPage';
-import { Dashboard } from './components/Dashboard';
+import { Toaster } from './components/ui/sonner-toaster.tsx';
+import { LandingPage } from './components/LandingPage.tsx';
+import { Dashboard } from './components/Dashboard.tsx';
 import { addDays, isAfter } from 'date-fns';
 
 interface AuthContextType {
