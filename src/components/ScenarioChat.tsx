@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button } from './ui/button';
-import { ScrollArea } from './ui/scroll-area';
-import { SCENARIOS } from '../constants';
-import { chatWithTutor, speakRussian } from '../lib/gemini';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { SCENARIOS } from '@/constants';
+import { chatWithTutor, speakRussian } from '@/lib/gemini';
 import { 
   Volume2, 
   Mic, 
@@ -18,9 +18,9 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Input } from './ui/input';
-import { auth } from '../lib/firebase';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { auth } from '@/lib/firebase';
 
 interface Message {
   role: 'user' | 'model';
