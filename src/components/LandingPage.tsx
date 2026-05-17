@@ -44,23 +44,24 @@ export function LandingPage() {
                 For Open Doors & Scholarship Winners
               </span>
             </div>
-            <h1 className="text-5xl md:text-8xl font-light tracking-tighter leading-[0.9] mb-8">
+            <h1 className="text-4xl md:text-8xl font-light tracking-tighter leading-[0.9] mb-6">
               Master <span className="italic font-serif">Russian</span> <br className="hidden sm:block"/>
               Before You Land.
             </h1>
-            <p className="text-base md:text-lg text-neutral-300 font-light max-w-md mb-10 leading-relaxed">
+            <p className="text-sm md:text-lg text-neutral-300 font-light max-w-md mb-8 leading-relaxed">
               Tailored for scholar achievers heading to Russia this September. 1 week free, then just $1/month to master real-world scenarios.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 mb-10">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button 
                 onClick={signIn}
-                className="bg-orange-500 text-white hover:bg-orange-600 h-14 px-8 rounded-full text-base md:text-lg font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-orange-500/20"
+                className="bg-orange-500 text-white hover:bg-orange-600 h-12 md:h-14 px-8 rounded-full text-base md:text-lg font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-orange-500/20 w-fit"
               >
                 Start Your Free Week
               </Button>
               <Button 
+                onClick={signIn}
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/10 h-14 px-8 rounded-full text-base md:text-lg font-light backdrop-blur-sm"
+                className="border-white/30 text-white hover:bg-white/10 h-12 md:h-14 px-8 rounded-full text-base md:text-lg font-light backdrop-blur-sm w-fit"
               >
                 Learn More
               </Button>
