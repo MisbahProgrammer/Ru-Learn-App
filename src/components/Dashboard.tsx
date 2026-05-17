@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useAuth } from '@/App';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '../App';
+import { Button } from './ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { ScrollArea } from './ui/scroll-area';
+import { Badge } from './ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { 
   BookOpen, 
   MessageSquare, 
@@ -18,12 +18,12 @@ import {
   Home,
   User
 } from 'lucide-react';
-import { ALPHABET, SCENARIOS, CITY_IMAGES } from '@/constants';
+import { ALPHABET, SCENARIOS, CITY_IMAGES } from '../constants';
 import { AlphabetView } from './AlphabetView';
 import { ScenarioChat } from './ScenarioChat';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '../lib/firebase';
 import { toast } from 'sonner';
 
 import { 
@@ -32,7 +32,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
+} from "./ui/dropdown-menu";
 
 export function Dashboard() {
   const { user, profile, signOut, isTrialValid, isPremium } = useAuth();

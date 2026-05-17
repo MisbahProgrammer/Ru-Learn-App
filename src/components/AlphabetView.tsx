@@ -1,10 +1,10 @@
 import React from 'react';
-import { ALPHABET } from '@/constants';
-import { speakRussian } from '@/lib/gemini';
-import { Button } from '@/components/ui/button';
+import { ALPHABET } from '../constants';
+import { speakRussian } from '../lib/gemini';
+import { Button } from './ui/button';
 import { Volume2, Search } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
+import { ScrollArea } from './ui/scroll-area';
+import { Input } from './ui/input';
 
 export function AlphabetView() {
   const [search, setSearch] = React.useState('');
