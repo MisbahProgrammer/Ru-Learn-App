@@ -16,13 +16,18 @@ import {
   Crown,
   Plane,
   Home,
-  User
+  User,
+  BookOpenCheck,
+  Video
 } from 'lucide-react';
 import { ALPHABET, SCENARIOS, CITY_IMAGES } from '@/constants';
 import { AlphabetView } from '@/components/AlphabetView';
 import { ScenarioChat } from '@/components/ScenarioChat';
+import { VocabularyView } from '@/components/VocabularyView';
+import { ProfileView } from '@/components/ProfileView';
+import { LecturesView } from '@/components/LecturesView';
 import { format, differenceInDays, addDays } from 'date-fns';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 
@@ -44,9 +49,17 @@ export function Dashboard() {
   const handleUpgrade = async () => {
     if (!user) return;
     try {
+      const invoiceId = `inv_${Math.random().toString(36).substr(2, 9)}`;
       await updateDoc(doc(db, 'users', user.uid), {
         isPremium: true,
-        premiumUntil: addDays(new Date(), 30).toISOString()
+        premiumUntil: addDays(new Date(), 30).toISOString(),
+        billingHistory: arrayUnion({
+          id: invoiceId,
+          date: new Date().toISOString(),
+          amount: 1.00,
+          description: 'Premium Scholar Plan - Monthly',
+          status: 'succeeded'
+        })
       });
       toast.success('Welcome to Premium Scholar! Your $1 payment was successful.');
     } catch (e: any) {
@@ -87,19 +100,22 @@ export function Dashboard() {
           )}
           
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || ''} />
-                  <AvatarFallback className="bg-neutral-100 text-neutral-600">{user?.displayName?.charAt(0) || <User />}</AvatarFallback>
-                </Avatar>
-              </Button>
+            <DropdownMenuTrigger className="relative h-8 w-8 rounded-full ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 overflow-hidden hover:bg-neutral-100">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || ''} />
+                <AvatarFallback className="bg-neutral-100 text-neutral-600">{user?.displayName?.charAt(0) || <User />}</AvatarFallback>
+              </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" sideOffset={8}>
               <div className="flex flex-col space-y-1 p-2">
                 <p className="text-sm font-medium leading-none truncate">{user?.displayName}</p>
                 <p className="text-xs leading-none text-neutral-500 truncate">{user?.email}</p>
               </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setActiveTab('profile')}>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile & Billing</span>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut} className="text-red-600 focus:text-red-700 focus:bg-red-50">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -112,7 +128,7 @@ export function Dashboard() {
 
       {/* Navigation Sidebar / Mobile Nav */}
       <main className="flex flex-col md:flex-row flex-1 overflow-hidden">
-        <Tabs defaultValue="home" className="flex-1 flex flex-col md:flex-row h-full" onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col md:flex-row h-full">
           {/* Desktop Sidebar */}
           <div className="hidden md:flex w-64 border-r border-neutral-200 p-4 flex-col gap-2 bg-neutral-50/50">
             <TabsList className="bg-transparent flex-col justify-start h-auto w-full p-0">
@@ -122,11 +138,20 @@ export function Dashboard() {
               <TabsTrigger value="alphabet" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
                 <BookOpen className="w-4 h-4" /> Alphabet
               </TabsTrigger>
+              <TabsTrigger value="vocabulary" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
+                <BookOpenCheck className="w-4 h-4" /> Vocabulary
+              </TabsTrigger>
               <TabsTrigger value="scenarios" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
                 <MessageSquare className="w-4 h-4" /> Scenarios
               </TabsTrigger>
+              <TabsTrigger value="lectures" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
+                <Video className="w-4 h-4" /> Lectures
+              </TabsTrigger>
               <TabsTrigger value="premium" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
                 <Crown className="w-4 h-4" /> Premium Plan
+              </TabsTrigger>
+              <TabsTrigger value="profile" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
+                <User className="w-4 h-4" /> Profile & Billing
               </TabsTrigger>
             </TabsList>
 
@@ -149,11 +174,20 @@ export function Dashboard() {
                <TabsTrigger value="alphabet" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
                  <BookOpen className="w-5 h-5" /> Alphabet
                </TabsTrigger>
+               <TabsTrigger value="vocabulary" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
+                 <BookOpenCheck className="w-5 h-5" /> Vocab
+               </TabsTrigger>
                <TabsTrigger value="scenarios" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
                  <MessageSquare className="w-5 h-5" /> Chat
                </TabsTrigger>
+               <TabsTrigger value="lectures" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
+                 <Video className="w-5 h-5" /> Lectures
+               </TabsTrigger>
                <TabsTrigger value="premium" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
                  <Crown className="w-5 h-5" /> Premium
+               </TabsTrigger>
+               <TabsTrigger value="profile" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
+                 <User className="w-5 h-5" /> Profile
                </TabsTrigger>
             </TabsList>
           </div>
@@ -167,19 +201,21 @@ export function Dashboard() {
                   <p className="text-neutral-500 text-sm md:text-base">Your journey to Russia starts here. You're part of the {profile?.scholarshipType || 'Scholar'} class.</p>
                 </div>
 
-                {!isTrialValid && !isPremium && (
-                  <Card className="border-orange-200 bg-orange-50">
+                {!isPremium && !isTrialValid && (
+                  <Card className="border-orange-200 bg-orange-50/80 backdrop-blur-sm shadow-lg shadow-orange-500/10">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-orange-900">
                         <AlertCircle className="w-5 h-5 text-orange-600" />
                         Trial Period Ended
                       </CardTitle>
-                      <CardDescription className="text-orange-800">
+                      <CardDescription className="text-orange-800 font-medium">
                         Your 7-day free trial has expired. To continue practicing voice scenarios and AI tutoring, please upgrade to the $1 Premium Scholar plan.
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Button onClick={() => setActiveTab('premium')} className="bg-orange-600 hover:bg-orange-700">Upgrade for $1/month</Button>
+                      <Button onClick={() => setActiveTab('premium')} className="bg-orange-600 hover:bg-orange-700 text-white px-8 h-12 rounded-xl font-bold shadow-lg shadow-orange-600/20">
+                        Upgrade for $1/month
+                      </Button>
                     </CardContent>
                   </Card>
                 )}
@@ -227,11 +263,15 @@ export function Dashboard() {
               </div>
             </TabsContent>
 
-            <TabsContent value="alphabet" className="flex-1 m-0 overflow-hidden">
+            <TabsContent value="alphabet" className="flex-1 m-0 h-full overflow-hidden">
                <AlphabetView />
             </TabsContent>
 
-            <TabsContent value="scenarios" className="flex-1 m-0 overflow-hidden">
+            <TabsContent value="vocabulary" className="flex-1 m-0 h-full overflow-hidden">
+               <VocabularyView />
+            </TabsContent>
+
+            <TabsContent value="scenarios" className="flex-1 m-0 h-full overflow-hidden">
                {(isPremium || isTrialValid) ? (
                  <ScenarioChat />
                ) : (
@@ -246,7 +286,7 @@ export function Dashboard() {
                )}
             </TabsContent>
 
-            <TabsContent value="premium" className="flex-1 p-4 md:p-8 m-0 pb-24 md:pb-8 overflow-auto">
+             <TabsContent value="premium" className="flex-1 p-4 md:p-8 m-0 pb-24 md:pb-8 overflow-auto">
                <div className="max-w-2xl mx-auto space-y-8 md:space-y-12">
                  <div className="text-center">
                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Premium Scholar Plan</h1>
@@ -299,7 +339,15 @@ export function Dashboard() {
                     </CardContent>
                  </Card>
                </div>
-            </TabsContent>
+             </TabsContent>
+
+             <TabsContent value="profile" className="flex-1 m-0 h-full overflow-hidden">
+                <ProfileView onNavigate={setActiveTab} />
+             </TabsContent>
+
+             <TabsContent value="lectures" className="flex-1 m-0 h-full overflow-hidden">
+                <LecturesView />
+             </TabsContent>
           </div>
         </Tabs>
       </main>

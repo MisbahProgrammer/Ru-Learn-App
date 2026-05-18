@@ -56,10 +56,11 @@ async function startServer() {
   app.post('/api/gemini/tts', async (req, res) => {
     try {
       const { text } = req.body;
+      console.log('Generating TTS for:', text);
       
       const response = await ai.models.generateContent({
         model: 'gemini-3.1-flash-tts-preview',
-        contents: [{ parts: [{ text: `Say in Russian: ${text}` }] }],
+        contents: [{ parts: [{ text: `Speak this: ${text}` }] }],
         config: {
           responseModalities: [Modality.AUDIO],
           speechConfig: {
@@ -70,15 +71,28 @@ async function startServer() {
         },
       });
 
-      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+      const part = response.candidates?.[0]?.content?.parts?.[0];
+      const base64Audio = part?.inlineData?.data;
+      const mimeType = part?.inlineData?.mimeType;
+
       if (base64Audio) {
-        res.status(200).json({ audio: base64Audio });
+        console.log('Successfully generated audio, mimeType:', mimeType);
+        res.status(200).json({ 
+          audio: base64Audio, 
+          mimeType: mimeType || 'audio/pcm;rate=24000' 
+        });
       } else {
+        console.error('No audio part in Gemini response:', JSON.stringify(response));
         res.status(500).json({ error: 'No audio generated' });
       }
     } catch (error: any) {
-      console.error('Gemini TTS Error:', error);
-      res.status(500).json({ error: error.message });
+      const isQuotaError = error.message?.includes('429') || error.message?.includes('quota');
+      if (isQuotaError) {
+        console.warn('Gemini TTS Quota exceeded (429)');
+      } else {
+        console.error('Gemini TTS Error:', error);
+      }
+      res.status(isQuotaError ? 429 : 500).json({ error: error.message });
     }
   });
 

@@ -1,23 +1,52 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/App';
 import { Button } from '@/components/ui/button';
 import { CITY_IMAGES } from '@/constants';
 import { motion } from 'motion/react';
 import { GraduationCap, Plane, Languages, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { AuthDialog } from '@/components/AuthDialog';
 
 export function LandingPage() {
   const { signIn } = useAuth();
+  const [authMode, setAuthMode] = useState<'signin' | 'signup' | null>(null);
+
+  const handleAuth = (action: 'signin' | 'signup') => {
+    setAuthMode(action);
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signIn();
+    } catch (error: any) {
+      if (error.code !== 'auth/popup-closed-by-user') {
+        toast.error('Authentication failed. Please try again.');
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="absolute top-0 left-0 right-0 z-20 px-8 py-6 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
-        <div className="flex items-center gap-2 text-white font-bold text-xl uppercase tracking-widest">
-          <GraduationCap className="text-orange-500" />
-          <span>Russian Scholar</span>
+      <header className="absolute top-0 left-0 right-0 z-20 px-4 sm:px-8 py-4 sm:py-6 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-white font-bold text-lg sm:text-xl uppercase tracking-widest">
+          <GraduationCap className="text-orange-500 w-5 h-5 sm:w-6 sm:h-6" />
+          <span className="truncate">Russian <span className="hidden min-[400px]:inline">Scholar</span></span>
         </div>
-        <Button onClick={signIn} variant="ghost" className="text-white hover:bg-white/10 rounded-full px-6">
-          Sign In
-        </Button>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Button 
+            onClick={() => handleAuth('signin')} 
+            variant="ghost" 
+            className="text-white hover:bg-white/10 rounded-full px-3 sm:px-6 text-sm sm:text-base font-medium"
+          >
+            Login
+          </Button>
+          <Button 
+            onClick={() => handleAuth('signup')} 
+            className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-4 sm:px-6 h-9 sm:h-10 text-sm sm:text-base font-bold shadow-lg shadow-orange-500/20"
+          >
+            Sign Up
+          </Button>
+        </div>
       </header>
 
       {/* Hero Section */}
@@ -52,17 +81,17 @@ export function LandingPage() {
               <p className="text-base md:text-xl text-neutral-300 font-light max-w-lg mb-10 leading-relaxed">
                 Tailored for scholar achievers heading to Russia this September. 1 week free, then just $1/month to master real-world scenarios.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                 <Button 
-                  onClick={signIn}
+                  onClick={() => handleAuth('signup')}
                   className="bg-orange-500 text-white hover:bg-orange-600 h-14 md:h-16 px-10 rounded-full text-lg md:text-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-xl shadow-orange-500/20 w-full sm:w-auto"
                 >
                   Start Your Free Week
                 </Button>
                 <Button 
-                  onClick={signIn}
+                  onClick={() => handleAuth('signin')}
                   variant="ghost"
-                  className="border-2 border-orange-500/50 text-orange-400 hover:bg-orange-500/10 hover:text-orange-300 h-14 md:h-16 px-10 rounded-full text-lg md:text-xl font-medium backdrop-blur-sm w-full sm:w-auto transition-all"
+                  className="border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white h-14 md:h-16 px-10 rounded-full text-lg md:text-xl font-bold backdrop-blur-sm w-full sm:w-auto transition-all"
                 >
                   Learn More
                 </Button>
@@ -152,7 +181,7 @@ export function LandingPage() {
               <span className="text-6xl md:text-8xl font-bold tracking-tighter">$1</span>
               <span className="text-neutral-500 text-xl md:text-2xl font-light mb-2">/month</span>
             </div>
-            <Button onClick={signIn} className="w-full h-14 md:h-16 bg-orange-500 hover:bg-orange-600 rounded-3xl text-lg md:text-xl font-bold transition-all hover:scale-[1.02] shadow-lg shadow-orange-500/20">
+            <Button onClick={() => handleAuth('signup')} className="w-full h-14 md:h-16 bg-orange-500 hover:bg-orange-600 rounded-3xl text-lg md:text-xl font-bold transition-all hover:scale-[1.02] shadow-lg shadow-orange-500/20">
               Get Started for Free
             </Button>
             <p className="mt-6 text-[10px] md:text-xs text-neutral-500 tracking-wide">First 7 days are completely free. Cancel anytime.</p>
@@ -172,6 +201,13 @@ export function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <AuthDialog 
+        isOpen={authMode !== null} 
+        onClose={() => setAuthMode(null)} 
+        mode={authMode || 'signin'}
+        onGoogleSignIn={handleGoogleSignIn}
+      />
     </div>
   );
 }

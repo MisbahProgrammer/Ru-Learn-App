@@ -5,8 +5,8 @@ export const SCENARIOS = [
     description: 'Practice ordering a taxi from the airport to your hotel.',
     icon: 'Car',
     culturalTip: 'In Russia, it is best to use apps like Yandex Go rather than calling a taxi on the street.',
-    initialMessage: 'Hi! I need a taxi to the Radisson Hotel.',
-    initialMessageRu: 'Здравствуйте! Мне нужно такси до гостиницы Рэдиссон.'
+    initialMessage: "Hello! This is Yandex Go. Where would you like to go today?",
+    initialMessageRu: 'Здравствуйте! Это Яндекс Go. Куда вы хотите поехать сегодня?'
   },
   {
     id: 'directions',
@@ -14,8 +14,8 @@ export const SCENARIOS = [
     description: 'Learn how to find your way around Moscow and St. Petersburg.',
     icon: 'MapPin',
     culturalTip: 'Russians are very helpful with directions, but they might seem direct or serious at first.',
-    initialMessage: 'Excuse me, where is the Red Square?',
-    initialMessageRu: 'Извините, где Красная площадь?'
+    initialMessage: 'Hello! You look like you are looking for something. Can I help you with directions?',
+    initialMessageRu: 'Здравствуйте! Похоже, вы что-то ищете. Вам помочь с дорогой?'
   },
   {
     id: 'food',
@@ -23,8 +23,8 @@ export const SCENARIOS = [
     description: 'Try ordering some delicious Borsch or Pelmeni at a local restaurant.',
     icon: 'Utensils',
     culturalTip: 'Tipping is usually around 10% in most Russian restaurants.',
-    initialMessage: 'Can I have the menu, please?',
-    initialMessageRu: 'Можно меню, пожалуйста?'
+    initialMessage: 'Good evening! Welcome to our restaurant. Would you like to see the menu?',
+    initialMessageRu: 'Добрый вечер! Добро пожаловать в наш ресторан. Желаете посмотреть меню?'
   },
   {
     id: 'hotel',
@@ -32,8 +32,8 @@ export const SCENARIOS = [
     description: 'Manage your arrival and check-in process smoothly.',
     icon: 'Hotel',
     culturalTip: 'Always have your passport and visa ready for registration at the hotel.',
-    initialMessage: 'I have a reservation for Misbah.',
-    initialMessageRu: 'У меня забронирован номер на имя Мисбах.'
+    initialMessage: 'Hello! Welcome to our hotel. Do you have a reservation?',
+    initialMessageRu: 'Здравствуйте! Добро пожаловать в наш отель. У вас есть бронирование?'
   },
   {
     id: 'emergency',
@@ -41,8 +41,8 @@ export const SCENARIOS = [
     description: 'Important phrases for when things dont go as planned.',
     icon: 'AlertCircle',
     culturalTip: 'The emergency number in Russia is 112.',
-    initialMessage: 'Help! I lost my passport.',
-    initialMessageRu: 'Помогите! Я потерял свой паспорт.'
+    initialMessage: 'Emergency service 112. What is your emergency?',
+    initialMessageRu: 'Служба экстренной помощи 112. Что у вас случилось?'
   }
 ];
 
@@ -98,4 +98,87 @@ export const ALPHABET = [
   { letter: 'Э', sound: 'e', example: 'Эхо', transcription: 'Ekho' },
   { letter: 'Ю', sound: 'yu', example: 'Юмор', transcription: 'Yumor' },
   { letter: 'Я', sound: 'ya', example: 'Яблоко', transcription: 'Yabloko' }
+];
+
+export const VOCABULARY = [
+  {
+    category: 'Fruits (Фрукты)',
+    items: [
+      { ru: 'Яблоко', en: 'Apple', pr: 'Yabloko' },
+      { ru: 'Банан', en: 'Banana', pr: 'Banan' },
+      { ru: 'Апельсин', en: 'Orange', pr: 'Apel\'sin' },
+      { ru: 'Виноград', en: 'Grapes', pr: 'Vinograd' },
+      { ru: 'Клубника', en: 'Strawberry', pr: 'Klubnika' }
+    ]
+  },
+  {
+    category: 'Vegetables (Овощи)',
+    items: [
+      { ru: 'Картофель', en: 'Potato', pr: 'Kartofel\'' },
+      { ru: 'Морковь', en: 'Carrot', pr: 'Morkov\'' },
+      { ru: 'Огурец', en: 'Cucumber', pr: 'Ogurets' },
+      { ru: 'Помидор', en: 'Tomato', pr: 'Pomidor' },
+      { ru: 'Лук', en: 'Onion', pr: 'Luk' }
+    ]
+  },
+  {
+    category: 'Transport (Транспорт)',
+    items: [
+      { ru: 'Такси', en: 'Taxi', pr: 'Taxi' },
+      { ru: 'Автобус', en: 'Bus', pr: 'Avtobus' },
+      { ru: 'Метро', en: 'Metro', pr: 'Metro' },
+      { ru: 'Поезд', en: 'Train', pr: 'Poezd' },
+      { ru: 'Самолёт', en: 'Airplane', pr: 'Samolyot' }
+    ]
+  },
+  {
+    category: 'Directions (Направления)',
+    items: [
+      { ru: 'Налево', en: 'To the left', pr: 'Nalevo' },
+      { ru: 'Направо', en: 'To the right', pr: 'Napravo' },
+      { ru: 'Прямо', en: 'Straight', pr: 'Pryamo' },
+      { ru: 'Здесь', en: 'Here', pr: 'Zdes\'' },
+      { ru: 'Там', en: 'There', pr: 'Tam' }
+    ]
+  },
+  {
+    category: 'Counting (Числа)',
+    items: [
+      { ru: 'Один', en: 'One', pr: 'Odin' },
+      { ru: 'Два', en: 'Two', pr: 'Dva' },
+      { ru: 'Три', en: 'Three', pr: 'Tri' },
+      { ru: 'Четыре', en: 'Four', pr: 'Chetyre' },
+      { ru: 'Пять', en: 'Five', pr: 'Pyat\'' }
+    ]
+  },
+  {
+    category: 'Student Items (Предметы студента)',
+    items: [
+      { ru: 'Книга', en: 'Book', pr: 'Kniga' },
+      { ru: 'Ручка', en: 'Pen', pr: 'Ruchka' },
+      { ru: 'Тетрадь', en: 'Notebook', pr: 'Tetrad\'' },
+      { ru: 'Словарь', en: 'Dictionary', pr: 'Slovar\'' },
+      { ru: 'Рюкзак', en: 'Backpack', pr: 'Ryukzak' }
+    ]
+  },
+  {
+    category: 'Cooking Essentials (Кухонные принадлежности)',
+    items: [
+      { ru: 'Нож', en: 'Knife', pr: 'Nozh' },
+      { ru: 'Ложка', en: 'Spoon', pr: 'Lozhka' },
+      { ru: 'Вилка', en: 'Fork', pr: 'Vilka' },
+      { ru: 'Тарелка', en: 'Plate', pr: 'Tarelka' },
+      { ru: 'Кастрюля', en: 'Pot', pr: 'Kastryulya' }
+    ]
+  }
+];
+
+export const PHRASES = [
+  { ru: 'Как дела?', en: 'How are you?', pr: 'Kak dela?' },
+  { ru: 'Меня зовут...', en: 'My name is...', pr: 'Menya zovut...' },
+  { ru: 'Сколько это стоит?', en: 'How much does it cost?', pr: 'Skol\'ko eto stoit?' },
+  { ru: 'Где метро?', en: 'Where is the metro?', pr: 'Gde metro?' },
+  { ru: 'Я не понимаю', en: 'I don\'t understand', pr: 'Ya ne ponimayu' },
+  { ru: 'Вы говорите по-английски?', en: 'Do you speak English?', pr: 'Vy govorite po-angliyski?' },
+  { ru: 'Повторите, пожалуйста', en: 'Repeat, please', pr: 'Povtorite, pozhaluysta' }
 ];

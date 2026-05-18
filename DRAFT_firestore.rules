@@ -39,10 +39,6 @@ service cloud.firestore {
               data.keys().size() <= 10);
     }
 
-    function isAdmin() {
-      return isSignedIn() && request.auth.token.email == 'misbahrehman891@gmail.com' && request.auth.token.email_verified == true;
-    }
-
     // Profiles / Users Collection
     match /users/{userId} {
       allow get: if isOwner(userId) && isValidId(userId);
@@ -57,17 +53,9 @@ service cloud.firestore {
                       isValidUser(incoming()) && 
                       incoming().uid == existing().uid &&
                       (
-                        // Action: Update Profile Info (Regular users CANNOT set isPremium, only admin or system)
-                        // However, for this specific prototype we let them "upgrade" but in real app this would be restricted.
-                        // I'll keep it as is for now if the app core flow depends on it (Simulated billing).
-                        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'scholarshipType', 'isPremium', 'premiumUntil', 'trialStartDate', 'cancelledAt', 'billingHistory'])
+                        // Action: Update Profile Info
+                        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'scholarshipType', 'isPremium', 'premiumUntil', 'trialStartDate'])
                       );
-    }
-
-    // Lectures Collection
-    match /lectures/{lectureId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
     }
   }
 }

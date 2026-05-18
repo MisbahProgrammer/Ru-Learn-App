@@ -1,23 +1,79 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { auth, db } from './lib/firebase';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, User as FirebaseUser } from 'firebase/auth';
+import { 
+  onAuthStateChanged, 
+  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult,
+  GoogleAuthProvider, 
+  User as FirebaseUser 
+} from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { Toaster } from '@/components/ui/sonner-toaster';
 import { LandingPage } from '@/components/LandingPage';
 import { Dashboard } from '@/components/Dashboard';
 import { addDays, isAfter } from 'date-fns';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: FirebaseUser | null;
   profile: any | null;
   loading: boolean;
   signIn: () => Promise<void>;
+  signUp: () => Promise<void>;
   signOut: () => Promise<void>;
   isTrialValid: boolean;
   isPremium: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 export function useAuth() {
   const context = useContext(AuthContext);
@@ -31,48 +87,91 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Handle redirect result
+    getRedirectResult(auth).catch((error) => {
+      console.error('Redirect result error:', error);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if (user) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (!userDoc.exists()) {
-          const newProfile = {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            trialStartDate: new Date().toISOString(),
-            isPremium: false,
-          };
-          await setDoc(doc(db, 'users', user.uid), newProfile);
-          setProfile(newProfile);
+      try {
+        setUser(user);
+        if (user) {
+          const userPath = `users/${user.uid}`;
+          try {
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (!userDoc.exists()) {
+              const newProfile = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName || '',
+                trialStartDate: new Date().toISOString(),
+                isPremium: false,
+                createdAt: new Date().toISOString(),
+              };
+              await setDoc(doc(db, 'users', user.uid), newProfile);
+              setProfile(newProfile);
+            } else {
+              setProfile(userDoc.data());
+            }
+
+            // Sync profile
+            onSnapshot(doc(db, 'users', user.uid), (doc) => {
+              if (doc.exists()) setProfile(doc.data());
+            }, (error) => {
+              console.error('Profile snapshot error:', error);
+            });
+          } catch (error) {
+            console.error('Error fetching profile:', error);
+          }
         } else {
-          setProfile(userDoc.data());
-          // Sync profile
-          onSnapshot(doc(db, 'users', user.uid), (doc) => {
-            setProfile(doc.data());
-          });
+          setProfile(null);
         }
-      } else {
-        setProfile(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
     return unsubscribe;
   }, []);
 
   const signIn = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error: any) {
+      console.error('Sign in popup error, trying redirect:', error);
+      // Fallback to redirect if popup is blocked or fails
+      if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+        // Only redirect if specifically blocked, otherwise just toast. 
+        // Actually, for better UX in iframes, just fallback to redirect for common errors.
+        try {
+          await signInWithRedirect(auth, provider);
+        } catch (redirectError: any) {
+          toast.error('Authentication failed. Please check your browser settings.');
+        }
+      } else {
+        toast.error('Sign in failed: ' + error.message);
+      }
+    }
+  };
+
+  const signUp = async () => {
+    // For Google Auth, Sign Up and Sign In are essentially the same flow,
+    // but we provide a separate function to reflect UI intent.
+    return signIn();
   };
 
   const signOut = () => auth.signOut();
 
   const isPremium = profile?.isPremium || false;
-  const trialValid = profile ? isAfter(addDays(new Date(profile.trialStartDate), 7), new Date()) : false;
+  const trialValid = profile 
+    ? isAfter(addDays(new Date(profile.trialStartDate), 7), new Date()) 
+    : true; // Default to true if profile is still loading to avoid flash
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signOut, isTrialValid: trialValid, isPremium }}>
-      <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 border-x border-neutral-200 max-w-7xl mx-auto shadow-sm">
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, isTrialValid: trialValid, isPremium }}>
+      <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 overflow-x-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-screen">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>

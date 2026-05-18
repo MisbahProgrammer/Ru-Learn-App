@@ -35,13 +35,26 @@ export function ScenarioChat() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    const scrollToBottom = () => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+      }
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    scrollToBottom();
+    // Execute a bit later to catch layout shifts or image loads
+    const timeoutId = setTimeout(scrollToBottom, 150);
+    const timeoutId2 = setTimeout(scrollToBottom, 500); 
+    return () => {
+      clearTimeout(timeoutId);
+      clearTimeout(timeoutId2);
+    };
   }, [messages, loading]);
 
   useEffect(() => {
@@ -78,11 +91,25 @@ export function ScenarioChat() {
     ]);
   };
 
+  const handleSpeak = async (text: string) => {
+    try {
+      await speakRussian(text);
+    } catch (error) {
+      console.error('TTS error', error);
+    }
+  };
+
   const handleSend = async (textOverride?: string) => {
     const textToSend = textOverride || input;
     if (!textToSend.trim() || loading) return;
 
-    const userMessage: Message = { role: 'user', parts: [{ text: textToSend }] };
+    const containsRussian = /[\u0400-\u04FF]/.test(textToSend);
+    const userMessage: Message = { 
+      role: 'user', 
+      parts: [{ text: textToSend }],
+      russian: containsRussian ? textToSend : undefined
+    };
+    
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
@@ -96,8 +123,8 @@ export function ScenarioChat() {
       let translation = '';
       
       parts.forEach((p: string) => {
-        if (p.startsWith('Russian:')) russian = p.replace('Russian:', '').trim();
-        if (p.startsWith('Translation:')) translation = p.replace('Translation:', '').trim();
+        if (p.toLowerCase().startsWith('russian:')) russian = p.replace(/russian:/i, '').trim();
+        if (p.toLowerCase().startsWith('translation:')) translation = p.replace(/translation:/i, '').trim();
       });
 
       const modelMessage: Message = { 
@@ -111,9 +138,9 @@ export function ScenarioChat() {
       
       // Auto-play Russian audio
       if (russian) {
-        speakRussian(russian);
-      } else {
-         speakRussian(response.text);
+        handleSpeak(russian);
+      } else if (response.text && !translation) {
+         handleSpeak(response.text);
       }
     } catch (error: any) {
       toast.error('Tutor is busy: ' + error.message);
@@ -138,34 +165,37 @@ export function ScenarioChat() {
 
   if (!selectedScenario) {
     return (
-      <div className="p-8 h-full bg-neutral-50/50 flex flex-col">
-        <div className="mb-12">
-          <h2 className="text-4xl font-light tracking-tight mb-2">Voice <span className="font-serif italic font-medium text-orange-600">Scenarios</span></h2>
-          <p className="text-neutral-500 font-light max-w-2xl leading-relaxed">
-            Pick a real-world situation you'll encounter in Russia. Each session includes an AI tutor, voice practice, and cultural context.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-1">
-          {SCENARIOS.map((scenario) => (
-            <div 
-              key={scenario.id} 
-              className="bg-white border border-neutral-200 p-8 rounded-[32px] hover:shadow-xl transition-all group flex flex-col items-start gap-4 cursor-pointer hover:border-orange-200"
-              onClick={() => startScenario(scenario)}
-            >
-              <div className="p-4 bg-orange-50 text-orange-600 rounded-2xl group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                 {/* Lucide icon rendering needs to be dynamic or static */}
-                 <MessageSquare className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold tracking-tight">{scenario.title}</h3>
-              <p className="text-neutral-500 text-sm font-light leading-relaxed mb-4">{scenario.description}</p>
-              
-              <div className="mt-auto pt-6 border-t border-neutral-100 w-full flex items-center justify-between">
-                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">START PRACTICE</span>
-                <CheckCircle2 className="w-4 h-4 text-neutral-200 group-hover:text-orange-500 transition-colors" />
-              </div>
+      <div className="h-full bg-neutral-50/50">
+      <div className="h-full overflow-y-auto">
+        <div className="p-8 flex flex-col min-h-full">
+            <div className="mb-12">
+              <h2 className="text-4xl font-light tracking-tight mb-2">Voice <span className="font-serif italic font-medium text-orange-600">Scenarios</span></h2>
+              <p className="text-neutral-500 font-light max-w-2xl leading-relaxed">
+                Pick a real-world situation you'll encounter in Russia. Each session includes an AI tutor, voice practice, and cultural context.
+              </p>
             </div>
-          ))}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-1 pb-40 md:pb-12 h-max">
+              {SCENARIOS.map((scenario) => (
+                <div 
+                  key={scenario.id} 
+                  className="bg-white border border-neutral-200 p-8 rounded-[32px] hover:shadow-xl transition-all group flex flex-col items-start gap-4 cursor-pointer hover:border-orange-200"
+                  onClick={() => startScenario(scenario)}
+                >
+                  <div className="p-4 bg-orange-50 text-orange-600 rounded-2xl group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                     <MessageSquare className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold tracking-tight">{scenario.title}</h3>
+                  <p className="text-neutral-500 text-sm font-light leading-relaxed mb-4">{scenario.description}</p>
+                  
+                  <div className="mt-auto pt-6 border-t border-neutral-100 w-full flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">START PRACTICE</span>
+                    <CheckCircle2 className="w-4 h-4 text-neutral-200 group-hover:text-orange-500 transition-colors" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -191,8 +221,11 @@ export function ScenarioChat() {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 px-4 md:px-6 py-4">
-        <div className="max-w-3xl mx-auto space-y-4 md:space-y-6">
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto px-4 md:px-6 py-4 scroll-smooth"
+      >
+        <div className="max-w-3xl mx-auto space-y-4 md:space-y-6 pb-32 md:pb-8">
           <AnimatePresence>
             {messages.map((m, i) => (
               <motion.div
@@ -213,27 +246,50 @@ export function ScenarioChat() {
                       ? 'bg-neutral-900 text-white rounded-tr-none' 
                       : 'bg-white border border-neutral-200 rounded-tl-none shadow-sm'
                   }`}>
-                    {m.russian ? (
+                    {/* Model message with Russian and Translation */}
+                    {m.role === 'model' && m.russian ? (
                         <div className="flex flex-col gap-2">
                           <div className="flex justify-between items-start gap-4">
-                            <p className={`text-2xl md:text-3xl font-medium tracking-wide leading-relaxed ${m.role === 'user' ? 'text-white' : 'text-neutral-900'}`}>{m.russian}</p>
+                            <p className="text-2xl md:text-3xl font-medium tracking-wide leading-relaxed text-neutral-900">{m.russian}</p>
                             <Button 
                               size="icon" 
                               variant="ghost" 
                               className="h-8 w-8 text-orange-500 hover:bg-orange-50 shrink-0"
-                              onClick={() => speakRussian(m.russian!)}
+                              onClick={() => handleSpeak(m.russian!)}
                             >
                               <Volume2 className="w-4 h-4" />
                             </Button>
                           </div>
-                          <div className={`h-[1px] w-full my-1 ${m.role === 'user' ? 'bg-white/10' : 'bg-neutral-100'}`} />
-                          <p className={`text-xs md:text-sm italic font-light opacity-80 ${m.role === 'user' ? 'text-white/70' : 'text-neutral-500'}`}>
+                          <div className="h-[1px] w-full my-1 bg-neutral-100" />
+                          <p className="text-xs md:text-sm italic font-light text-neutral-500 opacity-80">
                             {m.translation}
                           </p>
                         </div>
+                    ) : m.role === 'user' ? (
+                      <div className="flex items-center gap-3">
+                         <p className="text-sm md:text-base">{m.parts[0].text}</p>
+                         <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-6 w-6 text-white/40 hover:text-white hover:bg-white/10 shrink-0"
+                            onClick={() => handleSpeak(m.parts[0].text)}
+                          >
+                            <Volume2 className="w-3 h-3" />
+                          </Button>
+                      </div>
                     ) : (
-                      <div className="prose prose-sm max-w-none prose-neutral">
-                        <ReactMarkdown>{m.parts[0].text}</ReactMarkdown>
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="prose prose-sm max-w-none prose-neutral">
+                          <ReactMarkdown>{m.parts[0].text}</ReactMarkdown>
+                        </div>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-8 w-8 text-orange-500 hover:bg-orange-50 shrink-0"
+                          onClick={() => handleSpeak(m.parts[0].text)}
+                        >
+                          <Volume2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -262,10 +318,10 @@ export function ScenarioChat() {
                 </div>
               </motion.div>
             )}
-            <div ref={scrollRef} />
+            <div ref={messagesEndRef} />
           </AnimatePresence>
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Input Area */}
       <div className="p-3 md:p-6 bg-white/80 backdrop-blur-md border-t border-neutral-200 fixed bottom-16 md:bottom-0 left-0 right-0 md:relative z-40">
@@ -273,7 +329,7 @@ export function ScenarioChat() {
           <div className="relative flex items-center gap-2 md:gap-3">
              <div className="relative flex-1 group">
                 <Input 
-                  placeholder="Type in English..." 
+                  placeholder="Type in English or Russian..." 
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
