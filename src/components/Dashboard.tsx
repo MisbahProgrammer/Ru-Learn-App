@@ -18,7 +18,8 @@ import {
   Home,
   User,
   BookOpenCheck,
-  Video
+  Video,
+  BookText
 } from 'lucide-react';
 import { ALPHABET, SCENARIOS, CITY_IMAGES } from '@/constants';
 import { AlphabetView } from '@/components/AlphabetView';
@@ -26,6 +27,7 @@ import { ScenarioChat } from '@/components/ScenarioChat';
 import { VocabularyView } from '@/components/VocabularyView';
 import { ProfileView } from '@/components/ProfileView';
 import { LecturesView } from '@/components/LecturesView';
+import { GrammarView } from '@/components/GrammarView';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -141,6 +143,9 @@ export function Dashboard() {
               <TabsTrigger value="vocabulary" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
                 <BookOpenCheck className="w-4 h-4" /> Vocabulary
               </TabsTrigger>
+              <TabsTrigger value="grammar" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
+                <BookText className="w-4 h-4" /> Grammar
+              </TabsTrigger>
               <TabsTrigger value="scenarios" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
                 <MessageSquare className="w-4 h-4" /> Scenarios
               </TabsTrigger>
@@ -176,6 +181,9 @@ export function Dashboard() {
                </TabsTrigger>
                <TabsTrigger value="vocabulary" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
                  <BookOpenCheck className="w-5 h-5" /> Vocab
+               </TabsTrigger>
+               <TabsTrigger value="grammar" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
+                 <BookText className="w-5 h-5" /> Grammar
                </TabsTrigger>
                <TabsTrigger value="scenarios" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
                  <MessageSquare className="w-5 h-5" /> Chat
@@ -220,7 +228,7 @@ export function Dashboard() {
                   </Card>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                    <Card className="hover:border-neutral-300 transition-colors cursor-pointer group" onClick={() => setActiveTab('alphabet')}>
                      <CardHeader>
                        <CardTitle className="flex items-center gap-2">
@@ -230,6 +238,18 @@ export function Dashboard() {
                         Alphabet Master
                        </CardTitle>
                        <CardDescription>Learn the sounds and letters of the Cyrillic alphabet.</CardDescription>
+                     </CardHeader>
+                   </Card>
+
+                   <Card className="hover:border-neutral-300 transition-colors cursor-pointer group" onClick={() => setActiveTab('grammar')}>
+                     <CardHeader>
+                       <CardTitle className="flex items-center gap-2">
+                        <div className="p-2 bg-neutral-100 rounded-lg group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors">
+                          <BookText className="w-5 h-5" />
+                        </div>
+                        Grammar Essentials
+                       </CardTitle>
+                       <CardDescription>Master cases, pronouns, and sentence structure.</CardDescription>
                      </CardHeader>
                    </Card>
                    
@@ -269,6 +289,10 @@ export function Dashboard() {
 
             <TabsContent value="vocabulary" className="flex-1 m-0 h-full overflow-hidden">
                <VocabularyView />
+            </TabsContent>
+
+            <TabsContent value="grammar" className="flex-1 m-0 h-full overflow-hidden">
+               <GrammarView />
             </TabsContent>
 
             <TabsContent value="scenarios" className="flex-1 m-0 h-full overflow-hidden">
