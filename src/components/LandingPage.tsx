@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { AuthDialog } from '@/components/AuthDialog';
 
 export function LandingPage() {
-  const { signIn } = useAuth();
+  const { signIn, signInAsGuest } = useAuth();
   const [authMode, setAuthMode] = useState<'signin' | 'signup' | null>(null);
 
   const handleAuth = (action: 'signin' | 'signup') => {
@@ -207,6 +207,7 @@ export function LandingPage() {
         onClose={() => setAuthMode(null)} 
         mode={authMode || 'signin'}
         onGoogleSignIn={handleGoogleSignIn}
+        onSignInAsGuest={signInAsGuest}
       />
     </div>
   );

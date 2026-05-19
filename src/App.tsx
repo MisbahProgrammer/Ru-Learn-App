@@ -21,6 +21,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: () => Promise<void>;
   signUp: () => Promise<void>;
+  signInAsGuest: () => void;
   signOut: () => Promise<void>;
   isTrialValid: boolean;
   isPremium: boolean;
@@ -140,11 +141,18 @@ export default function App() {
     try {
       await signInWithPopup(auth, provider);
     } catch (error: any) {
-      console.error('Sign in popup error, trying redirect:', error);
-      // Fallback to redirect if popup is blocked or fails
+      console.error('Sign in popup error:', error);
+      
+      if (error.code === 'auth/unauthorized-domain') {
+        toast.error(
+          'This domain is not authorized for Google Sign-In in Firebase. Please use Email & Password login instead, or add this domain to your Firebase Console settings.',
+          { duration: 6000 }
+        );
+        return;
+      }
+      
+      // Fallback to redirect if popup is blocked
       if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        // Only redirect if specifically blocked, otherwise just toast. 
-        // Actually, for better UX in iframes, just fallback to redirect for common errors.
         try {
           await signInWithRedirect(auth, provider);
         } catch (redirectError: any) {
@@ -154,6 +162,25 @@ export default function App() {
         toast.error('Sign in failed: ' + error.message);
       }
     }
+  };
+
+  const signInAsGuest = () => {
+    // Mock user for guest mode
+    const guestUser: any = {
+      uid: 'guest-' + Math.random().toString(36).substr(2, 9),
+      displayName: 'Guest Scholar',
+      email: 'guest@scholar.com',
+      isGuest: true
+    };
+    setUser(guestUser);
+    setProfile({
+      uid: guestUser.uid,
+      displayName: 'Guest Scholar',
+      isPremium: true, // Let guests try everything
+      trialStartDate: new Date().toISOString(),
+      isGuest: true
+    });
+    toast.success('Continuing as Guest. Progress will not be saved across sessions.');
   };
 
   const signUp = async () => {
@@ -170,7 +197,7 @@ export default function App() {
     : true; // Default to true if profile is still loading to avoid flash
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, isTrialValid: trialValid, isPremium }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signInAsGuest, signOut, isTrialValid: trialValid, isPremium }}>
       <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 overflow-x-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-screen">
