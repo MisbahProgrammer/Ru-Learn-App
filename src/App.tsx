@@ -145,8 +145,8 @@ export default function App() {
       
       if (error.code === 'auth/unauthorized-domain') {
         toast.error(
-          'This domain is not authorized for Google Sign-In in Firebase. Please use Email & Password login instead, or add this domain to your Firebase Console settings.',
-          { duration: 6000 }
+          'This domain is not authorized in Firebase. Please use the AI Studio Development/Shared URL, or use "Continue as Guest".',
+          { duration: 8000 }
         );
         return;
       }

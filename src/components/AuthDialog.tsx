@@ -47,7 +47,22 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn,
       }
       onClose();
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Auth error:', error);
+      if (error.code === 'auth/operation-not-allowed') {
+        toast.error('Email/Password login is not enabled in this project. Please use Google Login or Continue as Guest.', {
+          duration: 6000
+        });
+      } else if (error.code === 'auth/email-already-in-use') {
+        toast.error('This email is already in use. Please sign in instead.');
+      } else if (error.code === 'auth/weak-password') {
+        toast.error('Password is too weak. Please use at least 6 characters.');
+      } else if (error.code === 'auth/invalid-email') {
+        toast.error('Invalid email address.');
+      } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        toast.error('Invalid email or password.');
+      } else {
+        toast.error(error.message || 'An error occurred during authentication.');
+      }
     } finally {
       setLoading(false);
     }

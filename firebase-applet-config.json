@@ -1,10 +1,10 @@
 {
-  "projectId": "splendid-opus-kcf5x",
-  "appId": "1:1035121136800:web:7bff72420ac2af6556e5c5",
-  "apiKey": "AIzaSyB-hmgsnNAsKS4vz-MzSFV2KLQ_QIR8kjw",
-  "authDomain": "splendid-opus-kcf5x.firebaseapp.com",
+  "projectId": "russian-scholar",
+  "appId": "1:580004800624:web:adbb92dc0ef2b95c7aecb5",
+  "apiKey": "AIzaSyAXmXDyPTAcUQ3kUpbq8_6V13tfArlCr_Y",
+  "authDomain": "russian-scholar.firebaseapp.com",
   "firestoreDatabaseId": "ai-studio-9e286b40-a3cc-4fa0-8451-c01cf88324d0",
-  "storageBucket": "splendid-opus-kcf5x.firebasestorage.app",
-  "messagingSenderId": "1035121136800",
-  "measurementId": ""
+  "storageBucket": "russian-scholar.firebasestorage.app",
+  "messagingSenderId": "580004800624",
+  "measurementId": "G-ZJEK56Z0GD"
 }
