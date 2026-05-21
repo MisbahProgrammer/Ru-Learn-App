@@ -10,14 +10,20 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
+  const getAi = () => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY environment variable is required. Please set it in your Secrets.');
+    }
+    return new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        },
       },
-    },
-  });
+    });
+  };
 
   app.use(express.json());
 
@@ -25,6 +31,7 @@ async function startServer() {
   app.post('/api/gemini/chat', async (req, res) => {
     try {
       const { messages, scenario } = req.body;
+      const ai = getAi();
       
       const systemInstruction = `You are an expert Russian tutor and cultural guide. 
       The current scenario is: ${scenario || 'General conversation'}.
@@ -57,6 +64,7 @@ async function startServer() {
     try {
       const { text } = req.body;
       console.log('Generating TTS for:', text);
+      const ai = getAi();
       
       const response = await ai.models.generateContent({
         model: 'gemini-3.1-flash-tts-preview',
