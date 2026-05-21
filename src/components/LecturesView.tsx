@@ -17,17 +17,7 @@ import {
   Trash2,
   Edit2
 } from 'lucide-react';
-import { 
-  collection, 
-  query, 
-  onSnapshot, 
-  addDoc, 
-  deleteDoc, 
-  doc, 
-  serverTimestamp,
-  orderBy 
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -70,18 +60,42 @@ export function LecturesView() {
   // ADMIN CHECK: Hardcoded for your email
   const isAdmin = user?.email === 'misbahrehman891@gmail.com';
 
-  useEffect(() => {
-    const q = query(collection(db, 'lectures'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Lecture[];
-      setLectures(docs);
-      setLoading(false);
-    });
+  const fetchLectures = async () => {
+    if (!supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('lectures')
+        .select('*')
+        .order('createdAt', { ascending: false });
 
-    return () => unsubscribe();
+      if (error) throw error;
+      setLectures(data || []);
+    } catch (err: any) {
+      console.error('Error fetching lectures:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLectures();
+
+    if (supabase) {
+      const channel = supabase
+        .channel('lectures_changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'lectures' },
+          () => {
+            fetchLectures();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        channel.unsubscribe();
+      };
+    }
   }, []);
 
   const handleAddLecture = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -89,18 +103,25 @@ export function LecturesView() {
     const formData = new FormData(e.currentTarget);
     
     try {
-      await addDoc(collection(db, 'lectures'), {
-        title: formData.get('title'),
-        description: formData.get('description'),
-        duration: formData.get('duration'),
-        thumbnail: formData.get('thumbnail') || 'https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&q=80&w=800',
-        videoUrl: formData.get('videoUrl'),
-        type: formData.get('type'),
-        category: formData.get('category'),
-        createdAt: serverTimestamp(),
-      });
+      if (!supabase) throw new Error('Supabase client is not initialized.');
+
+      const { error } = await supabase
+        .from('lectures')
+        .insert([{
+          title: formData.get('title'),
+          description: formData.get('description'),
+          duration: formData.get('duration'),
+          thumbnail: formData.get('thumbnail') || 'https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&q=80&w=800',
+          videoUrl: formData.get('videoUrl'),
+          type: formData.get('type'),
+          category: formData.get('category'),
+        }]);
+
+      if (error) throw error;
+
       toast.success('Lecture added successfully!');
       setIsAdding(false);
+      fetchLectures(); // Refresh fallback if channel is delayed
     } catch (error: any) {
       toast.error('Error adding lecture: ' + error.message);
     }
@@ -109,8 +130,17 @@ export function LecturesView() {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this lecture?')) return;
     try {
-      await deleteDoc(doc(db, 'lectures', id));
+      if (!supabase) throw new Error('Supabase client is not initialized.');
+
+      const { error } = await supabase
+        .from('lectures')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
       toast.success('Lecture deleted');
+      fetchLectures(); // Refresh fallback
     } catch (error: any) {
       toast.error('Error deleting: ' + error.message);
     }

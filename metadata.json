@@ -1,6 +1,6 @@
 {
-  "name": "Russian Open Doors Master",
-  "description": "Master Russian language for scholarship winners with AI tutors and voice scenarios.",
+  "name": "Russian Scholar",
+  "description": "Russian Scholar: Language mastery platform for students and scholarship candidates with AI-powered tutoring and real-world scenarios.",
   "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

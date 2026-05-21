@@ -15,13 +15,12 @@ import {
   Crown
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void }) {
-  const { user, profile, isPremium } = useAuth();
+  const { user, profile, isPremium, updateProfileState } = useAuth();
 
   const handleCancelSubscription = async () => {
     if (!user) return;
@@ -30,18 +29,50 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
     
     if (!confirmCancel) return;
 
+    const currentBilling = profile?.billingHistory || [];
+    const updatedBilling = [
+      ...currentBilling,
+      {
+        id: `inv_${Math.random().toString(36).substr(2, 9)}`,
+        date: new Date().toISOString(),
+        amount: 0,
+        description: 'Subscription Cancelled',
+        status: 'cancelled'
+      }
+    ];
+
     try {
-      await updateDoc(doc(db, 'users', user.uid), {
-        isPremium: false,
-        cancelledAt: new Date().toISOString(),
-        billingHistory: arrayUnion({
-          id: `inv_${Math.random().toString(36).substr(2, 9)}`,
-          date: new Date().toISOString(),
-          amount: 0,
-          description: 'Subscription Cancelled',
-          status: 'cancelled'
+      if (user.isGuest) {
+        updateProfileState({
+          ...profile,
+          isPremium: false,
+          cancelledAt: new Date().toISOString(),
+          billingHistory: updatedBilling
+        });
+        toast.success('Your subscription has been cancelled (Guest Mode).');
+        return;
+      }
+
+      if (!supabase) throw new Error('Supabase client is not initialized.');
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          isPremium: false,
+          premiumUntil: null,
+          billingHistory: updatedBilling
         })
+        .eq('uid', user.id);
+
+      if (error) throw error;
+
+      updateProfileState({
+        ...profile,
+        isPremium: false,
+        premiumUntil: null,
+        billingHistory: updatedBilling
       });
+
       toast.success('Your subscription has been cancelled.');
     } catch (e: any) {
       toast.error('Failed to cancel subscription: ' + e.message);

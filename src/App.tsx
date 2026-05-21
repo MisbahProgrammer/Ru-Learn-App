@@ -1,22 +1,15 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { auth, db } from './lib/firebase';
-import { 
-  onAuthStateChanged, 
-  signInWithPopup, 
-  signInWithRedirect, 
-  getRedirectResult,
-  GoogleAuthProvider, 
-  User as FirebaseUser 
-} from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { supabase } from './lib/supabase';
 import { Toaster } from '@/components/ui/sonner-toaster';
 import { LandingPage } from '@/components/LandingPage';
 import { Dashboard } from '@/components/Dashboard';
 import { addDays, isAfter } from 'date-fns';
 import { toast } from 'sonner';
+import { AlertCircle, Terminal } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface AuthContextType {
-  user: FirebaseUser | null;
+  user: any | null;
   profile: any | null;
   loading: boolean;
   signIn: () => Promise<void>;
@@ -25,56 +18,11 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   isTrialValid: boolean;
   isPremium: boolean;
+  updateProfileState: (data: any) => void;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId?: string | null;
-    email?: string | null;
-    emailVerified?: boolean | null;
-    isAnonymous?: boolean | null;
-    tenantId?: string | null;
-    providerInfo?: {
-      providerId?: string | null;
-      email?: string | null;
-    }[];
-  }
-}
-
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData?.map(provider => ({
-        providerId: provider.providerId,
-        email: provider.email,
-      })) || []
-    },
-    operationType,
-    path
-  };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
-}
 
 export function useAuth() {
   const context = useContext(AuthContext);
@@ -82,122 +30,219 @@ export function useAuth() {
   return context;
 }
 
+function SetupWarning() {
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6 bg-neutral-50">
+      <div className="max-w-md w-full space-y-6">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold font-serif mb-2 text-neutral-900 italic">Russian Scholar</h1>
+          <p className="text-neutral-500">Service initialization required</p>
+        </div>
+        <Alert variant="destructive" className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Supabase Not Configured</AlertTitle>
+          <AlertDescription>
+            Secrets are missing. Please go to <strong>Settings &gt; Secrets</strong> and add your VITE_SUPABASE_* variables.
+          </AlertDescription>
+        </Alert>
+        <div className="bg-neutral-900 text-neutral-400 p-4 rounded-xl font-mono text-xs space-y-2 border border-neutral-800">
+          <div className="flex items-center gap-2 text-neutral-200 mb-2">
+            <Terminal className="w-3 h-3" />
+            <span>Required Environment Variables</span>
+          </div>
+          <div>VITE_SUPABASE_URL</div>
+          <div>VITE_SUPABASE_ANON_KEY</div>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="w-full py-3 bg-neutral-900 text-white rounded-xl font-bold hover:bg-black transition-colors"
+        >
+          Check Again
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Handle redirect result
-    getRedirectResult(auth).catch((error) => {
-      console.error('Redirect result error:', error);
-    });
+  if (!supabase) {
+    return <SetupWarning />;
+  }
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      try {
-        setUser(user);
-        if (user) {
-          const userPath = `users/${user.uid}`;
-          try {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            if (!userDoc.exists()) {
-              const newProfile = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName || '',
-                trialStartDate: new Date().toISOString(),
-                isPremium: false,
-                createdAt: new Date().toISOString(),
-              };
-              await setDoc(doc(db, 'users', user.uid), newProfile);
-              setProfile(newProfile);
-            } else {
-              setProfile(userDoc.data());
-            }
-
-            // Sync profile
-            onSnapshot(doc(db, 'users', user.uid), (doc) => {
-              if (doc.exists()) setProfile(doc.data());
-            }, (error) => {
-              console.error('Profile snapshot error:', error);
-            });
-          } catch (error) {
-            console.error('Error fetching profile:', error);
-          }
-        } else {
-          setProfile(null);
-        }
-      } finally {
-        setLoading(false);
-      }
-    });
-    return unsubscribe;
-  }, []);
-
-  const signIn = async () => {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    
+  const fetchProfile = async (uid: string) => {
     try {
-      await signInWithPopup(auth, provider);
-    } catch (error: any) {
-      console.error('Sign in popup error:', error);
-      
-      if (error.code === 'auth/unauthorized-domain') {
-        toast.error(
-          'This domain is not authorized in Firebase. Please use the AI Studio Development/Shared URL, or use "Continue as Guest".',
-          { duration: 8000 }
-        );
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('uid', uid)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
         return;
       }
-      
-      // Fallback to redirect if popup is blocked
-      if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        try {
-          await signInWithRedirect(auth, provider);
-        } catch (redirectError: any) {
-          toast.error('Authentication failed. Please check your browser settings.');
+
+      if (!data) {
+        // Create profile if it does not exist in our custom public.users table
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        const newProfile = {
+          uid: uid,
+          email: currentUser?.email || '',
+          displayName: currentUser?.user_metadata?.full_name || currentUser?.user_metadata?.name || '',
+          trialStartDate: new Date().toISOString(),
+          isPremium: false,
+          createdAt: new Date().toISOString(),
+          billingHistory: []
+        };
+
+        const { data: insertedData, error: insertError } = await supabase
+          .from('users')
+          .insert([newProfile])
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+          // If insert fails (for example trigger created it), try selecting again
+          const { data: secondRetry } = await supabase
+            .from('users')
+            .select('*')
+            .eq('uid', uid)
+            .maybeSingle();
+          if (secondRetry) {
+            setProfile(secondRetry);
+          }
+        } else {
+          setProfile(insertedData);
         }
       } else {
-        toast.error('Sign in failed: ' + error.message);
+        setProfile(data);
       }
+    } catch (error) {
+      console.error('Exception fetching profile:', error);
     }
   };
 
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchProfile(user.id);
+    }
+  };
+
+  const updateProfileState = (updatedProfile: any) => {
+    setProfile(curr => curr ? { ...curr, ...updatedProfile } : updatedProfile);
+  };
+
+  useEffect(() => {
+    // 1. Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const activeUser = session?.user || null;
+      setUser(activeUser);
+      if (activeUser) {
+        fetchProfile(activeUser.id);
+      } else {
+        setProfile(null);
+        setLoading(false);
+      }
+    }).catch(err => {
+      console.error('Session retrieval failed:', err);
+      setLoading(false);
+    });
+
+    // 2. Set up auth listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const activeUser = session?.user || null;
+      setUser(activeUser);
+      if (activeUser) {
+        await fetchProfile(activeUser.id);
+      } else {
+        setProfile(null);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const signIn = async () => {
+    try {
+      // Connects to Supabase Google Auth
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Google Sign in error:', error);
+      toast.error('Google login error: ' + error.message);
+    }
+  };
+
+  const signUp = async () => {
+    return signIn();
+  };
+
   const signInAsGuest = () => {
-    // Mock user for guest mode
     const guestUser: any = {
-      uid: 'guest-' + Math.random().toString(36).substr(2, 9),
-      displayName: 'Guest Scholar',
+      id: 'guest-' + Math.random().toString(36).substr(2, 9),
       email: 'guest@scholar.com',
+      user_metadata: {
+        full_name: 'Guest Scholar',
+        name: 'Guest Scholar'
+      },
       isGuest: true
     };
     setUser(guestUser);
     setProfile({
-      uid: guestUser.uid,
+      uid: guestUser.id,
       displayName: 'Guest Scholar',
       isPremium: true, // Let guests try everything
       trialStartDate: new Date().toISOString(),
-      isGuest: true
+      isGuest: true,
+      billingHistory: []
     });
     toast.success('Continuing as Guest. Progress will not be saved across sessions.');
   };
 
-  const signUp = async () => {
-    // For Google Auth, Sign Up and Sign In are essentially the same flow,
-    // but we provide a separate function to reflect UI intent.
-    return signIn();
+  const signOut = async () => {
+    if (user?.isGuest) {
+      setUser(null);
+      setProfile(null);
+      return;
+    }
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error('Sign out failed: ' + error.message);
+    }
   };
-
-  const signOut = () => auth.signOut();
 
   const isPremium = profile?.isPremium || false;
   const trialValid = profile 
     ? isAfter(addDays(new Date(profile.trialStartDate), 7), new Date()) 
-    : true; // Default to true if profile is still loading to avoid flash
+    : true;
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signInAsGuest, signOut, isTrialValid: trialValid, isPremium }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      profile, 
+      loading, 
+      signIn, 
+      signUp, 
+      signInAsGuest, 
+      signOut, 
+      isTrialValid: trialValid, 
+      isPremium,
+      updateProfileState,
+      refreshProfile
+    }}>
       <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 overflow-x-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-screen">

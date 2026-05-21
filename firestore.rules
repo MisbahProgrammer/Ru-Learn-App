@@ -1,73 +1,34 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 0. Global Safety Net
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // 3. Global Helpers
+    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
     
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    function incoming() {
-      return request.resource.data;
-    }
-
-    function existing() {
-      return resource.data;
-    }
-
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-
-    // 2. Validation Blueprints
+    
     function isValidUser(data) {
-      return data.uid is string && data.uid.size() <= 128 &&
-             data.email is string && data.email.size() <= 256 &&
-             data.displayName is string && data.displayName.size() <= 256 &&
-             data.trialStartDate is string && data.trialStartDate.size() <= 64 &&
-             data.isPremium is bool &&
-             data.createdAt is string && data.createdAt.size() <= 64 &&
-             (data.keys().hasAll(['uid', 'email', 'displayName', 'trialStartDate', 'isPremium', 'createdAt']) &&
-              data.keys().size() <= 10);
+      return data.uid is string && 
+             data.email is string &&
+             data.trialStartDate is string;
     }
 
-    function isAdmin() {
-      return isSignedIn() && request.auth.token.email == 'misbahrehman891@gmail.com' && request.auth.token.email_verified == true;
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
     }
 
-    // Profiles / Users Collection
     match /users/{userId} {
-      allow get: if isOwner(userId) && isValidId(userId);
-      
-      allow create: if isOwner(userId) && 
-                      isValidId(userId) && 
-                      isValidUser(incoming()) && 
-                      incoming().uid == request.auth.uid;
-                      
-      allow update: if isOwner(userId) && 
-                      isValidId(userId) && 
-                      isValidUser(incoming()) && 
-                      incoming().uid == existing().uid &&
-                      (
-                        // Action: Update Profile Info (Regular users CANNOT set isPremium, only admin or system)
-                        // However, for this specific prototype we let them "upgrade" but in real app this would be restricted.
-                        // I'll keep it as is for now if the app core flow depends on it (Simulated billing).
-                        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'scholarshipType', 'isPremium', 'premiumUntil', 'trialStartDate', 'cancelledAt', 'billingHistory'])
-                      );
-    }
-
-    // Lectures Collection
-    match /lectures/{lectureId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && (
+        // Allow updating premium status and billing history
+        // In a real app, billing should be handled by server-side functions
+        request.resource.data.diff(resource.data).affectedKeys().hasAny(['isPremium', 'premiumUntil', 'billingHistory', 'displayName'])
+      );
     }
   }
 }

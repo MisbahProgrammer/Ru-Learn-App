@@ -29,8 +29,7 @@ import { ProfileView } from '@/components/ProfileView';
 import { LecturesView } from '@/components/LecturesView';
 import { GrammarView } from '@/components/GrammarView';
 import { format, differenceInDays, addDays } from 'date-fns';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 import { 
@@ -42,7 +41,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function Dashboard() {
-  const { user, profile, signOut, isTrialValid, isPremium } = useAuth();
+  const { user, profile, signOut, isTrialValid, isPremium, updateProfileState } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
 
   const trialDaysLeft = 7 - differenceInDays(new Date(), new Date(profile?.trialStartDate || new Date()));
@@ -50,19 +49,51 @@ export function Dashboard() {
 
   const handleUpgrade = async () => {
     if (!user) return;
+    const invoiceId = `inv_${Math.random().toString(36).substr(2, 9)}`;
+    const currentBilling = profile?.billingHistory || [];
+    const updatedBilling = [
+      ...currentBilling,
+      {
+        id: invoiceId,
+        date: new Date().toISOString(),
+        amount: 1.00,
+        description: 'Premium Scholar Plan - Monthly',
+        status: 'succeeded'
+      }
+    ];
+
     try {
-      const invoiceId = `inv_${Math.random().toString(36).substr(2, 9)}`;
-      await updateDoc(doc(db, 'users', user.uid), {
+      if (user.isGuest) {
+        updateProfileState({
+          ...profile,
+          isPremium: true,
+          premiumUntil: addDays(new Date(), 30).toISOString(),
+          billingHistory: updatedBilling
+        });
+        toast.success('Welcome to Premium Scholar! (Guest Mode active)');
+        return;
+      }
+
+      if (!supabase) throw new Error('Supabase client is not initialized.');
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          isPremium: true,
+          premiumUntil: addDays(new Date(), 30).toISOString(),
+          billingHistory: updatedBilling
+        })
+        .eq('uid', user.id);
+
+      if (error) throw error;
+
+      updateProfileState({
+        ...profile,
         isPremium: true,
         premiumUntil: addDays(new Date(), 30).toISOString(),
-        billingHistory: arrayUnion({
-          id: invoiceId,
-          date: new Date().toISOString(),
-          amount: 1.00,
-          description: 'Premium Scholar Plan - Monthly',
-          status: 'succeeded'
-        })
+        billingHistory: updatedBilling
       });
+
       toast.success('Welcome to Premium Scholar! Your $1 payment was successful.');
     } catch (e: any) {
       toast.error('Failed to upgrade: ' + e.message);

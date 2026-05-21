@@ -20,7 +20,7 @@ import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
-import { auth } from '@/lib/firebase';
+import { useAuth } from '@/App';
 
 interface Message {
   role: 'user' | 'model';
@@ -30,6 +30,7 @@ interface Message {
 }
 
 export function ScenarioChat() {
+  const { user } = useAuth();
   const [selectedScenario, setSelectedScenario] = useState<typeof SCENARIOS[0] | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -297,7 +298,7 @@ export function ScenarioChat() {
 
                 {m.role === 'user' && (
                   <Avatar className="h-8 w-8 mt-1">
-                    <AvatarImage src={auth.currentUser?.photoURL || ''} />
+                    <AvatarImage src={(user as any)?.user_metadata?.avatar_url || (user as any)?.photoURL || ''} />
                     <AvatarFallback><User /></AvatarFallback>
                   </Avatar>
                 )}

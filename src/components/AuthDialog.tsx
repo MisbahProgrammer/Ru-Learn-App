@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog';
-import { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { GraduationCap, Mail, Lock, User, Github } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
@@ -35,34 +35,34 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn,
     setLoading(true);
 
     try {
+      if (!supabase) {
+        throw new Error('Supabase client is not initialized.');
+      }
+
       if (mode === 'signup') {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, {
-          displayName: `${firstName} ${lastName}`.trim(),
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: `${firstName} ${lastName}`.trim(),
+            }
+          }
         });
-        toast.success('Account created successfully!');
+        if (error) throw error;
+        toast.success('Account created successfully! Check your email for verification if enabled.');
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        if (error) throw error;
         toast.success('Logged in successfully!');
       }
       onClose();
     } catch (error: any) {
       console.error('Auth error:', error);
-      if (error.code === 'auth/operation-not-allowed') {
-        toast.error('Email/Password login is not enabled in this project. Please use Google Login or Continue as Guest.', {
-          duration: 6000
-        });
-      } else if (error.code === 'auth/email-already-in-use') {
-        toast.error('This email is already in use. Please sign in instead.');
-      } else if (error.code === 'auth/weak-password') {
-        toast.error('Password is too weak. Please use at least 6 characters.');
-      } else if (error.code === 'auth/invalid-email') {
-        toast.error('Invalid email address.');
-      } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        toast.error('Invalid email or password.');
-      } else {
-        toast.error(error.message || 'An error occurred during authentication.');
-      }
+      toast.error(error.message || 'An error occurred during authentication.');
     } finally {
       setLoading(false);
     }
