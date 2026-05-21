@@ -7,6 +7,8 @@ import { addDays, isAfter } from 'date-fns';
 import { toast } from 'sonner';
 import { AlertCircle, Terminal } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import AuthCallback from './components/AuthCallback';
 
 interface AuthContextType {
   user: any | null;
@@ -65,6 +67,7 @@ function SetupWarning() {
 }
 
 export default function App() {
+  const navigate = useNavigate();
   const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -159,8 +162,14 @@ export default function App() {
       setUser(activeUser);
       if (activeUser) {
         await fetchProfile(activeUser.id);
+        if (event === 'SIGNED_IN') {
+          navigate('/dashboard');
+        }
       } else {
         setProfile(null);
+        if (event === 'SIGNED_OUT') {
+          navigate('/login');
+        }
       }
       setLoading(false);
     });
@@ -248,10 +257,14 @@ export default function App() {
           <div className="flex items-center justify-center h-screen">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>
           </div>
-        ) : !user ? (
-          <LandingPage />
         ) : (
-          <Dashboard />
+          <Routes>
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
+            <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" replace />} />
+            <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
+            <Route path="*" element={<Navigate to={user ? "/dashboard" : "/"} replace />} />
+          </Routes>
         )}
         <Toaster />
       </div>

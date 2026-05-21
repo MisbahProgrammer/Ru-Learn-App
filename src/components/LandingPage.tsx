@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/App';
 import { Button } from '@/components/ui/button';
 import { CITY_IMAGES } from '@/constants';
@@ -6,10 +6,27 @@ import { motion } from 'motion/react';
 import { GraduationCap, Plane, Languages, MessageSquare, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AuthDialog } from '@/components/AuthDialog';
+import { useLocation } from 'react-router-dom';
 
 export function LandingPage() {
   const { signIn, signInAsGuest } = useAuth();
-  const [authMode, setAuthMode] = useState<'signin' | 'signup' | null>(null);
+  const location = useLocation();
+  const isLoginPage = location.pathname === '/login';
+  const [authMode, setAuthMode] = useState<'signin' | 'signup' | null>(isLoginPage ? 'signin' : null);
+
+  useEffect(() => {
+    if (location.pathname === '/login') {
+      setAuthMode('signin');
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (location.state && (location.state as any).error) {
+      toast.error((location.state as any).error);
+      // clear status state to prevent duplicate triggers
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleAuth = (action: 'signin' | 'signup') => {
     setAuthMode(action);
