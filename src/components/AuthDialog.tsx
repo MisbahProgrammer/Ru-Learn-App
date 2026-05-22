@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { GraduationCap, Mail, Lock, User, Github } from 'lucide-react';
+import { GraduationCap, Mail, Lock, User, Github, Eye, EyeOff } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 interface AuthDialogProps {
@@ -29,6 +29,14 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn,
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Synchronize internal mode state with parent's initialMode prop when dialog opens or mode updates
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+    }
+  }, [initialMode, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,13 +142,25 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn,
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <Input 
-                  type="password" 
+                  type={showPassword ? 'text' : 'password'} 
                   placeholder="Password" 
-                  className="pl-10 rounded-xl"
+                  className="pl-10 pr-10 rounded-xl"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required 
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 focus:outline-none transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
               </div>
             </div>
 
