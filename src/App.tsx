@@ -72,6 +72,17 @@ export default function App() {
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const setEnhancedUser = (rawUser: any) => {
+    if (rawUser) {
+      setUser({
+        ...rawUser,
+        displayName: rawUser.displayName || rawUser.user_metadata?.full_name || rawUser.user_metadata?.name || rawUser.email?.split('@')[0] || 'Scholar'
+      });
+    } else {
+      setUser(null);
+    }
+  };
+
   if (!supabase) {
     return <SetupWarning />;
   }
@@ -144,7 +155,7 @@ export default function App() {
     // 1. Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       const activeUser = session?.user || null;
-      setUser(activeUser);
+      setEnhancedUser(activeUser);
       if (activeUser) {
         fetchProfile(activeUser.id);
       } else {
@@ -159,7 +170,7 @@ export default function App() {
     // 2. Set up auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const activeUser = session?.user || null;
-      setUser(activeUser);
+      setEnhancedUser(activeUser);
       if (activeUser) {
         await fetchProfile(activeUser.id);
         if (event === 'SIGNED_IN') {
@@ -209,7 +220,7 @@ export default function App() {
       },
       isGuest: true
     };
-    setUser(guestUser);
+    setEnhancedUser(guestUser);
     setProfile({
       uid: guestUser.id,
       displayName: 'Guest Scholar',
@@ -223,7 +234,7 @@ export default function App() {
 
   const signOut = async () => {
     if (user?.isGuest) {
-      setUser(null);
+      setEnhancedUser(null);
       setProfile(null);
       return;
     }

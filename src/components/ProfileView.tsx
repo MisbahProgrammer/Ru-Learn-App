@@ -22,6 +22,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   const { user, profile, isPremium, updateProfileState } = useAuth();
 
+  const displayName = user?.displayName || profile?.displayName || user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Scholar';
+
   const handleCancelSubscription = async () => {
     if (!user) return;
     
@@ -103,7 +105,7 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
             <CardContent className="space-y-4">
               <div className="space-y-1">
                 <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">Full Name</p>
-                <p className="text-sm font-medium">{user?.displayName || 'N/A'}</p>
+                <p className="text-sm font-medium">{displayName}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">Email Address</p>

@@ -44,6 +44,10 @@ export function Dashboard() {
   const { user, profile, signOut, isTrialValid, isPremium, updateProfileState } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
 
+  const displayName = user?.displayName || profile?.displayName || user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Scholar';
+  const firstName = displayName.split(' ')[0];
+  const avatarFallback = displayName.charAt(0).toUpperCase();
+
   const trialDaysLeft = 7 - differenceInDays(new Date(), new Date(profile?.trialStartDate || new Date()));
   const showTrialWarning = !isPremium && trialDaysLeft <= 2;
 
@@ -135,13 +139,13 @@ export function Dashboard() {
           <DropdownMenu>
             <DropdownMenuTrigger className="relative h-8 w-8 rounded-full ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 overflow-hidden hover:bg-neutral-100">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || ''} />
-                <AvatarFallback className="bg-neutral-100 text-neutral-600">{user?.displayName?.charAt(0) || <User />}</AvatarFallback>
+                <AvatarImage src={user?.photoURL || ''} alt={displayName || ''} />
+                <AvatarFallback className="bg-neutral-100 text-neutral-600">{avatarFallback || <User />}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" sideOffset={8}>
               <div className="flex flex-col space-y-1 p-2">
-                <p className="text-sm font-medium leading-none truncate">{user?.displayName}</p>
+                <p className="text-sm font-medium leading-none truncate">{displayName}</p>
                 <p className="text-xs leading-none text-neutral-500 truncate">{user?.email}</p>
               </div>
               <DropdownMenuSeparator />
@@ -236,7 +240,7 @@ export function Dashboard() {
             <TabsContent value="home" className="flex-1 p-4 md:p-8 m-0 pb-24 md:pb-8 overflow-auto">
               <div className="max-w-4xl mx-auto space-y-8 md:space-y-12">
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-light tracking-tight mb-2">Welcome back, <span className="font-serif italic">{user?.displayName?.split(' ')[0]}</span>.</h1>
+                  <h1 className="text-2xl md:text-3xl font-light tracking-tight mb-2">Welcome back, <span className="font-serif italic">{firstName}</span>.</h1>
                   <p className="text-neutral-500 text-sm md:text-base">Your journey to Russia starts here. You're part of the {profile?.scholarshipType || 'Scholar'} class.</p>
                 </div>
 
