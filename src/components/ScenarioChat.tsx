@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SCENARIOS } from '@/constants';
-import { chatWithTutor, speakRussian } from '@/lib/gemini';
+import { chatWithTutor, chatWithTutorStream, speakRussian } from '@/lib/gemini';
 import { 
   Volume2, 
   Mic, 
@@ -111,40 +111,73 @@ export function ScenarioChat() {
       russian: containsRussian ? textToSend : undefined
     };
     
-    setMessages(prev => [...prev, userMessage]);
+    const newMessagesList = [...messages, userMessage];
+    setMessages(newMessagesList);
     setInput('');
     setLoading(true);
 
     try {
       const history = messages.map(m => ({ role: m.role, parts: m.parts }));
-      const response = await chatWithTutor([...history, { role: 'user', parts: [{ text: textToSend }] }], selectedScenario?.title);
       
-      const parts = response.text.split('\n');
-      let russian = '';
-      let translation = '';
-      
-      parts.forEach((p: string) => {
-        if (p.toLowerCase().startsWith('russian:')) russian = p.replace(/russian:/i, '').trim();
-        if (p.toLowerCase().startsWith('translation:')) translation = p.replace(/translation:/i, '').trim();
-      });
-
-      const modelMessage: Message = { 
-        role: 'model', 
-        parts: [{ text: response.text }],
-        russian: russian || response.text,
-        translation: translation
+      // Add an empty model message placeholder
+      const modelMessage: Message = {
+        role: 'model',
+        parts: [{ text: '' }],
+        russian: '',
+        translation: '',
       };
       
-      setMessages(prev => [...prev, modelMessage]);
+      setMessages([...newMessagesList, modelMessage]);
+      
+      let streamText = '';
+      const fullResponseText = await chatWithTutorStream(
+        [...history, { role: 'user', parts: [{ text: textToSend }] }],
+        selectedScenario?.title,
+        (chunk) => {
+          streamText += chunk;
+          
+          const parts = streamText.split('\n');
+          let russian = '';
+          let translation = '';
+          
+          parts.forEach((p: string) => {
+            if (p.toLowerCase().startsWith('russian:')) russian = p.replace(/russian:/i, '').trim();
+            if (p.toLowerCase().startsWith('translation:')) translation = p.replace(/translation:/i, '').trim();
+          });
+          
+          setMessages(prev => {
+            const updated = [...prev];
+            const target = updated[updated.length - 1];
+            if (target && target.role === 'model') {
+              target.parts = [{ text: streamText }];
+              target.russian = russian || streamText;
+              target.translation = translation;
+            }
+            return updated;
+          });
+        }
+      );
+      
+      // Parse finally
+      const parts = fullResponseText.split('\n');
+      let finalRussian = '';
+      let finalTranslation = '';
+      
+      parts.forEach((p: string) => {
+        if (p.toLowerCase().startsWith('russian:')) finalRussian = p.replace(/russian:/i, '').trim();
+        if (p.toLowerCase().startsWith('translation:')) finalTranslation = p.replace(/translation:/i, '').trim();
+      });
       
       // Auto-play Russian audio
-      if (russian) {
-        handleSpeak(russian);
-      } else if (response.text && !translation) {
-         handleSpeak(response.text);
+      if (finalRussian) {
+        handleSpeak(finalRussian);
+      } else if (fullResponseText && !finalTranslation) {
+        handleSpeak(fullResponseText);
       }
     } catch (error: any) {
       toast.error('Tutor is busy: ' + error.message);
+      // Clean up placeholder if stream fails
+      setMessages(prev => prev.filter((_, i) => i < prev.length - 1));
     } finally {
       setLoading(false);
     }

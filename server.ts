@@ -60,6 +60,49 @@ async function startServer() {
     }
   });
 
+  app.post('/api/gemini/chat-stream', async (req, res) => {
+    try {
+      const { messages, scenario } = req.body;
+      const ai = getAi();
+      
+      const systemInstruction = `You are an expert Russian tutor and cultural guide. 
+      The current scenario is: ${scenario || 'General conversation'}.
+      User is a student who won a scholarship to Russia.
+      You must conduct the conversation primarily in Russian to help the student practice.
+      Always provide your response in this exact format:
+      Russian: [Clear Russian sentence in Cyrillic]
+      Translation: [Concise English translation]
+      
+      If the user asks a question, answer it in Russian first, then provide the translation.
+      Focus on being natural, like a real person in Moscow.
+      Include cultural tips or student-specific advice when relevant.`;
+
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      const stream = await ai.models.generateContentStream({
+        model: 'gemini-3.5-flash',
+        contents: messages,
+        config: {
+          systemInstruction,
+        },
+      });
+
+      for await (const chunk of stream) {
+        if (chunk.text) {
+          res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
+        }
+      }
+      res.write('data: [DONE]\n\n');
+      res.end();
+    } catch (error: any) {
+      console.error('Gemini Chat Stream Error:', error);
+      res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+      res.end();
+    }
+  });
+
   app.post('/api/gemini/tts', async (req, res) => {
     try {
       const { text } = req.body;

@@ -8,6 +8,61 @@ export async function chatWithTutor(messages: any[], scenario?: string) {
   return response.json();
 }
 
+export async function chatWithTutorStream(
+  messages: any[],
+  scenario: string | undefined,
+  onChunk: (chunk: string) => void
+): Promise<string> {
+  const response = await fetch('/api/gemini/chat-stream', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages, scenario }),
+  });
+  
+  if (!response.ok) throw new Error('Streaming failed');
+  if (!response.body) throw new Error('Response body is missing');
+  
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let accumulatedText = '';
+  let done = false;
+  let buffer = '';
+
+  while (!done) {
+    const { value, done: doneReading } = await reader.read();
+    done = doneReading;
+    if (value) {
+      buffer += decoder.decode(value, { stream: !doneReading });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || ''; // Keep the last incomplete line
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('data: ')) {
+          const dataContent = trimmed.substring(6);
+          if (dataContent === '[DONE]') {
+            continue;
+          }
+          try {
+            const parsed = JSON.parse(dataContent);
+            if (parsed.error) {
+              throw new Error(parsed.error);
+            }
+            if (parsed.text) {
+              accumulatedText += parsed.text;
+              onChunk(parsed.text);
+            }
+          } catch (e) {
+            console.warn('Could not parse SSE chunk:', dataContent);
+          }
+        }
+      }
+    }
+  }
+  
+  return accumulatedText;
+}
+
 export async function speakRussian(text: string) {
   try {
     const response = await fetch('/api/gemini/tts', {
