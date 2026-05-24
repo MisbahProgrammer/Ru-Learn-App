@@ -138,6 +138,8 @@ export default function App() {
       }
     } catch (error) {
       console.error('Exception fetching profile:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
