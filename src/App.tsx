@@ -154,22 +154,27 @@ export default function App() {
   };
 
   useEffect(() => {
-    // 1. Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const activeUser = session?.user || null;
-      setEnhancedUser(activeUser);
-      if (activeUser) {
-        fetchProfile(activeUser.id);
-      } else {
-        setProfile(null);
-        setLoading(false);
-      }
-    }).catch(err => {
-      console.error('Session retrieval failed:', err);
-      setLoading(false);
-    });
+    console.log("Auth check started");
+    let resolved = false;
 
-    // 2. Set up auth listener
+    const timeoutId = setTimeout(() => {
+      if (!resolved) {
+        console.log("Auth timeout triggered");
+        resolved = true;
+        setLoading(false);
+        navigate('/');
+      }
+    }, 5000);
+
+    const markResolved = () => {
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timeoutId);
+        console.log("Auth check completed");
+      }
+    };
+
+    // Set up auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const activeUser = session?.user || null;
       setEnhancedUser(activeUser);
@@ -181,13 +186,15 @@ export default function App() {
       } else {
         setProfile(null);
         if (event === 'SIGNED_OUT') {
-          navigate('/login');
+          navigate('/');
         }
+        setLoading(false);
       }
-      setLoading(false);
+      markResolved();
     });
 
     return () => {
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);
