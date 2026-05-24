@@ -41,8 +41,72 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function Dashboard() {
-  const { user, profile, signOut, isTrialValid, isPremium, updateProfileState } = useAuth();
+  const { user, profile, signOut, isTrialValid, isPremium, updateProfileState, updateLessonProgress } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
+
+  const intakeDate = new Date('2026-09-01T00:00:00Z');
+  const daysRemaining = Math.max(0, differenceInDays(intakeDate, new Date()));
+
+  // 1. Dynamic calculations from profile context (No extra DB reads)
+  const lessonsCompleted = profile?.lessons_completed || {};
+
+  const alphabetLessons = ['alphabet_vocals', 'alphabet_consonants', 'alphabet_modifiers', 'alphabet_reading', 'alphabet_review'];
+  const alphabetCompletedCount = alphabetLessons.filter(id => lessonsCompleted[id]).length;
+  const alphabetPercentage = Math.round((alphabetCompletedCount / alphabetLessons.length) * 100);
+
+  const grammarLessons = ['grammar_sentence_logic', 'grammar_pronouns', 'grammar_six_cases', 'grammar_verbs_aspects'];
+  const grammarCompletedCount = grammarLessons.filter(id => lessonsCompleted[id]).length;
+  const grammarPercentage = Math.round((grammarCompletedCount / grammarLessons.length) * 100);
+
+  const scenarioLessons = ['scenario_taxi', 'scenario_directions', 'scenario_food', 'scenario_hotel', 'scenario_emergency'];
+  const scenarioCompletedCount = scenarioLessons.filter(id => lessonsCompleted[id]).length;
+  const scenarioPercentage = Math.round((scenarioCompletedCount / scenarioLessons.length) * 100);
+
+  // Define learning path to automatically identify current lesson
+  const ALL_LESSONS = [
+    { id: 'alphabet_vocals', title: 'Cyrillic Vowels & Pronunciation', section: 'Alphabet Master', tab: 'alphabet', progress: alphabetPercentage },
+    { id: 'alphabet_consonants', title: 'Consonants & Palatalization', section: 'Alphabet Master', tab: 'alphabet', progress: alphabetPercentage },
+    { id: 'alphabet_modifiers', title: 'Hard & Soft Signs', section: 'Alphabet Master', tab: 'alphabet', progress: alphabetPercentage },
+    { id: 'alphabet_reading', title: 'Basic Syllables & Stress', section: 'Alphabet Master', tab: 'alphabet', progress: alphabetPercentage },
+    { id: 'alphabet_review', title: 'Cyrillic Alphabet Review', section: 'Alphabet Master', tab: 'alphabet', progress: alphabetPercentage },
+    
+    { id: 'grammar_sentence_logic', title: 'Sentence Logic & Flex Order', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
+    { id: 'grammar_pronouns', title: 'Personal Pronouns & Objects', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
+    { id: 'grammar_six_cases', title: 'Introduction to the 6 Cases', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
+    { id: 'grammar_verbs_aspects', title: 'Verb Conjugations & Aspect Pairs', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
+    
+    { id: 'scenario_taxi', title: 'Booking a Taxi Dialogue', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+    { id: 'scenario_directions', title: 'Asking for Directions Dialogue', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+    { id: 'scenario_food', title: 'Ordering Russian Dishes', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+    { id: 'scenario_hotel', title: 'HSE/RUDN Dormitory Check-in', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+    { id: 'scenario_emergency', title: 'Emergency Service 112 Dial', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+  ];
+
+  const currentActiveLesson = ALL_LESSONS.find(l => !lessonsCompleted[l.id]) || ALL_LESSONS[0];
+
+  // Streak calculations
+  const streakCount = profile?.streak_count || 0;
+  const lastActive = profile?.last_activity_date;
+  const lastActiveDateOnly = lastActive ? lastActive.split('T')[0] : null;
+
+  const getLocalDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  const todayStr = getLocalDateString(new Date());
+
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = getLocalDateString(yesterday);
+
+  // Streak remains active if user's last activity is today or yesterday
+  const isStreakActive = lastActiveDateOnly === todayStr || lastActiveDateOnly === yesterdayStr;
+  const activeStreakVal = isStreakActive ? streakCount : 0;
+
+  const currentDayOfWeek = (new Date().getDay() + 6) % 7; // 0 = Mon, 1 = Tue, ..., 6 = Sun
+  const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   const displayName = user?.displayName || profile?.displayName || user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Scholar';
   const firstName = displayName.split(' ')[0];
@@ -187,8 +251,8 @@ export function Dashboard() {
               <TabsTrigger value="lectures" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
                 <Video className="w-4 h-4" /> Lectures
               </TabsTrigger>
-              <TabsTrigger value="premium" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
-                <Crown className="w-4 h-4" /> Premium Plan
+              <TabsTrigger value="premium" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all text-orange-600 font-bold hover:text-orange-700">
+                <Star className="w-4 h-4 text-orange-500 fill-orange-400 animate-pulse" /> Premium Plan
               </TabsTrigger>
               <TabsTrigger value="profile" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
                 <User className="w-4 h-4" /> Profile & Billing
@@ -227,7 +291,7 @@ export function Dashboard() {
                  <Video className="w-5 h-5" /> Lectures
                </TabsTrigger>
                <TabsTrigger value="premium" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
-                 <Crown className="w-5 h-5" /> Premium
+                 <Star className="w-5 h-5 text-orange-500 fill-orange-400" /> Premium
                </TabsTrigger>
                <TabsTrigger value="profile" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
                  <User className="w-5 h-5" /> Profile
@@ -242,6 +306,60 @@ export function Dashboard() {
                 <div>
                   <h1 className="text-2xl md:text-3xl font-light tracking-tight mb-2">Welcome back, <span className="font-serif italic">{firstName}</span>.</h1>
                   <p className="text-neutral-500 text-sm md:text-base">Your journey to Russia starts here. You're part of the {profile?.scholarshipType || 'Scholar'} class.</p>
+                  
+                  {/* Streak & Countdown Widget */}
+                  <div className="flex flex-col md:flex-row md:items-center gap-4 mt-6">
+                    {/* Daily Streak Row */}
+                    <div className="flex items-center gap-3 bg-orange-50/50 border border-orange-100 p-4 rounded-2xl flex-1 max-w-lg shadow-xs">
+                      <div className="flex flex-col shrink-0">
+                        <span className="text-sm font-bold text-orange-600 flex items-center gap-1">
+                          🔥 {activeStreakVal}-Day Streak
+                        </span>
+                        <span className="text-[10px] text-orange-850 font-bold flex items-center gap-1 bg-orange-100/50 px-1.5 py-0.5 rounded-md mt-0.5">
+                          🏆 {profile?.xp_points || 0} XP
+                        </span>
+                      </div>
+                      <div className="h-8 w-[1px] bg-neutral-200 mx-2 hidden min-[360px]:block" />
+                      <div className="flex justify-between items-center flex-1 gap-1.5 min-w-[150px]">
+                        {weekDays.map((day, idx) => {
+                          const isCompleted = isStreakActive && (
+                            idx <= currentDayOfWeek && (currentDayOfWeek - idx) < activeStreakVal
+                          );
+                          const isToday = idx === currentDayOfWeek;
+                          return (
+                            <div key={idx} className="flex flex-col items-center gap-1">
+                              <span className="text-[9px] text-neutral-400 font-semibold">{day}</span>
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all relative ${
+                                isCompleted 
+                                  ? 'bg-orange-500 text-white shadow-xs' 
+                                  : isToday 
+                                    ? 'bg-orange-100 border border-orange-300 text-orange-700 animate-pulse' 
+                                    : 'bg-neutral-100 text-neutral-400'
+                              }`}>
+                                {isCompleted ? '✓' : ''}
+                                {isToday && !isCompleted && '•'}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Countdown Widget */}
+                    <div className="flex items-center gap-3 bg-neutral-50 border border-neutral-200 px-4 py-3.5 rounded-2xl md:w-64 shadow-xs shrink-0">
+                      <div className="p-2 bg-neutral-100 rounded-xl text-neutral-600">
+                        <Plane className="w-5 h-5 text-orange-500" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-neutral-900">
+                          {daysRemaining} Days
+                        </div>
+                        <div className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
+                          Until Sept Intake
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {!isPremium && !isTrialValid && (
@@ -263,9 +381,41 @@ export function Dashboard() {
                   </Card>
                 )}
 
+                {/* Continue Learning progress card */}
+                <Card className="border border-neutral-200 shadow-xs relative overflow-hidden bg-gradient-to-r from-neutral-50 to-white hover:border-neutral-300 transition-colors">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
+                  <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[10px] text-orange-600 border-orange-200 bg-orange-50 font-semibold uppercase tracking-wider">
+                          {currentActiveLesson.section}
+                        </Badge>
+                        <span className="text-[11px] text-neutral-400">• Current lesson</span>
+                      </div>
+                      <h3 className="text-base md:text-lg font-medium text-neutral-900 tracking-tight">
+                        {currentActiveLesson.title}
+                      </h3>
+                      <div className="flex items-center gap-4 w-full sm:w-64 pt-2">
+                        <div className="flex-1 bg-neutral-100 h-1.5 rounded-full overflow-hidden">
+                          <div className="bg-orange-500 h-full rounded-full transition-all duration-500" style={{ width: `${currentActiveLesson.progress}%` }} />
+                        </div>
+                        <span className="text-xs font-semibold text-neutral-500">{currentActiveLesson.progress}% Section Completed</span>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => setActiveTab(currentActiveLesson.tab)} 
+                      className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-10 rounded-xl font-bold transition-all hover:scale-[1.02] shrink-0"
+                    >
+                      Continue Lesson
+                    </Button>
+                  </CardContent>
+                </Card>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                   <Card className="hover:border-neutral-300 transition-colors cursor-pointer group" onClick={() => setActiveTab('alphabet')}>
-                     <CardHeader>
+                   <Card className="hover:border-neutral-300 transition-colors cursor-pointer group flex flex-col justify-between" onClick={() => {
+                     setActiveTab('alphabet');
+                   }}>
+                     <CardHeader className="pb-4">
                        <CardTitle className="flex items-center gap-2">
                         <div className="p-2 bg-neutral-100 rounded-lg group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors">
                           <BookOpen className="w-5 h-5" />
@@ -274,10 +424,21 @@ export function Dashboard() {
                        </CardTitle>
                        <CardDescription>Learn the sounds and letters of the Cyrillic alphabet.</CardDescription>
                      </CardHeader>
+                     <CardContent className="pt-0">
+                       <div className="flex justify-between items-center text-xs text-neutral-400 mb-1">
+                         <span className="font-light">Completed</span>
+                         <span className="font-semibold text-neutral-600">{alphabetPercentage}%</span>
+                       </div>
+                       <div className="w-full bg-neutral-100 h-1.5 rounded-full overflow-hidden">
+                         <div className="bg-orange-500 h-full rounded-full transition-all duration-500" style={{ width: `${alphabetPercentage}%` }} />
+                       </div>
+                     </CardContent>
                    </Card>
 
-                   <Card className="hover:border-neutral-300 transition-colors cursor-pointer group" onClick={() => setActiveTab('grammar')}>
-                     <CardHeader>
+                   <Card className="hover:border-neutral-300 transition-colors cursor-pointer group flex flex-col justify-between" onClick={() => {
+                     setActiveTab('grammar');
+                   }}>
+                     <CardHeader className="pb-4">
                        <CardTitle className="flex items-center gap-2">
                         <div className="p-2 bg-neutral-100 rounded-lg group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors">
                           <BookText className="w-5 h-5" />
@@ -286,10 +447,21 @@ export function Dashboard() {
                        </CardTitle>
                        <CardDescription>Master cases, pronouns, and sentence structure.</CardDescription>
                      </CardHeader>
+                     <CardContent className="pt-0">
+                       <div className="flex justify-between items-center text-xs text-neutral-400 mb-1">
+                         <span className="font-light">Completed</span>
+                         <span className="font-semibold text-neutral-600">{grammarPercentage}%</span>
+                       </div>
+                       <div className="w-full bg-neutral-100 h-1.5 rounded-full overflow-hidden">
+                         <div className="bg-orange-500 h-full rounded-full transition-all duration-500" style={{ width: `${grammarPercentage}%` }} />
+                       </div>
+                     </CardContent>
                    </Card>
                    
-                   <Card className="hover:border-neutral-300 transition-colors cursor-pointer group" onClick={() => setActiveTab('scenarios')}>
-                     <CardHeader>
+                   <Card className="hover:border-neutral-300 transition-colors cursor-pointer group flex flex-col justify-between" onClick={() => {
+                     setActiveTab('scenarios');
+                   }}>
+                     <CardHeader className="pb-4">
                        <CardTitle className="flex items-center gap-2">
                         <div className="p-2 bg-neutral-100 rounded-lg group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors">
                           <MessageSquare className="w-5 h-5" />
@@ -298,6 +470,15 @@ export function Dashboard() {
                        </CardTitle>
                        <CardDescription>Practice real conversations for taxi, hotel, and dining.</CardDescription>
                      </CardHeader>
+                     <CardContent className="pt-0">
+                       <div className="flex justify-between items-center text-xs text-neutral-400 mb-1">
+                         <span className="font-light">Completed</span>
+                         <span className="font-semibold text-neutral-600">{scenarioPercentage}%</span>
+                       </div>
+                       <div className="w-full bg-neutral-100 h-1.5 rounded-full overflow-hidden">
+                         <div className="bg-orange-500 h-full rounded-full transition-all duration-500" style={{ width: `${scenarioPercentage}%` }} />
+                       </div>
+                     </CardContent>
                    </Card>
                 </div>
 
@@ -314,6 +495,40 @@ export function Dashboard() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* Word of the Day Card */}
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-neutral-400">Word of the Day</h3>
+                    <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200">Bonus XP</Badge>
+                  </div>
+                  <Card className="border border-neutral-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="space-y-1">
+                          <div className="text-xs text-neutral-400 font-mono tracking-wider">DAILY SELECTION</div>
+                          <div className="flex items-baseline gap-3 flex-wrap">
+                            <h4 className="text-3xl font-bold font-serif text-neutral-900 tracking-tight">Спасибо</h4>
+                            <span className="text-xs font-mono text-orange-500 bg-orange-50 px-2 py-0.5 rounded">[spah-see-bah]</span>
+                          </div>
+                          <p className="text-sm text-neutral-600 font-medium pt-1">
+                            "Thank you" — <span className="text-neutral-500 font-light">The most essential word you will use at Pyaterochka supermarkets, Yandex taxis, and in your HSE/RUDN dormitory.</span>
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={() => {
+                            setActiveTab('scenarios');
+                            toast.success("AI Scenario Tutor started! Try saying 'Спасибо' (Thank you) to practice pronunciation.");
+                          }}
+                          className="bg-neutral-900 hover:bg-black text-white px-5 h-10 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-orange-400" />
+                          Practice in Chat
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </TabsContent>

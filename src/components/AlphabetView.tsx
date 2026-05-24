@@ -6,8 +6,11 @@ import { Volume2, Search } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { useAuth } from '@/App';
 
 export function AlphabetView() {
+  const { profile, updateLessonProgress } = useAuth();
+  const lessonsCompleted = profile?.lessons_completed || {};
   const [search, setSearch] = React.useState('');
 
   const handleSpeak = async (text: string) => {
@@ -42,6 +45,48 @@ export function AlphabetView() {
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10 h-10 md:h-11 rounded-xl bg-white border-neutral-200 w-full"
               />
+            </div>
+          </div>
+
+          {/* Duolingo Quiz / Lesson Trackers */}
+          <div className="mt-6 bg-white border border-neutral-200 p-6 rounded-3xl shadow-xs space-y-4 max-w-5xl mb-8">
+            <div>
+              <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
+                🎯 Alphabet Learning Path
+              </h3>
+              <p className="text-neutral-500 text-xs font-light">Complete all 5 core modules to fully master Cyrillic reading logic.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              {[
+                { id: 'alphabet_vocals', title: '1. Vowels & Sounds' },
+                { id: 'alphabet_consonants', title: '2. Consonants Mastery' },
+                { id: 'alphabet_modifiers', title: '3. Hard & Soft Signs' },
+                { id: 'alphabet_reading', title: '4. Syllables & Stress' },
+                { id: 'alphabet_review', title: '5. Alphabet Review' },
+              ].map((lesson) => {
+                const isCompleted = !!lessonsCompleted[lesson.id];
+                return (
+                  <button
+                    key={lesson.id}
+                    onClick={() => {
+                      updateLessonProgress(lesson.id);
+                    }}
+                    className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left text-xs cursor-pointer ${
+                      isCompleted 
+                        ? 'bg-orange-50/50 border-orange-200 text-orange-950 font-bold' 
+                        : 'bg-white hover:bg-neutral-50 border-neutral-200 text-neutral-600'
+                    }`}
+                  >
+                    <span>{lesson.title}</span>
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] shrink-0 ml-2 ${
+                      isCompleted ? 'bg-orange-500 text-white font-bold' : 'border border-neutral-300 text-neutral-300'
+                    }`}>
+                      {isCompleted ? '✓' : ''}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

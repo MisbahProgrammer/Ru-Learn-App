@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/App';
 import { 
   BookText, 
   ArrowRightLeft, 
@@ -32,6 +33,9 @@ const COMMON_SENTENCES = [
 ];
 
 export function GrammarView() {
+  const { profile, updateLessonProgress } = useAuth();
+  const lessonsCompleted = profile?.lessons_completed || {};
+
   return (
     <div className="w-full h-full bg-neutral-50/30 overflow-y-auto overflow-x-hidden">
       <div className="w-full p-4 md:p-8 lg:p-12 pb-32">
@@ -43,6 +47,47 @@ export function GrammarView() {
             <p className="text-neutral-500 font-light max-w-2xl leading-relaxed text-base md:text-lg">
               Russian grammar is like a puzzle. Once you understand the pieces (cases, genders, and aspects), you can build anything.
             </p>
+          </div>
+
+          {/* Universal Grammar Module learning path */}
+          <div className="bg-white border border-neutral-200 p-6 rounded-3xl shadow-xs space-y-4 max-w-5xl">
+            <div>
+              <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
+                🎯 Grammar Learning Path
+              </h3>
+              <p className="text-neutral-500 text-xs font-light">Complete all 4 essentials to fully master basic sentence construction logic.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                { id: 'grammar_sentence_logic', title: '1. Sentence Logic' },
+                { id: 'grammar_pronouns', title: '2. Personal Pronouns' },
+                { id: 'grammar_six_cases', title: '3. Noun Cases' },
+                { id: 'grammar_verbs_aspects', title: '4. Verbs & Adverbs' },
+              ].map((lesson) => {
+                const isCompleted = !!lessonsCompleted[lesson.id];
+                return (
+                  <button
+                    key={lesson.id}
+                    onClick={() => {
+                      updateLessonProgress(lesson.id);
+                    }}
+                    className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left text-xs cursor-pointer ${
+                      isCompleted 
+                        ? 'bg-orange-50/50 border-orange-200 text-orange-950 font-bold' 
+                        : 'bg-white hover:bg-neutral-50 border-neutral-200 text-neutral-600'
+                    }`}
+                  >
+                    <span>{lesson.title}</span>
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] shrink-0 ml-2 ${
+                      isCompleted ? 'bg-orange-500 text-white font-bold' : 'border border-neutral-300 text-neutral-300'
+                    }`}>
+                      {isCompleted ? '✓' : ''}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <Tabs defaultValue="basics" className="flex flex-col w-full space-y-8 md:space-y-12">

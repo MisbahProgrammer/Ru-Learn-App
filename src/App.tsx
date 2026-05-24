@@ -22,6 +22,7 @@ interface AuthContextType {
   isPremium: boolean;
   updateProfileState: (data: any) => void;
   refreshProfile: () => Promise<void>;
+  updateLessonProgress: (lessonId: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -110,7 +111,11 @@ export default function App() {
           trialStartDate: new Date().toISOString(),
           isPremium: false,
           createdAt: new Date().toISOString(),
-          billingHistory: []
+          billingHistory: [],
+          streak_count: 0,
+          last_activity_date: null,
+          lessons_completed: {},
+          xp_points: 0
         };
 
         const { data: insertedData, error: insertError } = await supabase
@@ -128,13 +133,31 @@ export default function App() {
             .eq('uid', uid)
             .maybeSingle();
           if (secondRetry) {
-            setProfile(secondRetry);
+            setProfile({
+              streak_count: 0,
+              last_activity_date: null,
+              lessons_completed: {},
+              xp_points: 0,
+              ...secondRetry
+            });
           }
         } else {
-          setProfile(insertedData);
+          setProfile({
+            streak_count: 0,
+            last_activity_date: null,
+            lessons_completed: {},
+            xp_points: 0,
+            ...insertedData
+          });
         }
       } else {
-        setProfile(data);
+        setProfile({
+          streak_count: 0,
+          last_activity_date: null,
+          lessons_completed: {},
+          xp_points: 0,
+          ...data
+        });
       }
     } catch (error) {
       console.error('Exception fetching profile:', error);
@@ -236,7 +259,11 @@ export default function App() {
       isPremium: true, // Let guests try everything
       trialStartDate: new Date().toISOString(),
       isGuest: true,
-      billingHistory: []
+      billingHistory: [],
+      streak_count: 0,
+      last_activity_date: null,
+      lessons_completed: {},
+      xp_points: 0
     });
     toast.success('Continuing as Guest. Progress will not be saved across sessions.');
   };
@@ -250,6 +277,83 @@ export default function App() {
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast.error('Sign out failed: ' + error.message);
+    }
+  };
+
+  const updateLessonProgress = (lessonId: string) => {
+    if (!profile) return;
+
+    const lessonsCompleted = { ...(profile.lessons_completed || {}) };
+    const alreadyCompleted = !!lessonsCompleted[lessonId];
+    
+    // 1. Mark lesson as complete in lessons_completed
+    lessonsCompleted[lessonId] = true;
+
+    // 2. Add 10 XP if not already completed
+    const oldXp = profile.xp_points || 0;
+    const updatedXp = alreadyCompleted ? oldXp : oldXp + 10;
+
+    // 3. Streak check based on last_activity_date
+    const getLocalDateString = (d: Date) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const todayStr = getLocalDateString(new Date());
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = getLocalDateString(yesterday);
+
+    const lastActive = profile.last_activity_date;
+    const lastActiveDateOnly = lastActive ? lastActive.split('T')[0] : null;
+
+    let newStreak = profile.streak_count || 0;
+    if (!lastActiveDateOnly) {
+      newStreak = 1;
+    } else if (lastActiveDateOnly === todayStr) {
+      // If today -> no change
+    } else if (lastActiveDateOnly === yesterdayStr) {
+      // If yesterday -> streak_count + 1
+      newStreak = (profile.streak_count || 0) + 1;
+    } else {
+      // If older -> reset to 1
+      newStreak = 1;
+    }
+
+    const nowIso = new Date().toISOString();
+
+    // 4. Update local profile context instantly (don't wait for DB)
+    const updatedProfile = {
+      ...profile,
+      lessons_completed: lessonsCompleted,
+      xp_points: updatedXp,
+      streak_count: newStreak,
+      last_activity_date: nowIso
+    };
+    setProfile(updatedProfile);
+
+    // 5. Saves to Supabase users table in background
+    if (!profile.isGuest && user?.id) {
+      try {
+        supabase
+          .from('users')
+          .update({
+            lessons_completed: lessonsCompleted,
+            xp_points: updatedXp,
+            streak_count: newStreak,
+            last_activity_date: nowIso
+          })
+          .eq('uid', user.id)
+          .then(({ error }) => {
+            if (error) {
+              console.error('Error updating progress in Supabase:', error);
+            }
+          });
+      } catch (err) {
+        console.error('Exception updating Supabase:', err);
+      }
     }
   };
 
@@ -270,7 +374,8 @@ export default function App() {
       isTrialValid: trialValid, 
       isPremium,
       updateProfileState,
-      refreshProfile
+      refreshProfile,
+      updateLessonProgress
     }}>
       <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 overflow-x-hidden">
         {loading ? (

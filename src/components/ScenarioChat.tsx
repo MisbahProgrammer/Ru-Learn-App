@@ -30,7 +30,8 @@ interface Message {
 }
 
 export function ScenarioChat() {
-  const { user } = useAuth();
+  const { user, profile, updateLessonProgress } = useAuth();
+  const lessonsCompleted = profile?.lessons_completed || {};
   const [selectedScenario, setSelectedScenario] = useState<typeof SCENARIOS[0] | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -223,8 +224,14 @@ export function ScenarioChat() {
                   <p className="text-neutral-500 text-sm font-light leading-relaxed mb-4">{scenario.description}</p>
                   
                   <div className="mt-auto pt-6 border-t border-neutral-100 w-full flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">START PRACTICE</span>
-                    <CheckCircle2 className="w-4 h-4 text-neutral-200 group-hover:text-orange-500 transition-colors" />
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                      lessonsCompleted[scenario.id] ? 'text-green-600' : 'text-neutral-400'
+                    }`}>
+                      {lessonsCompleted[scenario.id] ? '✓ COMPLETED' : 'START PRACTICE'}
+                    </span>
+                    <CheckCircle2 className={`w-4 h-4 transition-colors ${
+                      lessonsCompleted[scenario.id] ? 'text-green-500 fill-green-50' : 'text-neutral-200 group-hover:text-orange-500'
+                    }`} />
                   </div>
                 </div>
               ))}
@@ -246,6 +253,22 @@ export function ScenarioChat() {
           <h3 className="font-bold text-xs md:text-sm tracking-tight truncate">{selectedScenario.title}</h3>
           <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-orange-600 font-bold">Live AI Practice</p>
         </div>
+
+        <Button
+          onClick={() => {
+            if (updateLessonProgress) {
+              updateLessonProgress(selectedScenario.id);
+              toast.success("Lesson Completed! +10 XP earned!");
+            }
+          }}
+          className={`h-9 md:h-10 px-4 rounded-xl text-xs font-bold transition-all shrink-0 ${
+            lessonsCompleted[selectedScenario.id]
+              ? 'bg-neutral-150 text-green-700 hover:bg-neutral-150'
+              : 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm hover:scale-[1.02]'
+          }`}
+        >
+          {lessonsCompleted[selectedScenario.id] ? '✓ Completed' : 'Complete (+10 XP)'}
+        </Button>
         
         <div className="hidden sm:flex ml-auto items-center gap-2">
            <div className="bg-orange-50 text-orange-600 p-2 rounded-lg flex items-center gap-2 text-xs font-semibold px-4 border border-orange-100">

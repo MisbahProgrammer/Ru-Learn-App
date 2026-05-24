@@ -59,7 +59,7 @@ export const CITY_IMAGES = [
   },
   {
     name: 'Kazan',
-    url: 'https://images.unsplash.com/photo-1590059522197-29bd5ea4728f?auto=format&fit=crop&q=80&w=1000',
+    url: 'https://images.unsplash.com/photo-1588614959060-4d144f28b207?auto=format&fit=crop&q=80&w=1000',
     description: 'Kazan Kremlin'
   }
 ];
