@@ -43,8 +43,13 @@ export function LandingPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="absolute top-0 left-0 right-0 z-20 px-4 sm:px-8 py-4 sm:py-6 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent">
+    <div className="flex flex-col min-h-screen relative">
+      {/* Announcement Banner */}
+      <div className="bg-gradient-to-r from-red-600 to-orange-500 text-white text-xs sm:text-sm font-semibold py-2.5 px-4 text-center z-30 relative shadow-sm">
+        ⏳ September 2026 intake is coming — Start your free week before it's too late
+      </div>
+
+      <header className="absolute top-[48px] sm:top-[38px] left-0 right-0 z-20 px-4 sm:px-8 py-4 sm:py-6 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent">
         <div className="flex items-center gap-1.5 sm:gap-2 text-white font-bold text-lg sm:text-xl uppercase tracking-widest">
           <GraduationCap className="text-orange-500 w-5 h-5 sm:w-6 sm:h-6" />
           <span className="truncate">Russian <span className="hidden min-[400px]:inline">Scholar</span></span>
@@ -67,7 +72,7 @@ export function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative min-h-[100vh] flex items-center overflow-hidden bg-black text-white px-4 sm:px-8 md:px-16 pt-20">
+      <section className="relative min-h-[100vh] flex items-center overflow-hidden bg-black text-white px-4 sm:px-8 md:px-16 pt-28 pb-16 md:pb-24">
         <div className="absolute inset-0 z-0">
           <img 
             src={CITY_IMAGES[0].url} 
@@ -125,7 +130,7 @@ export function LandingPage() {
 
       {/* Target Audience Bar */}
       <div className="bg-neutral-100 py-6 border-y border-neutral-200">
-        <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-12 px-4 opacity-70">
+        <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-y-4 gap-x-8 md:gap-12 px-4 opacity-70">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4" />
             <span className="text-xs font-semibold uppercase tracking-widest">Open Doors Applicants</span>
@@ -142,7 +147,7 @@ export function LandingPage() {
       </div>
 
       {/* Features Grid */}
-      <section className="py-20 md:py-32 px-4 sm:px-8">
+      <section className="pt-20 pb-32 md:pt-32 md:pb-44 px-4 sm:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16 md:mb-24">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight mb-6">
@@ -157,7 +162,30 @@ export function LandingPage() {
             <FeatureCard 
               icon={<MessageSquare className="w-10 h-10 md:w-12 md:h-12 text-orange-500" />}
               title="Real-World Scenarios"
-              description="Taxi apps, hotel check-ins, campus navigation—practice exactly what you'll do on day one in Moscow."
+              description={
+                <ul className="space-y-1.5 text-left text-neutral-500 text-sm font-light mt-2 inline-block">
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-orange-500 font-bold">•</span>
+                    <span>Booking Yandex Taxi from Sheremetyevo Airport</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-orange-500 font-bold">•</span>
+                    <span>Checking into your university dormitory</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-orange-500 font-bold">•</span>
+                    <span>Shopping at Pyaterochka supermarket</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-orange-500 font-bold">•</span>
+                    <span>Asking for metro directions in Russian</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-orange-500 font-bold">•</span>
+                    <span>Visiting a Russian pharmacy</span>
+                  </li>
+                </ul>
+              }
             />
             <FeatureCard 
               icon={<Languages className="w-10 h-10 md:w-12 md:h-12 text-orange-500" />}
@@ -173,8 +201,72 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-20 bg-neutral-50 px-4 sm:px-8 border-t border-b border-neutral-100">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-light tracking-tight mb-4">
+              Loved by <span className="font-serif italic underline underline-offset-8 decoration-orange-400">Scholars</span> Globally
+            </h2>
+            <p className="text-neutral-500 max-w-xl mx-auto text-sm md:text-base font-light">
+              See how scholarship winners prepared for their journey to Russia.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Pakistan Testimonial */}
+            <div className="bg-white p-8 rounded-3xl border border-neutral-100 shadow-sm flex flex-col justify-between hover:border-neutral-200 transition-colors">
+              <p className="text-neutral-600 font-light italic leading-relaxed mb-6">
+                "The Yandex Taxi and supermarket scenarios saved my life during my first week in Moscow. I knew exactly what to say to the driver and at checking out."
+              </p>
+              <div>
+                <div className="font-bold text-neutral-900 flex items-center gap-2">
+                  <span>Misbah Rehman</span>
+                  <span>🇵🇰</span>
+                </div>
+                <p className="text-xs text-orange-500 uppercase tracking-widest font-semibold mt-1">
+                  Open Doors Scholar
+                </p>
+              </div>
+            </div>
+
+            {/* Egypt Testimonial */}
+            <div className="bg-white p-8 rounded-3xl border border-neutral-100 shadow-sm flex flex-col justify-between hover:border-neutral-200 transition-colors">
+              <p className="text-neutral-600 font-light italic leading-relaxed mb-6">
+                "Checking into our HSE dormitory was so smooth because I practiced the check-in dialogue twenty times. The vocabulary learning tools work perfectly!"
+              </p>
+              <div>
+                <div className="font-bold text-neutral-900 flex items-center gap-2">
+                  <span>Mostafa El-Sayed</span>
+                  <span>🇪🇬</span>
+                </div>
+                <p className="text-xs text-orange-500 uppercase tracking-widest font-semibold mt-1">
+                  Russian Gov Scholar
+                </p>
+              </div>
+            </div>
+
+            {/* Nigeria Testimonial */}
+            <div className="bg-white p-8 rounded-3xl border border-neutral-100 shadow-sm flex flex-col justify-between hover:border-neutral-200 transition-colors">
+              <p className="text-neutral-600 font-light italic leading-relaxed mb-6">
+                "Learning cultural etiquette alongside actual phrases helped me avoid any awkward situations. 24/7 AI Tutor is like having a teacher in my pocket."
+              </p>
+              <div>
+                <div className="font-bold text-neutral-900 flex items-center gap-2">
+                  <span>Chidi Azikiwe</span>
+                  <span>🇳🇬</span>
+                </div>
+                <p className="text-xs text-orange-500 uppercase tracking-widest font-semibold mt-1">
+                  Global Talent Winner
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Premium Plan Section */}
-      <section className="bg-neutral-900 text-white py-20 md:py-32 px-4 sm:px-8 rounded-t-[40px] md:rounded-[60px] md:m-8 overflow-hidden relative shadow-2xl">
+      <section className="bg-neutral-900 text-white py-20 md:py-32 px-4 sm:px-8 rounded-3xl md:rounded-[60px] mx-4 my-16 md:m-8 overflow-hidden relative shadow-2xl">
         <img 
           src={CITY_IMAGES[1].url} 
           className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none"
@@ -189,20 +281,71 @@ export function LandingPage() {
             <span className="text-orange-400 font-serif italic">$1 / month</span>
           </h2>
           <p className="text-base md:text-xl text-neutral-400 mb-12 max-w-3xl mx-auto leading-relaxed px-4 font-light">
-            We know scholarship life. That's why we kept it simple. Get full access to all scenarios, AI voice practice, and cultural guides for the price of a single coffee.
+            We know scholarship life. That's why we kept it simple. Get full access to all scenarios, interactive AI tutoring, and cultural guides for the price of a single coffee.
           </p>
           <div className="bg-white/5 backdrop-blur-xl p-8 md:p-16 rounded-[40px] border border-white/10 max-w-lg mx-auto shadow-2xl">
             <h3 className="text-xl md:text-2xl font-semibold mb-2">Premium Scholar Plan</h3>
             <p className="text-neutral-400 mb-10 text-sm md:text-base font-light tracking-wide">Full Unrestricted Access</p>
-            <div className="flex items-end justify-center gap-1 mb-12">
+            <div className="flex items-end justify-center gap-1 mb-8">
               <span className="text-6xl md:text-8xl font-bold tracking-tighter">$1</span>
               <span className="text-neutral-500 text-xl md:text-2xl font-light mb-2">/month</span>
             </div>
+
+            {/* Checklist */}
+            <ul className="space-y-3 text-left mb-10 bg-white/5 p-6 rounded-2xl border border-white/5 max-w-md mx-auto">
+              {[
+                "20+ Real-world survival scenarios",
+                "AI Russian tutor available 24/7",
+                "RUDN teacher video lectures",
+                "Cultural etiquette guide"
+              ].map((item, idx) => (
+                <li key={idx} className="flex items-center gap-3 text-sm text-neutral-200 font-light">
+                  <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+
             <Button onClick={() => handleAuth('signup')} className="w-full h-14 md:h-16 bg-orange-500 hover:bg-orange-600 rounded-3xl text-lg md:text-xl font-bold transition-all hover:scale-[1.02] shadow-lg shadow-orange-500/20">
               Get Started for Free
             </Button>
             <p className="mt-6 text-[10px] md:text-xs text-neutral-500 tracking-wide">First 7 days are completely free. Cancel anytime.</p>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20 md:py-32 px-4 sm:px-8 max-w-4xl mx-auto border-t border-neutral-100">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl font-light tracking-tight mb-4">
+            Frequently Asked <span className="font-serif italic underline underline-offset-8 decoration-orange-400">Questions</span>
+          </h2>
+          <p className="text-neutral-500 text-sm md:text-base font-light">
+            Everything you need to know before you fly to Russia.
+          </p>
+        </div>
+
+        <div className="space-y-4 max-w-3xl mx-auto">
+          <FAQItem 
+            question="When should I start preparing with this course?" 
+            answer="Ideally, 1-3 months before your flight. Starting now gets you familiar with Cyrillic reading, basic survival phrases, and campus vocabulary so you can land with confidence on day one." 
+          />
+          <FAQItem 
+            question="I am going on a full English-medium scholarship. Do I really need Russian?" 
+            answer="Absolutely. While your lectures might be in English, daily transactions—ordering Yandex taxis, buying groceries at Pyaterochka, checking into your dormitory, and dealing with university registration offices—will be entirely in Russian. Basic survival Russian is a must." 
+          />
+          <FAQItem 
+            question="How does the AI Russian Tutor help me?" 
+            answer="Our 24/7 AI tutor allows you to ask questions in English, get instant context-accurate Russian translations, and explain complex Cyrillic reading or cultural etiquette on the go." 
+          />
+          <FAQItem 
+            question="Do I need to know Cyrillic (the Russian alphabet) before I start?" 
+            answer="No prior knowledge is needed! Our course starts with an interactive, easy-to-learn alphabet and reading guide so you can learn Cyrillic in your very first week." 
+          />
+          <FAQItem 
+            question="Is there any hidden fee or automatic charge?" 
+            answer="No hidden fees. You start with a 7-day free trial. If you choose to keep your premium scholar plan, it's just $1/month. You can cancel anytime with a single click inside your dashboard profile." 
+          />
         </div>
       </section>
 
@@ -230,12 +373,34 @@ export function LandingPage() {
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: React.ReactNode }) {
   return (
     <div className="text-center p-8 rounded-3xl hover:bg-neutral-50 transition-colors border border-transparent hover:border-neutral-100 group">
       <div className="mb-6 flex justify-center group-hover:scale-110 transition-transform duration-300">{icon}</div>
       <h3 className="text-xl font-bold tracking-tight mb-4">{title}</h3>
-      <p className="text-neutral-500 leading-relaxed font-light">{description}</p>
+      <div className="text-neutral-500 leading-relaxed font-light">{description}</div>
+    </div>
+  );
+}
+
+function FAQItem({ question, answer }: { question: string, answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border-b border-neutral-200 py-5 transition-colors">
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="w-full flex justify-between items-center text-left py-2 font-medium text-neutral-950 focus:outline-none hover:text-orange-500 transition-colors"
+      >
+        <span className="text-base md:text-lg font-normal tracking-tight">{question}</span>
+        <span className="text-orange-500 text-xl font-light transform transition-transform duration-200">
+          {isOpen ? '−' : '+'}
+        </span>
+      </button>
+      <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+        <p className="text-neutral-500 text-sm md:text-base font-light leading-relaxed pb-2">
+          {answer}
+        </p>
+      </div>
     </div>
   );
 }
