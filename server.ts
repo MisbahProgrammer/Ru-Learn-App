@@ -11,9 +11,9 @@ async function startServer() {
   const PORT = 3000;
 
   const getAi = () => {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY environment variable is required. Please set it in your Secrets.');
+      throw new Error('GEMINI_API_KEY or VITE_GEMINI_API_KEY environment variable is required. Please set it in your Vercel Environment Variables or AI Studio Secrets.');
     }
     return new GoogleGenAI({
       apiKey,
@@ -46,7 +46,7 @@ async function startServer() {
       Include cultural tips or student-specific advice when relevant.`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3.5-flash',
         contents: messages,
         config: {
           systemInstruction,
