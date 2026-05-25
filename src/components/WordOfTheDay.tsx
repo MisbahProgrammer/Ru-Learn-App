@@ -1,8 +1,7 @@
 import React from 'react';
-import { Volume2, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { AudioButton } from '@/components/AudioButton';
 
 interface RussianWord {
   russian: string;
@@ -129,18 +128,6 @@ export function WordOfTheDay() {
   const wordIndex = dayOfYear % WORDS_LIST.length;
   const word = WORDS_LIST[wordIndex];
 
-  // Text-To-Speech handler
-  const handleSpeak = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(word.russian);
-      utterance.lang = 'ru-RU';
-      window.speechSynthesis.speak(utterance);
-    } else {
-      toast.error('TTS is not supported in this browser.');
-    }
-  };
-
   return (
     <Card className="border border-neutral-200 overflow-hidden bg-white rounded-3xl" id="word-of-the-day-card">
       <CardHeader className="pb-3 pt-5 px-5 flex flex-row items-center justify-between">
@@ -150,15 +137,10 @@ export function WordOfTheDay() {
           </div>
           <p className="text-xs font-bold uppercase tracking-widest text-neutral-400">Word of the Day</p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleSpeak}
-          className="text-orange-500 hover:text-orange-600 hover:bg-orange-50 h-8 rounded-lg flex items-center gap-1 text-xs cursor-pointer font-semibold"
-        >
-          <Volume2 className="w-4 h-4" />
-          Hear Pronunciation
-        </Button>
+        <div className="flex items-center gap-1">
+          <AudioButton text={word.russian} size="md" label="Normal" />
+          <AudioButton text={word.russian} slow={true} size="sm" label="Slow" />
+        </div>
       </CardHeader>
       
       <CardContent className="px-5 pb-5 pt-0 space-y-3">
@@ -179,7 +161,13 @@ export function WordOfTheDay() {
 
         <div className="bg-neutral-50 p-3.5 rounded-2xl border border-neutral-100 flex flex-col gap-1">
           <span className="text-[9px] uppercase tracking-widest text-neutral-400 font-bold">Practical Example</span>
-          <p className="text-xs font-semibold text-neutral-800">{word.example}</p>
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs font-semibold text-neutral-800">{word.example}</p>
+            <div className="flex items-center gap-1">
+              <AudioButton text={word.example} size="sm" />
+              <AudioButton text={word.example} slow={true} size="sm" />
+            </div>
+          </div>
           <p className="text-[11px] text-neutral-500 font-light">{word.exampleEnglish}</p>
         </div>
       </CardContent>

@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/App';
+import { AudioButton } from '@/components/AudioButton';
 import { 
   BookText, 
   ArrowRightLeft, 
@@ -126,12 +127,22 @@ export function GrammarView() {
                       <div className="space-y-4">
                         <div className="bg-neutral-50 p-6 rounded-3xl border border-neutral-100">
                           <div className="text-[10px] font-bold text-orange-600 uppercase mb-2 tracking-widest">Natural Word Order</div>
-                          <div className="text-2xl font-bold tracking-tight mb-1">Я читаю книгу</div>
+                          <div className="flex items-center flex-wrap gap-2 mb-1">
+                            <span className="text-2xl font-bold tracking-tight">Я читаю книгу</span>
+                            <div className="flex items-center gap-1">
+                              <AudioButton text="Я читаю книгу" size="md" label="Normal" />
+                              <AudioButton text="Я читаю книгу" slow={true} size="sm" label="Slow" />
+                            </div>
+                          </div>
                           <div className="text-sm text-neutral-500">I (Subject) + read (Verb) + book (Object)</div>
                         </div>
-                        <div className="flex gap-3 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 italic text-sm text-blue-800">
-                          <Info className="w-5 h-5 shrink-0" />
-                          "You can say 'Книгу я читаю' for emphasis on the book, or 'Читаю я книгу' to sound more dramatic!"
+                        <div className="flex flex-col gap-2 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 text-sm text-blue-800">
+                          <div className="flex gap-3 items-start">
+                            <Info className="w-5 h-5 shrink-0 mt-0.5" />
+                            <div>
+                              You can say <span className="font-semibold italic">'Книгу я читаю'</span> <AudioButton text="Книгу я читаю" size="sm" /> for emphasis on the book, or <span className="font-semibold italic">'Читаю я книгу'</span> <AudioButton text="Читаю я книгу" size="sm" /> to sound more dramatic!
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -149,12 +160,20 @@ export function GrammarView() {
                     <CardContent className="p-6 md:p-8">
                       <div className="space-y-5">
                         {COMMON_SENTENCES.map((s, i) => (
-                          <div key={i} className="group border-b border-neutral-50 pb-4 last:border-0 last:pb-0">
-                            <div className="flex justify-between items-start mb-1">
-                              <span className="font-bold text-lg text-neutral-900">{s.ru}</span>
-                              <Badge variant="outline" className="text-[10px] bg-neutral-50 border-neutral-200 mt-1">{s.structure}</Badge>
+                          <div key={i} className="group border-b border-neutral-100 pb-4 last:border-0 last:pb-0">
+                            <div className="flex justify-between items-start gap-4 mb-1">
+                              <div>
+                                <div className="flex flex-wrap items-center gap-2 mb-1">
+                                  <span className="font-bold text-lg text-neutral-900">{s.ru}</span>
+                                  <div className="flex items-center gap-1">
+                                    <AudioButton text={s.ru} size="md" label="Normal" />
+                                    <AudioButton text={s.ru} slow={true} size="sm" label="Slow" />
+                                  </div>
+                                </div>
+                                <div className="text-sm text-neutral-500 font-medium">{s.en}</div>
+                              </div>
+                              <Badge variant="outline" className="text-[10px] bg-neutral-50 border-neutral-200 mt-1 shrink-0">{s.structure}</Badge>
                             </div>
-                            <div className="text-sm text-neutral-500 font-medium">{s.en}</div>
                           </div>
                         ))}
                       </div>
@@ -169,8 +188,9 @@ export function GrammarView() {
                     <Card key={i} className="rounded-[2rem] border-none shadow-sm text-center p-6 md:p-10 bg-white group hover:shadow-xl hover:shadow-orange-100 transition-all duration-300">
                       <div className="text-4xl md:text-6xl font-bold text-orange-600 mb-3 group-hover:scale-110 transition-transform">{p.ru}</div>
                       <div className="text-lg font-medium text-neutral-800">{p.en}</div>
-                      <div className="inline-block mt-4 px-4 py-1.5 bg-neutral-50 rounded-full text-xs text-neutral-400 font-mono tracking-wider italic">
-                        Pronounced: {p.phonetic}
+                      <div className="inline-flex items-center gap-1.5 mt-4 px-4 py-1.5 bg-neutral-50 rounded-full text-xs text-neutral-400 font-mono tracking-wider italic">
+                        <span>Pronounced: {p.phonetic}</span>
+                        <AudioButton text={p.ru.replace(/\//g, ' ')} size="sm" />
                       </div>
                     </Card>
                   ))}
@@ -208,7 +228,10 @@ export function GrammarView() {
                               <div className="text-xs text-neutral-400 font-mono italic">Example</div>
                             </div>
                             <div className="flex flex-col items-end">
-                              <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-none text-base px-4 py-1 rounded-xl">{c.ex}</Badge>
+                              <div className="flex items-center gap-1.5">
+                                <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-none text-base px-4 py-1 rounded-xl">{c.ex}</Badge>
+                                <AudioButton text={c.ex} size="sm" />
+                              </div>
                               <span className="text-[10px] text-neutral-400 mt-1 font-mono">[{c.phonetic}]</span>
                             </div>
                           </div>
@@ -240,7 +263,7 @@ export function GrammarView() {
                     <div className="p-6 bg-neutral-50 rounded-[2rem] border border-neutral-100 flex gap-4 items-start">
                       <Sparkles className="w-5 h-5 text-orange-500 shrink-0 mt-1" />
                       <p className="text-sm text-neutral-600 leading-relaxed italic">
-                        "Pro Tip: Most Russian verbs come in pairs. When you learn 'to read' (читать), you also learn its completed version (прочитать)."
+                        Pro Tip: Most Russian verbs come in pairs. When you learn 'to read' (<span className="font-semibold text-neutral-900 border-b border-dotted border-neutral-300">читать</span> <AudioButton text="читать" size="sm" />), you also learn its completed version (<span className="font-semibold text-neutral-900 border-b border-dotted border-neutral-300">прочитать</span> <AudioButton text="прочитать" size="sm" />).
                       </p>
                     </div>
                   </CardContent>
@@ -257,14 +280,20 @@ export function GrammarView() {
                       <div className="p-8 space-y-6">
                          <div className="flex justify-between items-center group">
                             <div>
-                                <div className="font-bold text-xl text-neutral-900 group-hover:text-orange-600 transition-colors">Быстро</div>
+                                <div className="flex items-center gap-2">
+                                  <div className="font-bold text-xl text-neutral-900 group-hover:text-orange-600 transition-colors">Быстро</div>
+                                  <AudioButton text="Быстро" size="sm" />
+                                </div>
                                 <div className="text-xs text-neutral-400 uppercase tracking-widest mt-1">Bystro</div>
                             </div>
                             <span className="text-sm text-neutral-500 italic">Fast</span>
                          </div>
                          <div className="flex justify-between items-center group">
                             <div>
-                                <div className="font-bold text-xl text-neutral-900 group-hover:text-orange-600 transition-colors">Медленно</div>
+                                <div className="flex items-center gap-2">
+                                  <div className="font-bold text-xl text-neutral-900 group-hover:text-orange-600 transition-colors">Медленно</div>
+                                  <AudioButton text="Медленно" size="sm" />
+                                </div>
                                 <div className="text-xs text-neutral-400 uppercase tracking-widest mt-1">Medlenno</div>
                             </div>
                             <span className="text-sm text-neutral-500 italic">Slowly</span>
@@ -273,14 +302,20 @@ export function GrammarView() {
                       <div className="p-8 space-y-6">
                          <div className="flex justify-between items-center group">
                             <div>
-                                <div className="font-bold text-xl text-neutral-900 group-hover:text-orange-600 transition-colors">Хорошо</div>
+                                <div className="flex items-center gap-2">
+                                  <div className="font-bold text-xl text-neutral-900 group-hover:text-orange-600 transition-colors">Хорошо</div>
+                                  <AudioButton text="Хорошо" size="sm" />
+                                </div>
                                 <div className="text-xs text-neutral-400 uppercase tracking-widest mt-1">Khorosho</div>
                             </div>
                             <span className="text-sm text-neutral-500 italic">Well</span>
                          </div>
                          <div className="flex justify-between items-center group">
                             <div>
-                                <div className="font-bold text-xl text-neutral-900 group-hover:text-orange-600 transition-colors">Плохо</div>
+                                <div className="flex items-center gap-2">
+                                  <div className="font-bold text-xl text-neutral-900 group-hover:text-orange-600 transition-colors">Плохо</div>
+                                  <AudioButton text="Плохо" size="sm" />
+                                </div>
                                 <div className="text-xs text-neutral-400 uppercase tracking-widest mt-1">Plokho</div>
                             </div>
                             <span className="text-sm text-neutral-500 italic">Badly</span>

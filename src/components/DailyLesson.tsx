@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Play, Sparkles, BookOpen, Volume2, Award, ArrowRight, Hourglass, RefreshCw } from 'lucide-react';
+import { AudioButton } from '@/components/AudioButton';
 
 export function DailyLesson() {
   const { profile, updateLessonProgress } = useAuth();
@@ -228,16 +229,10 @@ export function DailyLesson() {
                   {currentLesson.alphabetSection.letters.map((letter, idx) => (
                     <div 
                       key={idx} 
-                      className="border border-neutral-200 p-4 rounded-2xl text-center space-y-2 hover:border-neutral-300 pointer-events-auto transition-colors"
+                      className="border border-neutral-200 p-4 rounded-2xl text-center space-y-2 hover:border-neutral-300 pointer-events-auto transition-colors flex flex-col items-center justify-center"
                     >
                       <div className="text-3xl font-bold font-serif text-neutral-800">{letter}</div>
-                      <button
-                        onClick={() => handleSpeak(letter)}
-                        className="flex items-center justify-center gap-1.5 text-xs text-orange-500 hover:text-orange-600 font-bold mx-auto w-full transition-all cursor-pointer hover:underline"
-                      >
-                        <Volume2 className="w-4 h-4 shrink-0" />
-                        Listen Sound
-                      </button>
+                      <AudioButton text={letter} size="sm" label="Listen Sound" className="mx-auto" />
                     </div>
                   ))}
                 </div>
@@ -255,14 +250,10 @@ export function DailyLesson() {
                         </div>
                         <p className="text-xs text-neutral-500 font-light">{word.english}</p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleSpeak(word.russian)}
-                        className="text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-xl"
-                      >
-                        <Volume2 className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <AudioButton text={word.russian} size="sm" />
+                        <AudioButton text={word.russian} slow={true} size="sm" />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -276,21 +267,17 @@ export function DailyLesson() {
                       Dialogue context
                     </span>
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center flex-wrap gap-2.5">
                         <h4 className="text-base font-bold text-neutral-900">{sent.russian}</h4>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleSpeak(sent.russian)}
-                          className="text-orange-500 hover:text-orange-600 hover:bg-orange-50 h-7 w-7 rounded-lg shrink-0"
-                        >
-                          <Volume2 className="w-3.5 h-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <AudioButton text={sent.russian} size="md" label="Normal" />
+                          <AudioButton text={sent.russian} slow={true} size="sm" label="Slow" />
+                        </div>
                       </div>
                       <p className="text-xs text-orange-600 font-mono">[{sent.phonetic}]</p>
                       <p className="text-xs text-neutral-700 font-medium">{sent.english}</p>
                     </div>
-                    <div className="text-[11px] text-neutral-400 font-light border-t pt-2 border-neutral-50">
+                    <div className="text-[11px] text-neutral-400 font-light border-t pt-2 border-neutral-55">
                       💡 {sent.context}
                     </div>
                   </div>

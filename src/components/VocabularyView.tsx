@@ -3,11 +3,11 @@ import { VOCABULARY, PHRASES } from '@/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Volume2, Lock, Sparkles } from 'lucide-react';
-import { speakNative } from '@/lib/gemini';
+import { Lock, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useAuth } from '@/App';
+import { AudioButton } from '@/components/AudioButton';
 
 const PREMIUM_VOCABULARY = [
   {
@@ -34,20 +34,6 @@ const PREMIUM_VOCABULARY = [
 
 export function VocabularyView({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   const { isPremium } = useAuth();
-
-  const handleSpeak = async (text: string) => {
-    if (!isPremium) {
-      toast.info("🔊 Pronunciation audio is a Premium feature.", {
-        description: "Upgrade to the Scholar plan to unlock full TTS audio pronunciation helper.",
-      });
-      return;
-    }
-    try {
-      await speakNative(text);
-    } catch (error) {
-      console.warn('Native TTS failure', error);
-    }
-  };
 
   const allVocabulary = [...VOCABULARY, ...PREMIUM_VOCABULARY];
 
@@ -106,15 +92,13 @@ export function VocabularyView({ onNavigate }: { onNavigate?: (tab: string) => v
                               </div>
                               <p className="text-sm text-neutral-500 font-light">{item.en}</p>
                             </div>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="opacity-0 group-hover/item:opacity-100 transition-opacity"
-                              onClick={() => handleSpeak(item.ru)}
-                              disabled={isLockedCategory}
-                            >
-                              <Volume2 className="w-4 h-4 text-orange-500" />
-                            </Button>
+                            {(!isLockedCategory) && (
+                              <AudioButton 
+                                text={item.ru} 
+                                size="sm" 
+                                className="opacity-0 group-hover/item:opacity-100 transition-opacity"
+                              />
+                            )}
                           </div>
                         ))}
                       </div>
@@ -176,15 +160,12 @@ export function VocabularyView({ onNavigate }: { onNavigate?: (tab: string) => v
                           {phrase.en}
                         </Badge>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="rounded-full hover:bg-orange-50 shrink-0"
-                        onClick={() => handleSpeak(phrase.ru)}
-                        disabled={isPhraseLocked}
-                      >
-                        <Volume2 className="w-4 h-4 text-orange-500" />
-                      </Button>
+                      {!isPhraseLocked && (
+                        <div className="flex items-center gap-1 shrink-0 bg-neutral-50/50 p-1 rounded-lg">
+                          <AudioButton text={phrase.ru} size="md" />
+                          <AudioButton text={phrase.ru} slow={true} size="sm" />
+                        </div>
+                      )}
                     </div>
 
                     {isPhraseLocked && (
