@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { Play, Sparkles, BookOpen, Volume2, Award, ArrowRight, Hourglass, RefreshCw } from 'lucide-react';
 
 export function DailyLesson() {
-  const { profile, updateLessonProgress, isPremium } = useAuth();
+  const { profile, updateLessonProgress } = useAuth();
   const lessonsCompleted = profile?.lessons_completed || {};
 
   // 1. Calculate today's day number based on days since signup
@@ -35,12 +35,6 @@ export function DailyLesson() {
 
   // Audio text speech synthesis helper
   const handleSpeak = (text: string) => {
-    if (!isPremium) {
-      toast.info("🔊 Pronunciation audio is a Premium feature.", {
-        description: "Upgrade to the premium Scholar plan to unlock complete interactive audio voice guidance.",
-      });
-      return;
-    }
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
