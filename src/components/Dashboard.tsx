@@ -45,6 +45,13 @@ import {
 export function Dashboard() {
   const { user, profile, signOut, isPremium, updateProfileState, updateLessonProgress } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
+  const [signingOut, setSigningOut] = useState(false);
+
+  const handleLogout = async () => {
+    setSigningOut(true);
+    await signOut();
+    setSigningOut(false);
+  };
 
   const intakeDate = new Date('2026-09-01T00:00:00Z');
   const daysRemaining = Math.max(0, differenceInDays(intakeDate, new Date()));
@@ -218,9 +225,16 @@ export function Dashboard() {
                 <span>Profile & Billing</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={signOut} className="text-red-600 focus:text-red-700 focus:bg-red-50">
+              <DropdownMenuItem 
+                disabled={signingOut}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  await handleLogout();
+                }} 
+                className={`text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer ${signingOut ? 'opacity-50 pointer-events-none' : ''}`}
+              >
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>{signingOut ? 'Signing out...' : 'Log out'}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

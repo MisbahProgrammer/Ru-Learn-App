@@ -130,30 +130,30 @@ export default function App() {
             .maybeSingle();
           if (secondRetry) {
             setProfile({
-              streak_count: 0,
-              last_activity_date: null,
-              lessons_completed: {},
-              xp_points: 0,
-              ...secondRetry
+              ...secondRetry,
+              streak_count: secondRetry.streak_count ?? 0,
+              last_activity_date: secondRetry.last_activity_date ?? null,
+              lessons_completed: secondRetry.lessons_completed ?? {},
+              xp_points: secondRetry.xp_points ?? 0
             });
           }
         } else {
           setProfile({
-            streak_count: 0,
-            last_activity_date: null,
-            lessons_completed: {},
-            xp_points: 0,
-            ...insertedData
+            ...insertedData,
+            streak_count: insertedData.streak_count ?? 0,
+            last_activity_date: insertedData.last_activity_date ?? null,
+            lessons_completed: insertedData.lessons_completed ?? {},
+            xp_points: insertedData.xp_points ?? 0
           });
         }
       } else {
         // 3. When restoring or updating an existing profile, never touch or reset trialStartDate field
         setProfile({
-          streak_count: 0,
-          last_activity_date: null,
-          lessons_completed: {},
-          xp_points: 0,
-          ...data
+          ...data,
+          streak_count: data.streak_count ?? 0,
+          last_activity_date: data.last_activity_date ?? null,
+          lessons_completed: data.lessons_completed ?? {},
+          xp_points: data.xp_points ?? 0
         });
       }
     } catch (error) {
@@ -201,18 +201,25 @@ export default function App() {
 
     // Set up auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Handle sign out FIRST before anything else
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+        navigate('/', { replace: true });
+        markResolved();
+        return; // Stop here, don't run rest of function
+      }
+
       const activeUser = session?.user || null;
       setEnhancedUser(activeUser);
       if (activeUser) {
-        await fetchProfile(activeUser.id);
         if (event === 'SIGNED_IN') {
           navigate('/dashboard');
         }
+        await fetchProfile(activeUser.id);
       } else {
         setProfile(null);
-        if (event === 'SIGNED_OUT') {
-          navigate('/');
-        }
         setLoading(false);
       }
       markResolved();
@@ -270,14 +277,45 @@ export default function App() {
   };
 
   const signOut = async () => {
-    if (user?.isGuest) {
-      setEnhancedUser(null);
+    try {
+      if (user?.isGuest) {
+        setUser(null);
+        setProfile(null);
+        navigate('/');
+        return;
+      }
+      
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Sign out error:', error);
+        toast.error('Sign out failed: ' + error.message);
+      }
+      
+      // Clear any cached Supabase auth tokens
+      // that might auto-login the user again
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('sb-') || 
+            key.startsWith('supabase')) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      // Manually clear state immediately
+      // Do not wait for onAuthStateChange
+      setUser(null);
       setProfile(null);
-      return;
-    }
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error('Sign out failed: ' + error.message);
+      
+      // Force navigate to landing page
+      navigate('/', { replace: true });
+      
+    } catch (err) {
+      console.error('Sign out exception:', err);
+      // Even if Supabase fails, clear local state 
+      // and redirect anyway
+      setUser(null);
+      setProfile(null);
+      navigate('/', { replace: true });
     }
   };
 
@@ -387,7 +425,7 @@ export default function App() {
           <Routes>
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
-            <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" replace />} />
+            <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" replace />} />
             <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
             <Route path="*" element={<Navigate to={user ? "/dashboard" : "/"} replace />} />
           </Routes>
