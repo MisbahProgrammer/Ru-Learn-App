@@ -28,6 +28,8 @@ import { VocabularyView } from '@/components/VocabularyView';
 import { ProfileView } from '@/components/ProfileView';
 import { LecturesView } from '@/components/LecturesView';
 import { GrammarView } from '@/components/GrammarView';
+import { DailyLesson } from '@/components/DailyLesson';
+import { WordOfTheDay } from '@/components/WordOfTheDay';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -41,7 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function Dashboard() {
-  const { user, profile, signOut, isTrialValid, isPremium, updateProfileState, updateLessonProgress } = useAuth();
+  const { user, profile, signOut, isPremium, updateProfileState, updateLessonProgress } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
 
   const intakeDate = new Date('2026-09-01T00:00:00Z');
@@ -50,17 +52,20 @@ export function Dashboard() {
   // 1. Dynamic calculations from profile context (No extra DB reads)
   const lessonsCompleted = profile?.lessons_completed || {};
 
+  const completedDailyDays = Array.from({ length: 30 }, (_, i) => `day_${i + 1}`).filter(id => lessonsCompleted[id]).length;
+  const dailyLessonsPercentage = Math.round((completedDailyDays / 30) * 100);
+
   const alphabetLessons = ['alphabet_vocals', 'alphabet_consonants', 'alphabet_modifiers', 'alphabet_reading', 'alphabet_review'];
   const alphabetCompletedCount = alphabetLessons.filter(id => lessonsCompleted[id]).length;
-  const alphabetPercentage = Math.round((alphabetCompletedCount / alphabetLessons.length) * 100);
+  const alphabetPercentage = dailyLessonsPercentage;
 
   const grammarLessons = ['grammar_sentence_logic', 'grammar_pronouns', 'grammar_six_cases', 'grammar_verbs_aspects'];
   const grammarCompletedCount = grammarLessons.filter(id => lessonsCompleted[id]).length;
-  const grammarPercentage = Math.round((grammarCompletedCount / grammarLessons.length) * 100);
+  const grammarPercentage = dailyLessonsPercentage;
 
   const scenarioLessons = ['scenario_taxi', 'scenario_directions', 'scenario_food', 'scenario_hotel', 'scenario_emergency'];
   const scenarioCompletedCount = scenarioLessons.filter(id => lessonsCompleted[id]).length;
-  const scenarioPercentage = Math.round((scenarioCompletedCount / scenarioLessons.length) * 100);
+  const scenarioPercentage = dailyLessonsPercentage;
 
   // Define learning path to automatically identify current lesson
   const ALL_LESSONS = [
@@ -112,9 +117,6 @@ export function Dashboard() {
   const firstName = displayName.split(' ')[0];
   const avatarFallback = displayName.charAt(0).toUpperCase();
 
-  const trialDaysLeft = 7 - differenceInDays(new Date(), new Date(profile?.trialStartDate || new Date()));
-  const showTrialWarning = !isPremium && trialDaysLeft <= 2;
-
   const handleUpgrade = async () => {
     if (!user) return;
     const invoiceId = `inv_${Math.random().toString(36).substr(2, 9)}`;
@@ -124,7 +126,7 @@ export function Dashboard() {
       {
         id: invoiceId,
         date: new Date().toISOString(),
-        amount: 1.00,
+        amount: 2.00,
         description: 'Premium Scholar Plan - Monthly',
         status: 'succeeded'
       }
@@ -162,7 +164,7 @@ export function Dashboard() {
         billingHistory: updatedBilling
       });
 
-      toast.success('Welcome to Premium Scholar! Your $1 payment was successful.');
+      toast.success('Welcome to Premium Scholar! Your $2 payment was successful.');
     } catch (e: any) {
       toast.error('Failed to upgrade: ' + e.message);
     }
@@ -183,21 +185,19 @@ export function Dashboard() {
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
-          {!isPremium && (
-            <Badge variant="secondary" className="flex items-center gap-1 py-0.5 md:py-1 text-[10px] md:text-xs px-2">
-              <Star className="w-2.5 h-2.5 md:w-3 md:h-3 text-orange-500 fill-orange-500" />
-              {trialDaysLeft > 0 ? (
-                <span className="whitespace-nowrap">{trialDaysLeft}d left</span>
-              ) : (
-                <span>Expired</span>
-              )}
-            </Badge>
-          )}
-          {isPremium && (
-            <Badge className="bg-orange-500 text-white flex items-center gap-1 py-0.5 md:py-1 text-[10px] md:text-xs px-2">
-              <Crown className="w-2.5 h-2.5 md:w-3 md:h-3 fill-white" />
-              PREMIUM
-            </Badge>
+          {isPremium ? (
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <span className="hidden sm:inline-block text-xs md:text-sm font-semibold text-neutral-800">
+                {displayName}
+              </span>
+              <Badge className="bg-orange-500 hover:bg-orange-600 border-none text-white flex items-center gap-1 py-0.5 md:py-1 text-[10px] md:text-xs px-2.5 rounded-full font-bold select-none animate-pulse">
+                Scholar ⭐
+              </Badge>
+            </div>
+          ) : (
+            <span className="hidden sm:inline-block text-xs md:text-sm font-medium text-neutral-600">
+              {displayName}
+            </span>
           )}
           
           <DropdownMenu>
@@ -251,9 +251,15 @@ export function Dashboard() {
               <TabsTrigger value="lectures" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
                 <Video className="w-4 h-4" /> Lectures
               </TabsTrigger>
-              <TabsTrigger value="premium" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all text-orange-600 font-bold hover:text-orange-700">
-                <Star className="w-4 h-4 text-orange-500 fill-orange-400 animate-pulse" /> Premium Plan
-              </TabsTrigger>
+              {isPremium ? (
+                <TabsTrigger value="premium" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all text-green-600 font-bold hover:text-green-700 hover:bg-green-50/20">
+                  <span className="w-4 h-4 flex items-center justify-center text-xs">✓</span> Scholar Plan
+                </TabsTrigger>
+              ) : (
+                <TabsTrigger value="premium" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all text-orange-600 font-bold hover:text-orange-700 hover:bg-orange-50/20">
+                  <Star className="w-4 h-4 text-orange-500 fill-orange-400 animate-pulse" /> ⭐ Upgrade to Premium
+                </TabsTrigger>
+              )}
               <TabsTrigger value="profile" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
                 <User className="w-4 h-4" /> Profile & Billing
               </TabsTrigger>
@@ -291,7 +297,7 @@ export function Dashboard() {
                  <Video className="w-5 h-5" /> Lectures
                </TabsTrigger>
                <TabsTrigger value="premium" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
-                 <Star className="w-5 h-5 text-orange-500 fill-orange-400" /> Premium
+                 <Star className={`w-5 h-5 ${isPremium ? 'text-green-500 fill-green-400' : 'text-orange-500 fill-orange-400'}`} /> {isPremium ? "Scholar" : "Upgrade"}
                </TabsTrigger>
                <TabsTrigger value="profile" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
                  <User className="w-5 h-5" /> Profile
@@ -360,56 +366,17 @@ export function Dashboard() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Word of the Day Widget */}
+                  <div className="mt-6 max-w-lg">
+                    <WordOfTheDay />
+                  </div>
                 </div>
 
-                {!isPremium && !isTrialValid && (
-                  <Card className="border-orange-200 bg-orange-50/80 backdrop-blur-sm shadow-lg shadow-orange-500/10">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-orange-900">
-                        <AlertCircle className="w-5 h-5 text-orange-600" />
-                        Trial Period Ended
-                      </CardTitle>
-                      <CardDescription className="text-orange-800 font-medium">
-                        Your 7-day free trial has expired. To continue practicing voice scenarios and AI tutoring, please upgrade to the $1 Premium Scholar plan.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Button onClick={() => setActiveTab('premium')} className="bg-orange-600 hover:bg-orange-700 text-white px-8 h-12 rounded-xl font-bold shadow-lg shadow-orange-600/20">
-                        Upgrade for $1/month
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
 
-                {/* Continue Learning progress card */}
-                <Card className="border border-neutral-200 shadow-xs relative overflow-hidden bg-gradient-to-r from-neutral-50 to-white hover:border-neutral-300 transition-colors">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
-                  <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] text-orange-600 border-orange-200 bg-orange-50 font-semibold uppercase tracking-wider">
-                          {currentActiveLesson.section}
-                        </Badge>
-                        <span className="text-[11px] text-neutral-400">• Current lesson</span>
-                      </div>
-                      <h3 className="text-base md:text-lg font-medium text-neutral-900 tracking-tight">
-                        {currentActiveLesson.title}
-                      </h3>
-                      <div className="flex items-center gap-4 w-full sm:w-64 pt-2">
-                        <div className="flex-1 bg-neutral-100 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-orange-500 h-full rounded-full transition-all duration-500" style={{ width: `${currentActiveLesson.progress}%` }} />
-                        </div>
-                        <span className="text-xs font-semibold text-neutral-500">{currentActiveLesson.progress}% Section Completed</span>
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={() => setActiveTab(currentActiveLesson.tab)} 
-                      className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-10 rounded-xl font-bold transition-all hover:scale-[1.02] shrink-0"
-                    >
-                      Continue Lesson
-                    </Button>
-                  </CardContent>
-                </Card>
+
+                {/* Daily Structured Plan Lesson Component */}
+                <DailyLesson />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                    <Card className="hover:border-neutral-300 transition-colors cursor-pointer group flex flex-col justify-between" onClick={() => {
@@ -497,39 +464,7 @@ export function Dashboard() {
                   </div>
                 </div>
 
-                {/* Word of the Day Card */}
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-neutral-400">Word of the Day</h3>
-                    <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200">Bonus XP</Badge>
-                  </div>
-                  <Card className="border border-neutral-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div className="space-y-1">
-                          <div className="text-xs text-neutral-400 font-mono tracking-wider">DAILY SELECTION</div>
-                          <div className="flex items-baseline gap-3 flex-wrap">
-                            <h4 className="text-3xl font-bold font-serif text-neutral-900 tracking-tight">Спасибо</h4>
-                            <span className="text-xs font-mono text-orange-500 bg-orange-50 px-2 py-0.5 rounded">[spah-see-bah]</span>
-                          </div>
-                          <p className="text-sm text-neutral-600 font-medium pt-1">
-                            "Thank you" — <span className="text-neutral-500 font-light">The most essential word you will use at Pyaterochka supermarkets, Yandex taxis, and in your HSE/RUDN dormitory.</span>
-                          </p>
-                        </div>
-                        <Button 
-                          onClick={() => {
-                            setActiveTab('scenarios');
-                            toast.success("AI Scenario Tutor started! Try saying 'Спасибо' (Thank you) to practice pronunciation.");
-                          }}
-                          className="bg-neutral-900 hover:bg-black text-white px-5 h-10 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5 text-orange-400" />
-                          Practice in Chat
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+
               </div>
             </TabsContent>
 
@@ -538,7 +473,7 @@ export function Dashboard() {
             </TabsContent>
 
             <TabsContent value="vocabulary" className="flex-1 m-0 h-full overflow-hidden">
-               <VocabularyView />
+               <VocabularyView onNavigate={setActiveTab} />
             </TabsContent>
 
             <TabsContent value="grammar" className="flex-1 m-0 h-full overflow-hidden">
@@ -546,8 +481,8 @@ export function Dashboard() {
             </TabsContent>
 
             <TabsContent value="scenarios" className="flex-1 m-0 h-full overflow-hidden">
-               {(isPremium || isTrialValid) ? (
-                 <ScenarioChat />
+               {true ? (
+                 <ScenarioChat onNavigate={setActiveTab} />
                ) : (
                  <div className="flex flex-col items-center justify-center h-full p-8 text-center max-w-sm mx-auto">
                     <Crown className="w-12 h-12 text-orange-500 mb-6" />
@@ -575,7 +510,7 @@ export function Dashboard() {
                       <CardTitle className="text-3xl mb-2 font-serif">Scholar Elite</CardTitle>
                       <CardDescription>One simple price for everything.</CardDescription>
                       <div className="mt-8 flex items-baseline justify-center gap-1">
-                        <span className="text-6xl font-bold">$1</span>
+                        <span className="text-6xl font-bold">$2</span>
                         <span className="text-neutral-400 text-xl">/month</span>
                       </div>
                     </CardHeader>
@@ -606,7 +541,7 @@ export function Dashboard() {
                          </div>
                        ) : (
                          <Button onClick={handleUpgrade} className="w-full h-16 bg-neutral-900 hover:bg-black rounded-2xl text-xl font-bold transition-transform hover:scale-[1.02]">
-                           Activate Plan for $1
+                           Activate Plan for $2/month
                          </Button>
                        )}
                        <p className="text-center text-[10px] text-neutral-400">Secure payment. Cancel subscription anytime from this panel.</p>
@@ -620,7 +555,27 @@ export function Dashboard() {
              </TabsContent>
 
              <TabsContent value="lectures" className="flex-1 m-0 h-full overflow-hidden">
-                <LecturesView />
+                <div className="relative h-full w-full">
+                  <div className={`h-full w-full ${!isPremium ? "blur-xs pointer-events-none select-none" : ""}`}>
+                    <LecturesView />
+                  </div>
+                  {!isPremium && (
+                    <div className="absolute inset-0 bg-neutral-900/10 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center z-10">
+                      <div className="bg-white/95 border border-neutral-200 p-8 rounded-3xl max-w-sm shadow-xl flex flex-col items-center">
+                        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                          <Crown className="w-6 h-6 text-orange-500 animate-bounce" />
+                        </div>
+                        <h3 className="text-xl font-bold text-neutral-900 mb-2">🔒 This is a Premium feature</h3>
+                        <p className="text-sm text-neutral-500 mb-6 leading-relaxed">
+                          Unlock all scenarios for $2/month to continue learning.
+                        </p>
+                        <Button onClick={() => setActiveTab('premium')} className="w-full h-11 bg-orange-500 hover:bg-orange-600 font-bold rounded-xl text-sm transition-all shadow-md shadow-orange-500/20">
+                          Upgrade Now
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
              </TabsContent>
           </div>
         </Tabs>

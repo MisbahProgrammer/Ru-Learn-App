@@ -13,7 +13,8 @@ import {
   ArrowLeft,
   User,
   Sparkles,
-  MessageSquare
+  MessageSquare,
+  Lock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
@@ -29,10 +30,41 @@ interface Message {
   russian?: string;
 }
 
-export function ScenarioChat() {
-  const { user, profile, updateLessonProgress } = useAuth();
+const PREMIUM_SCENARIOS = [
+  {
+    id: 'dorm_roommate',
+    title: '💬 Dormitory Roommate Chat',
+    description: 'Break the ice with your Russian roommate in the campus student dorm.',
+    icon: 'Users',
+    culturalTip: 'Taking off shoes inside a Russian home or dorm is a non-negotiable standard.',
+  },
+  {
+    id: 'bank_card',
+    title: '💬 Opening a Bank Card',
+    description: 'Get a Russian student bank card at Sberbank or Tinkoff.',
+    icon: 'CreditCard',
+    culturalTip: 'Russian banking apps are extremely advanced and allow instant transfers dial-by-number.',
+  },
+  {
+    id: 'pyaterochka',
+    title: '💬 Grocery at Pyaterochka',
+    description: 'Shop at Pyaterochka supermarket and understand cashier questions.',
+    icon: 'ShoppingBag',
+    culturalTip: 'Cashiers will always ask if you have a loyalty card ("Karta est\'?").',
+  },
+  {
+    id: 'sim_card',
+    title: '💬 MTS Mobile SIM Card',
+    description: 'Get a high-speed local mobile data SIM card at MTS or Megafon.',
+    icon: 'Smartphone',
+    culturalTip: 'You need a valid passport and immigration slip to purchase any SIM card.',
+  }
+];
+
+export function ScenarioChat({ onNavigate }: { onNavigate?: (tab: string) => void }) {
+  const { user, profile, updateLessonProgress, isPremium } = useAuth();
   const lessonsCompleted = profile?.lessons_completed || {};
-  const [selectedScenario, setSelectedScenario] = useState<typeof SCENARIOS[0] | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<any | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -81,14 +113,28 @@ export function ScenarioChat() {
     }
   }, []);
 
-  const startScenario = (scenario: typeof SCENARIOS[0]) => {
+  const startScenario = (scenario: any) => {
+    const isPremiumScenario = PREMIUM_SCENARIOS.some(s => s.id === scenario.id);
+    if (!isPremium && isPremiumScenario) {
+      if (onNavigate) {
+        onNavigate('premium');
+        toast.info("🔒 Premium Scenario Locked", {
+          description: "We redirected you to the premium tab to unlock all survival voice dialogs.",
+        });
+      } else {
+        toast.info("🔒 Premium Scenario Locked", {
+          description: "Upgrade to our premium Scholar plan to unlock live interactive voice chats with our 24/7 AI tutor.",
+        });
+      }
+      return;
+    }
     setSelectedScenario(scenario);
     setMessages([
       { 
         role: 'model', 
-        parts: [{ text: `Hello! Let's practice the scenario: ${scenario.title}.\n\nRussian: ${scenario.initialMessageRu}\nTranslation: ${scenario.initialMessage}` }],
-        russian: scenario.initialMessageRu,
-        translation: scenario.initialMessage
+        parts: [{ text: `Hello! Let's practice the scenario: ${scenario.title}.\n\nRussian: ${scenario.initialMessageRu || 'Здравствуйте!'}\nTranslation: ${scenario.initialMessage || 'Hello!'}` }],
+        russian: scenario.initialMessageRu || 'Здравствуйте!',
+        translation: scenario.initialMessage || 'Hello!'
       }
     ]);
   };
@@ -211,30 +257,71 @@ export function ScenarioChat() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-1 pb-40 md:pb-12 h-max">
-              {SCENARIOS.map((scenario) => (
-                <div 
-                  key={scenario.id} 
-                  className="bg-white border border-neutral-200 p-8 rounded-[32px] hover:shadow-xl transition-all group flex flex-col items-start gap-4 cursor-pointer hover:border-orange-200"
-                  onClick={() => startScenario(scenario)}
-                >
-                  <div className="p-4 bg-orange-50 text-orange-600 rounded-2xl group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                     <MessageSquare className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-bold tracking-tight">{scenario.title}</h3>
-                  <p className="text-neutral-500 text-sm font-light leading-relaxed mb-4">{scenario.description}</p>
-                  
-                  <div className="mt-auto pt-6 border-t border-neutral-100 w-full flex items-center justify-between">
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      lessonsCompleted[scenario.id] ? 'text-green-600' : 'text-neutral-400'
+              {[...SCENARIOS, ...PREMIUM_SCENARIOS].map((scenario) => {
+                const isPremiumScenario = PREMIUM_SCENARIOS.some(s => s.id === scenario.id);
+                const isLocked = !isPremium && isPremiumScenario;
+                const isCompleted = lessonsCompleted[scenario.id];
+
+                return (
+                  <div 
+                    key={scenario.id} 
+                    className={`bg-white border border-neutral-200 p-8 rounded-[32px] hover:shadow-xl transition-all group flex flex-col items-start gap-4 cursor-pointer hover:border-orange-200 relative overflow-hidden ${
+                      isLocked ? 'hover:border-neutral-300' : ''
+                    }`}
+                    onClick={() => startScenario(scenario)}
+                  >
+                    <div className={`p-4 rounded-2xl transition-colors ${
+                      isLocked 
+                        ? 'bg-neutral-100 text-neutral-400' 
+                        : 'bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white'
                     }`}>
-                      {lessonsCompleted[scenario.id] ? '✓ COMPLETED' : 'START PRACTICE'}
-                    </span>
-                    <CheckCircle2 className={`w-4 h-4 transition-colors ${
-                      lessonsCompleted[scenario.id] ? 'text-green-500 fill-green-50' : 'text-neutral-200 group-hover:text-orange-500'
-                    }`} />
+                       <MessageSquare className="w-6 h-6" />
+                    </div>
+                    
+                    <div className={isLocked ? "blur-xs select-none" : ""}>
+                      <h3 className="text-xl font-bold tracking-tight flex items-center gap-2">
+                        {scenario.title}
+                        {isPremiumScenario && (
+                          <span className="text-[10px] font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-md leading-none uppercase select-none">
+                            Premium
+                          </span>
+                        )}
+                      </h3>
+                      <p className="text-neutral-500 text-sm font-light leading-relaxed mb-4">{scenario.description}</p>
+                    </div>
+                    
+                    <div className={`mt-auto pt-6 border-t border-neutral-100 w-full flex items-center justify-between ${
+                      isLocked ? 'blur-xs select-none' : ''
+                    }`}>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                        isCompleted ? 'text-green-600' : 'text-neutral-400'
+                      }`}>
+                        {isCompleted ? '✓ COMPLETED' : 'START PRACTICE'}
+                      </span>
+                      <CheckCircle2 className={`w-4 h-4 transition-colors ${
+                        isCompleted ? 'text-green-500 fill-green-50' : 'text-neutral-200 group-hover:text-orange-500'
+                      }`} />
+                    </div>
+
+                    {isLocked && (
+                      <div className="absolute inset-x-0 bottom-0 bg-neutral-900/90 text-white p-4 flex flex-col items-center justify-center text-center z-10" onClick={(e) => {
+                        e.stopPropagation();
+                        if (onNavigate) {
+                          onNavigate('premium');
+                        }
+                      }}>
+                        <div className="flex items-center gap-1 text-orange-400 text-xs font-bold mb-1">
+                          <Lock className="w-3.5 h-3.5 animate-pulse" />
+                          <span>Premium Locked</span>
+                        </div>
+                        <p className="text-[10px] text-neutral-300">
+                          Unlock all scenarios for $2/month (Click to Upgrade)
+                        </p>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

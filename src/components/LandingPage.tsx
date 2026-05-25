@@ -46,7 +46,7 @@ export function LandingPage() {
     <div className="flex flex-col min-h-screen relative">
       {/* Announcement Banner */}
       <div className="bg-gradient-to-r from-red-600 to-orange-500 text-white text-xs sm:text-sm font-semibold py-2.5 px-4 text-center z-30 relative shadow-sm">
-        ⏳ September 2026 intake is coming — Start your free week before it's too late
+        ⏳ September 2026 intake is coming — Start preparing now for free before you fly
       </div>
 
       <header className="absolute top-[48px] sm:top-[38px] left-0 right-0 z-20 px-4 sm:px-8 py-4 sm:py-6 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent">
@@ -101,14 +101,14 @@ export function LandingPage() {
                 Before You Land.
               </h1>
               <p className="text-base md:text-xl text-neutral-300 font-light max-w-lg mb-10 leading-relaxed">
-                Tailored for scholar achievers heading to Russia this September. 1 week free, then just $1/month to master real-world scenarios.
+                Tailored for scholar achievers heading to Russia this September. Start learning for free, or lock in all real-world scenarios for just $2/month.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                 <Button 
                   onClick={() => handleAuth('signup')}
                   className="bg-orange-500 text-white hover:bg-orange-600 h-14 md:h-16 px-10 rounded-full text-lg md:text-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-xl shadow-orange-500/20 w-full sm:w-auto"
                 >
-                  Start Your Free Week
+                  Start Learning Free
                 </Button>
                 <Button 
                   onClick={() => handleAuth('signin')}
@@ -265,52 +265,180 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Premium Plan Section */}
-      <section className="bg-neutral-900 text-white py-20 md:py-32 px-4 sm:px-8 rounded-3xl md:rounded-[60px] mx-4 my-16 md:m-8 overflow-hidden relative shadow-2xl">
-        <img 
-          src={CITY_IMAGES[1].url} 
-          className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none"
-          alt="Saint Petersburg"
-        />
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-orange-500/20 text-orange-400 px-4 md:px-6 py-2 rounded-full mb-8 md:mb-12 border border-orange-500/30">
-            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">Limited Time Launch Offer</span>
+      {/* Pricing Section */}
+      <section className="py-20 md:py-32 px-4 sm:px-8 bg-neutral-50 border-t border-b border-neutral-100" id="pricing-section">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight mb-6">
+              Affordable Plans for <span className="font-serif italic underline underline-offset-8 decoration-orange-400">Every Scholar</span>
+            </h2>
+            <p className="text-neutral-500 max-w-xl mx-auto text-sm md:text-lg font-light">
+              Choose the perfect tier to match your preparation pace. Built to coordinate with scholarship budgets.
+            </p>
           </div>
-          <h2 className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tighter mb-8 leading-none">
-            Master Russian for <br className="hidden md:block"/>
-            <span className="text-orange-400 font-serif italic">$1 / month</span>
-          </h2>
-          <p className="text-base md:text-xl text-neutral-400 mb-12 max-w-3xl mx-auto leading-relaxed px-4 font-light">
-            We know scholarship life. That's why we kept it simple. Get full access to all scenarios, interactive AI tutoring, and cultural guides for the price of a single coffee.
-          </p>
-          <div className="bg-white/5 backdrop-blur-xl p-8 md:p-16 rounded-[40px] border border-white/10 max-w-lg mx-auto shadow-2xl">
-            <h3 className="text-xl md:text-2xl font-semibold mb-2">Premium Scholar Plan</h3>
-            <p className="text-neutral-400 mb-10 text-sm md:text-base font-light tracking-wide">Full Unrestricted Access</p>
-            <div className="flex items-end justify-center gap-1 mb-8">
-              <span className="text-6xl md:text-8xl font-bold tracking-tighter">$1</span>
-              <span className="text-neutral-500 text-xl md:text-2xl font-light mb-2">/month</span>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+            {/* Column 1 - FREE FOREVER */}
+            <div className="bg-white rounded-[32px] border border-neutral-200 p-8 shadow-xs flex flex-col justify-between hover:border-neutral-300 transition-all">
+              <div>
+                <div className="mb-6">
+                  <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">Free Forever</span>
+                  <div className="flex items-baseline gap-1 mt-2">
+                    <span className="text-4xl sm:text-5xl font-bold tracking-tight text-neutral-900">$0</span>
+                    <span className="text-neutral-500 text-sm">/ forever</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-100 py-6">
+                  <ul className="space-y-3.5">
+                    {[
+                      { included: true, text: "Full Cyrillic alphabet lessons" },
+                      { included: true, text: "50 core vocabulary words" },
+                      { included: true, text: "5 survival scenarios (preview)" },
+                      { included: true, text: "Word of the day" },
+                      { included: true, text: "Basic streak tracking" },
+                      { included: true, text: "Community Telegram access" },
+                      { included: false, text: "AI Russian tutor" },
+                      { included: false, text: "All 20+ scenarios" },
+                      { included: false, text: "Video lectures" },
+                      { included: false, text: "Offline audio downloads" },
+                      { included: false, text: "Progress certificate" },
+                    ].map((feat, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5 text-sm">
+                        {feat.included ? (
+                          <span className="text-orange-500 font-bold leading-none select-none text-base">✓</span>
+                        ) : (
+                          <span className="text-neutral-300 font-bold leading-none select-none text-base">✗</span>
+                        )}
+                        <span className={feat.included ? "text-neutral-600 font-light" : "text-neutral-400 font-light line-through decoration-neutral-100"}>
+                          {feat.text}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="pt-6">
+                <Button 
+                  onClick={() => handleAuth('signup')} 
+                  variant="outline"
+                  className="w-full h-12 border-neutral-300 text-neutral-700 hover:bg-neutral-50 rounded-2xl text-sm font-bold transition-all cursor-pointer"
+                >
+                  Start Free
+                </Button>
+              </div>
             </div>
 
-            {/* Checklist */}
-            <ul className="space-y-3 text-left mb-10 bg-white/5 p-6 rounded-2xl border border-white/5 max-w-md mx-auto">
-              {[
-                "20+ Real-world survival scenarios",
-                "AI Russian tutor available 24/7",
-                "RUDN teacher video lectures",
-                "Cultural etiquette guide"
-              ].map((item, idx) => (
-                <li key={idx} className="flex items-center gap-3 text-sm text-neutral-200 font-light">
-                  <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+            {/* Column 2 - MONTHLY (Scholar) */}
+            <div className="bg-neutral-900 text-white rounded-[32px] border border-orange-500/50 p-8 shadow-xl flex flex-col justify-between relative overflow-hidden group transform hover:scale-[1.01] transition-all">
+              <div className="absolute top-0 right-0 bg-orange-500 text-white text-[10px] font-bold tracking-wider uppercase py-1.5 px-6 rounded-bl-2xl">
+                MOST POPULAR
+              </div>
+              <div>
+                <div className="mb-6">
+                  <span className="text-xs font-bold uppercase tracking-widest text-orange-400">Scholar Plan</span>
+                  <div className="flex items-baseline gap-1 mt-2">
+                    <span className="text-4xl sm:text-5xl font-bold tracking-tight text-white">$2</span>
+                    <span className="text-neutral-400 text-sm">/ month</span>
+                  </div>
+                </div>
 
-            <Button onClick={() => handleAuth('signup')} className="w-full h-14 md:h-16 bg-orange-500 hover:bg-orange-600 rounded-3xl text-lg md:text-xl font-bold transition-all hover:scale-[1.02] shadow-lg shadow-orange-500/20">
-              Get Started for Free
-            </Button>
-            <p className="mt-6 text-[10px] md:text-xs text-neutral-500 tracking-wide">First 7 days are completely free. Cancel anytime.</p>
+                <div className="border-t border-neutral-800 py-6">
+                  <ul className="space-y-3.5">
+                    {[
+                      "Everything in Free",
+                      "All 20+ real-world scenarios",
+                      "AI Russian tutor (24/7)",
+                      "RUDN teacher video lectures",
+                      "Pronunciation audio downloads",
+                      "Offline mode for travel",
+                      "Progress certificate",
+                      "City-specific vocabulary packs",
+                      "Priority support"
+                    ].map((feat, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5 text-sm">
+                        <span className="text-orange-400 font-bold leading-none select-none text-base">✓</span>
+                        <span className="text-neutral-200 font-light">{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="pt-6">
+                <Button 
+                  onClick={() => handleAuth('signup')} 
+                  className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-sm font-bold shadow-lg shadow-orange-500/20 transition-all cursor-pointer animate-pulse"
+                >
+                  Start Learning
+                </Button>
+              </div>
+            </div>
+
+            {/* Column 3 - BEST VALUE */}
+            <div className="bg-white rounded-[32px] border border-neutral-200 p-8 shadow-xs flex flex-col justify-between hover:border-neutral-300 transition-all">
+              <div>
+                <div className="mb-6">
+                  <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">Best Value</span>
+                  
+                  {/* Option A & B split inside one card */}
+                  <div className="mt-4 space-y-4">
+                    {/* Option A */}
+                    <div className="p-3.5 rounded-2xl border border-neutral-100 bg-neutral-50/50 flex flex-col justify-between">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-bold text-neutral-800">6 Months</span>
+                        <span className="text-base font-bold text-neutral-900">$10 total</span>
+                      </div>
+                      <span className="text-xs text-neutral-500 mt-1">$1.67/month — save 17%</span>
+                    </div>
+
+                    {/* Option B */}
+                    <div className="p-3.5 rounded-2xl border-2 border-green-200 bg-green-50/10 flex flex-col justify-between relative overflow-hidden">
+                      <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] font-bold tracking-widest uppercase py-0.5 px-3 rounded-bl-lg">
+                        BEST VALUE
+                      </div>
+                      <div className="flex justify-between items-center mt-1">
+                        <span className="text-sm font-bold text-neutral-800">Annual Plan</span>
+                        <span className="text-xl font-bold text-green-700">$16/year</span>
+                      </div>
+                      <span className="text-xs text-neutral-500 mt-0.5 font-medium">$1.33/month — save 33%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-100 py-6">
+                  <ul className="space-y-3.5">
+                    {[
+                      "Everything in Scholar plan",
+                      "Locked-in price forever",
+                      "Free access to new features",
+                      "Early access to mobile app",
+                      "Founding Scholar badge in profile"
+                    ].map((feat, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5 text-sm">
+                        <span className="text-orange-500 font-bold leading-none select-none text-base">✓</span>
+                        <span className="text-neutral-600 font-light">{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="pt-6">
+                <Button 
+                  onClick={() => handleAuth('signup')} 
+                  className="w-full h-12 bg-neutral-900 hover:bg-black text-white rounded-2xl text-sm font-bold transition-all cursor-pointer"
+                >
+                  Get Best Deal
+                </Button>
+              </div>
+            </div>
           </div>
+
+          <p className="text-center text-xs text-neutral-400 mt-8 tracking-wide font-light">
+            No credit card required · Cancel anytime · Instant access
+          </p>
         </div>
       </section>
 
@@ -344,7 +472,7 @@ export function LandingPage() {
           />
           <FAQItem 
             question="Is there any hidden fee or automatic charge?" 
-            answer="No hidden fees. You start with a 7-day free trial. If you choose to keep your premium scholar plan, it's just $1/month. You can cancel anytime with a single click inside your dashboard profile." 
+            answer="No hidden fees. You can starting learning completely free. If you choose to upgrade to our premium Scholar plan, it is just $2/month (with further discounts on multi-month bundles). You can cancel anytime with a single click inside your dashboard profile." 
           />
         </div>
       </section>

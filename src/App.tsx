@@ -3,7 +3,6 @@ import { supabase } from './lib/supabase';
 import { Toaster } from '@/components/ui/sonner-toaster';
 import { LandingPage } from '@/components/LandingPage';
 import { Dashboard } from '@/components/Dashboard';
-import { addDays, isAfter } from 'date-fns';
 import { toast } from 'sonner';
 import { AlertCircle, Terminal } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -18,7 +17,6 @@ interface AuthContextType {
   signUp: () => Promise<void>;
   signInAsGuest: () => void;
   signOut: () => Promise<void>;
-  isTrialValid: boolean;
   isPremium: boolean;
   updateProfileState: (data: any) => void;
   refreshProfile: () => Promise<void>;
@@ -84,12 +82,10 @@ export default function App() {
     }
   };
 
-  if (!supabase) {
-    return <SetupWarning />;
-  }
-
   const fetchProfile = async (uid: string) => {
+    if (!supabase) return;
     try {
+      // 1. Check if a row already exists with that uid first
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -104,11 +100,11 @@ export default function App() {
       if (!data) {
         // Create profile if it does not exist in our custom public.users table
         const { data: { user: currentUser } } = await supabase.auth.getUser();
+        
         const newProfile = {
           uid: uid,
           email: currentUser?.email || '',
           displayName: currentUser?.user_metadata?.full_name || currentUser?.user_metadata?.name || '',
-          trialStartDate: new Date().toISOString(),
           isPremium: false,
           createdAt: new Date().toISOString(),
           billingHistory: [],
@@ -126,7 +122,7 @@ export default function App() {
 
         if (insertError) {
           console.error('Error creating profile:', insertError);
-          // If insert fails (for example trigger created it), try selecting again
+          // If insert fails (for example trigger or race condition created it), select the existing profile
           const { data: secondRetry } = await supabase
             .from('users')
             .select('*')
@@ -151,6 +147,7 @@ export default function App() {
           });
         }
       } else {
+        // 3. When restoring or updating an existing profile, never touch or reset trialStartDate field
         setProfile({
           streak_count: 0,
           last_activity_date: null,
@@ -177,6 +174,11 @@ export default function App() {
   };
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     console.log("Auth check started");
     let resolved = false;
 
@@ -257,7 +259,6 @@ export default function App() {
       uid: guestUser.id,
       displayName: 'Guest Scholar',
       isPremium: true, // Let guests try everything
-      trialStartDate: new Date().toISOString(),
       isGuest: true,
       billingHistory: [],
       streak_count: 0,
@@ -358,9 +359,10 @@ export default function App() {
   };
 
   const isPremium = profile?.isPremium || false;
-  const trialValid = profile 
-    ? isAfter(addDays(new Date(profile.trialStartDate), 7), new Date()) 
-    : true;
+
+  if (!supabase) {
+    return <SetupWarning />;
+  }
 
   return (
     <AuthContext.Provider value={{ 
@@ -371,7 +373,6 @@ export default function App() {
       signUp, 
       signInAsGuest, 
       signOut, 
-      isTrialValid: trialValid, 
       isPremium,
       updateProfileState,
       refreshProfile,
