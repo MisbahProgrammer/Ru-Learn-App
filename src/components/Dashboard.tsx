@@ -48,9 +48,13 @@ export function Dashboard() {
   const [signingOut, setSigningOut] = useState(false);
 
   const handleLogout = async () => {
+    if (signingOut) return; // prevent double click
     setSigningOut(true);
-    await signOut();
-    setSigningOut(false);
+    try {
+      await signOut();
+    } finally {
+      setSigningOut(false);
+    }
   };
 
   const intakeDate = new Date('2026-09-01T00:00:00Z');

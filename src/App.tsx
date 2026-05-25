@@ -186,8 +186,10 @@ export default function App() {
       if (!resolved) {
         console.log("Auth timeout triggered");
         resolved = true;
+        setUser(null);      // ADD THIS
+        setProfile(null);   // ADD THIS  
         setLoading(false);
-        navigate('/');
+        navigate('/', { replace: true });
       }
     }, 5000);
 
@@ -278,22 +280,24 @@ export default function App() {
 
   const signOut = async () => {
     try {
+      // Handle guest users immediately
       if (user?.isGuest) {
         setUser(null);
         setProfile(null);
-        navigate('/');
+        navigate('/', { replace: true });
         return;
       }
-      
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('Sign out error:', error);
-        toast.error('Sign out failed: ' + error.message);
-      }
-      
-      // Clear any cached Supabase auth tokens
-      // that might auto-login the user again
+
+      // 1. Clear local state FIRST so UI updates instantly
+      setUser(null);
+      setProfile(null);
+
+      // 2. Tell Supabase to sign out
+      // Do NOT clear localStorage before this
+      // Supabase needs its tokens to process signOut
+      await supabase.auth.signOut();
+
+      // 3. NOW clear localStorage AFTER Supabase is done
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('sb-') || 
             key.startsWith('supabase')) {
@@ -301,20 +305,20 @@ export default function App() {
         }
       });
 
-      // Manually clear state immediately
-      // Do not wait for onAuthStateChange
-      setUser(null);
-      setProfile(null);
-      
-      // Force navigate to landing page
+      // 4. Navigate to landing page
       navigate('/', { replace: true });
-      
+
     } catch (err) {
       console.error('Sign out exception:', err);
-      // Even if Supabase fails, clear local state 
-      // and redirect anyway
+      // Force logout even if everything fails
       setUser(null);
       setProfile(null);
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('sb-') || 
+            key.startsWith('supabase')) {
+          localStorage.removeItem(key);
+        }
+      });
       navigate('/', { replace: true });
     }
   };
