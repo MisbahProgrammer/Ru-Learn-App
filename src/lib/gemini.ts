@@ -52,8 +52,11 @@ export async function chatWithTutorStream(
               accumulatedText += parsed.text;
               onChunk(parsed.text);
             }
-          } catch (e) {
-            console.warn('Could not parse SSE chunk:', dataContent);
+          } catch (e: any) {
+            console.warn('Could not parse SSE chunk:', dataContent, e);
+            if (dataContent.includes('"error"') || e.message?.includes('AI') || e.message?.includes('API')) {
+              throw e;
+            }
           }
         }
       }

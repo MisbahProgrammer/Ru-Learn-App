@@ -197,36 +197,68 @@ export function ScenarioChat({
 
       setMessages([...newMessagesList, modelMessage]);
 
-      let streamText = "";
-      const fullResponseText = await chatWithTutorStream(
-        [...history, { role: "user", parts: [{ text: textToSend }] }],
-        selectedScenario?.title,
-        (chunk) => {
-          streamText += chunk;
+      let fullResponseText = "";
+      try {
+        let streamText = "";
+        fullResponseText = await chatWithTutorStream(
+          [...history, { role: "user", parts: [{ text: textToSend }] }],
+          selectedScenario?.title,
+          (chunk) => {
+            streamText += chunk;
 
-          const parts = streamText.split("\n");
-          let russian = "";
-          let translation = "";
+            const parts = streamText.split("\n");
+            let russian = "";
+            let translation = "";
 
-          parts.forEach((p: string) => {
-            if (p.toLowerCase().startsWith("russian:"))
-              russian = p.replace(/russian:/i, "").trim();
-            if (p.toLowerCase().startsWith("translation:"))
-              translation = p.replace(/translation:/i, "").trim();
-          });
+            parts.forEach((p: string) => {
+              if (p.toLowerCase().startsWith("russian:"))
+                russian = p.replace(/russian:/i, "").trim();
+              if (p.toLowerCase().startsWith("translation:"))
+                translation = p.replace(/translation:/i, "").trim();
+            });
 
-          setMessages((prev) => {
-            const updated = [...prev];
-            const target = updated[updated.length - 1];
-            if (target && target.role === "model") {
-              target.parts = [{ text: streamText }];
-              target.russian = russian || streamText;
-              target.translation = translation;
-            }
-            return updated;
-          });
-        },
-      );
+            setMessages((prev) => {
+              const updated = [...prev];
+              const target = updated[updated.length - 1];
+              if (target && target.role === "model") {
+                target.parts = [{ text: streamText }];
+                target.russian = russian || streamText;
+                target.translation = translation;
+              }
+              return updated;
+            });
+          },
+        );
+      } catch (streamError: any) {
+        console.warn("Streaming chat failed, falling back to non-streaming chat...", streamError);
+        const fallbackRes = await chatWithTutor(
+          [...history, { role: "user", parts: [{ text: textToSend }] }],
+          selectedScenario?.title
+        );
+        fullResponseText = fallbackRes.text;
+
+        const parts = fullResponseText.split("\n");
+        let russian = "";
+        let translation = "";
+
+        parts.forEach((p: string) => {
+          if (p.toLowerCase().startsWith("russian:"))
+            russian = p.replace(/russian:/i, "").trim();
+          if (p.toLowerCase().startsWith("translation:"))
+            translation = p.replace(/translation:/i, "").trim();
+        });
+
+        setMessages((prev) => {
+          const updated = [...prev];
+          const target = updated[updated.length - 1];
+          if (target && target.role === "model") {
+            target.parts = [{ text: fullResponseText }];
+            target.russian = russian || fullResponseText;
+            target.translation = translation;
+          }
+          return updated;
+        });
+      }
 
       // Parse finally
       const parts = fullResponseText.split("\n");
