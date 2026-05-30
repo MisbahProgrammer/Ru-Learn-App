@@ -19,10 +19,9 @@ interface AuthDialogProps {
   onClose: () => void;
   mode: 'signin' | 'signup';
   onGoogleSignIn: () => Promise<void>;
-  onSignInAsGuest: () => void;
 }
 
-export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn, onSignInAsGuest }: AuthDialogProps) {
+export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn }: AuthDialogProps) {
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -209,17 +208,6 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn,
               />
             </svg>
             Google
-          </Button>
-
-          <Button 
-            variant="ghost" 
-            className="w-full text-neutral-500 hover:text-orange-600 font-medium"
-            onClick={() => {
-              onSignInAsGuest();
-              onClose();
-            }}
-          >
-            Continue as Guest
           </Button>
 
           <p className="text-center text-sm text-neutral-500">

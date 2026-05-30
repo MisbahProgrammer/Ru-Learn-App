@@ -495,7 +495,6 @@ export function LandingPage() {
         onClose={() => setAuthMode(null)} 
         mode={authMode || 'signin'}
         onGoogleSignIn={handleGoogleSignIn}
-        onSignInAsGuest={signInAsGuest}
       />
     </div>
   );
