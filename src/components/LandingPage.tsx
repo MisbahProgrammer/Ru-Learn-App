@@ -484,7 +484,7 @@ export function LandingPage() {
             <span>Russian Scholar</span>
           </div>
           <div className="text-sm font-light">
-            Built for Open Doors winners, by scholarship achievers. © 2026
+            Built for Open Doors winners by BitFix. © 2026
           </div>
         </div>
       </footer>
