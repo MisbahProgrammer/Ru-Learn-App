@@ -297,7 +297,6 @@ export function LandingPage() {
                       { included: true, text: "5 survival scenarios (preview)" },
                       { included: true, text: "Word of the day" },
                       { included: true, text: "Basic streak tracking" },
-                      { included: true, text: "Community Telegram access" },
                       { included: false, text: "AI Russian tutor" },
                       { included: false, text: "All 20+ scenarios" },
                       { included: false, text: "Video lectures" },
