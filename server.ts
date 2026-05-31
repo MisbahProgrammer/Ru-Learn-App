@@ -27,11 +27,53 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Helper to ensure messages conform to Gemini API requirements (start with 'user' and alternate roles)
+  const formatMessagesForGemini = (messages: any[], scenario?: string) => {
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return messages;
+    }
+    
+    // Create a copy of messages and clean each message's fields
+    let formatted = messages.map(m => ({
+      role: m.role || 'user',
+      parts: Array.isArray(m.parts) ? m.parts : [{ text: m.text || '' }]
+    }));
+
+    // Gemini requires the first message to be from 'user'.
+    // If the first message is 'model', we prepend a natural user request to initiate the scenario.
+    if (formatted[0].role === 'model') {
+      formatted.unshift({
+        role: 'user',
+        parts: [
+          {
+            text: `Let's practice the Russian language scenario: "${scenario || 'General conversation'}". Please begin the conversation or introduce the scenario.`
+          }
+        ]
+      });
+    }
+
+    // Consolidate consecutive messages with the same role to maintain strict alternation
+    const consolidated: any[] = [];
+    for (const msg of formatted) {
+      if (consolidated.length > 0 && consolidated[consolidated.length - 1].role === msg.role) {
+        consolidated[consolidated.length - 1].parts = [
+          ...consolidated[consolidated.length - 1].parts,
+          ...msg.parts
+        ];
+      } else {
+        consolidated.push(msg);
+      }
+    }
+
+    return consolidated;
+  };
+
   // API Routes
   app.post('/api/gemini/chat', async (req, res) => {
     try {
       const { messages, scenario } = req.body;
       const ai = getAi();
+      const formattedMessages = formatMessagesForGemini(messages, scenario);
       
       const systemInstruction = `You are an expert Russian tutor and cultural guide. 
       The current scenario is: ${scenario || 'General conversation'}.
@@ -47,7 +89,7 @@ async function startServer() {
 
       const response = await ai.models.generateContent({
         model: 'gemini-3.5-flash',
-        contents: messages,
+        contents: formattedMessages,
         config: {
           systemInstruction,
         },
@@ -64,6 +106,7 @@ async function startServer() {
     try {
       const { messages, scenario } = req.body;
       const ai = getAi();
+      const formattedMessages = formatMessagesForGemini(messages, scenario);
       
       const systemInstruction = `You are an expert Russian tutor and cultural guide. 
       The current scenario is: ${scenario || 'General conversation'}.
@@ -83,7 +126,7 @@ async function startServer() {
 
       const stream = await ai.models.generateContentStream({
         model: 'gemini-3.5-flash',
-        contents: messages,
+        contents: formattedMessages,
         config: {
           systemInstruction,
         },
