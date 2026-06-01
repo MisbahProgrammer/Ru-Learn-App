@@ -25,48 +25,56 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/App";
 
 interface Message {
-  role: "user" | "model";
-  parts: [{ text: string }];
+  role: "user" | "model" | "assistant";
+  parts?: [{ text: string }];
   translation?: string;
   russian?: string;
+  phonetic?: string;
+  isOpening?: boolean;
+  content?: string;
+  english?: string;
 }
 
 const PREMIUM_SCENARIOS = [
   {
-    id: "dorm_roommate",
-    title: "💬 Dormitory Roommate Chat",
-    description:
-      "Break the ice with your Russian roommate in the campus student dorm.",
-    icon: "Users",
-    culturalTip:
-      "Taking off shoes inside a Russian home or dorm is a non-negotiable standard.",
-  },
-  {
-    id: "bank_card",
-    title: "💬 Opening a Bank Card",
-    description: "Get a Russian student bank card at Sberbank or Tinkoff.",
-    icon: "CreditCard",
-    culturalTip:
-      "Russian banking apps are extremely advanced and allow instant transfers dial-by-number.",
-  },
-  {
-    id: "pyaterochka",
-    title: "💬 Grocery at Pyaterochka",
-    description:
-      "Shop at Pyaterochka supermarket and understand cashier questions.",
+    id: "grocery",
+    title: "🛒 grocery at Pyaterochka",
+    description: "Shop at Pyaterochka supermarket and understand cashier questions.",
     icon: "ShoppingBag",
-    culturalTip:
-      'Cashiers will always ask if you have a loyalty card ("Karta est\'?").',
+    culturalTip: 'Cashiers will always ask if you have a loyalty card ("Karta est\'?").',
+    openingMessage: {
+      russian: "Здравствуйте! Вам помочь? Что вы ищете?",
+      phonetic: "Zdra-STVOOY-teh! Vam pa-MOCH? Shto vih ee-SHCHE-teh?",
+      english: "Hello! Can I help you? What are you looking for?",
+      suggestion: "Try: Где хлеб? (Where is the bread?)"
+    }
   },
   {
-    id: "sim_card",
-    title: "💬 MTS Mobile SIM Card",
-    description:
-      "Get a high-speed local mobile data SIM card at MTS or Megafon.",
-    icon: "Smartphone",
-    culturalTip:
-      "You need a valid passport and immigration slip to purchase any SIM card.",
+    id: "pharmacy",
+    title: "💊 Pharmacy Assistance",
+    description: "Describe symptoms or buy standard medicine at a Russian Apteka.",
+    icon: "Activity",
+    culturalTip: "Many quality medicines in Russian pharmacies are over-the-counter but kept behind the desk.",
+    openingMessage: {
+      russian: "Добрый день! Что вас беспокоит? Чем могу помочь?",
+      phonetic: "DOB-riy den! Shto vas bes-pa-KO-it?",
+      english: "Good day! What is bothering you? How can I help?",
+      suggestion: "Try: У меня болит... (I have pain in...)"
+    }
   },
+  {
+    id: "university",
+    title: "🎓 University Enrollment",
+    description: "Submit documents or register on your first day of Russian classes.",
+    icon: "GraduationCap",
+    culturalTip: "Your student document is called 'studencheskiy bilet' or 'zachetka' (grade book).",
+    openingMessage: {
+      russian: "Здравствуйте! Вы новый студент? Документы готовы?",
+      phonetic: "Zdra-STVOOY-teh! Vih NO-viy stu-DENT?",
+      english: "Hello! Are you a new student? Documents ready?",
+      suggestion: "Try: Да я новый студент из... (Yes I am a new student from...)"
+    }
+  }
 ];
 
 export function ScenarioChat({
@@ -81,6 +89,7 @@ export function ScenarioChat({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isOpeningPlaying, setIsOpeningPlaying] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -126,6 +135,73 @@ export function ScenarioChat({
     }
   }, []);
 
+  const getAIResponse = async (
+    allMessages: Message[],
+    systemPrompt: string
+  ) => {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    
+    // Filter opening message — never send to Gemini
+    const apiMessages = allMessages
+      .filter(msg => !msg.isOpening)
+      .map(msg => ({
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: msg.content || msg.parts?.[0]?.text || "" }]
+      }));
+
+    // Safety check — must start with user
+    if (apiMessages.length === 0 || 
+        apiMessages[0].role !== 'user') {
+      throw new Error('Invalid message order');
+    }
+
+    if (!apiKey) {
+      console.info("Client API Key not found, routing through system-secure server Proxy securely...");
+      const response = await fetch('/api/gemini/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: apiMessages, scenario: systemPrompt }),
+      });
+      if (!response.ok) {
+        throw new Error(`Proxy call failed: ${response.status}`);
+      }
+      const data = await response.json();
+      return data.text || 'Извините, повторите пожалуйста.';
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          contents: apiMessages,
+          generationConfig: {
+            temperature: 0.8,
+            maxOutputTokens: 250
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const err = await response.json()
+        .catch(() => ({}));
+      throw new Error(
+        err?.error?.message || 
+        `HTTP ${response.status}`
+      );
+    }
+
+    const data = await response.json();
+    return data?.candidates?.[0]
+      ?.content?.parts?.[0]?.text?.trim()
+      || 'Извините, повторите пожалуйста.';
+  };
+
   const startScenario = (scenario: any) => {
     const isPremiumScenario = PREMIUM_SCENARIOS.some(
       (s) => s.id === scenario.id,
@@ -148,17 +224,31 @@ export function ScenarioChat({
     setSelectedScenario(scenario);
     setMessages([
       {
-        role: "model",
-        parts: [
-          {
-            text: `Hello! Let's practice the scenario: ${scenario.title}.\n\nRussian: ${scenario.initialMessageRu || "Здравствуйте!"}\nTranslation: ${scenario.initialMessage || "Hello!"}`,
-          },
-        ],
-        russian: scenario.initialMessageRu || "Здравствуйте!",
-        translation: scenario.initialMessage || "Hello!",
+        role: "assistant",
+        content: scenario.openingMessage.russian,
+        phonetic: scenario.openingMessage.phonetic,
+        english: scenario.openingMessage.english,
+        translation: scenario.openingMessage.english,
+        isOpening: true,
       },
     ]);
   };
+
+  // Auto-speak opening message when scenario loads
+  useEffect(() => {
+    if (selectedScenario?.openingMessage) {
+      setIsOpeningPlaying(true);
+      const timer = setTimeout(() => {
+        speakRussian(selectedScenario.openingMessage.russian)
+          .finally(() => {
+            setIsOpeningPlaying(false);
+          });
+      }, 800);
+      return () => clearTimeout(timer);
+    } else {
+      setIsOpeningPlaying(false);
+    }
+  }, [selectedScenario]);
 
   const handleSpeak = async (text: string) => {
     try {
@@ -185,9 +275,19 @@ export function ScenarioChat({
     setLoading(true);
 
     try {
-      const history = messages.map((m) => ({ role: m.role, parts: m.parts }));
+      const systemPrompt = `You are an expert Russian tutor and cultural guide. 
+The current scenario is: ${selectedScenario?.title || 'General conversation'}.
+User is a student who won a scholarship to Russia.
+You must conduct the conversation primarily in Russian to help the student practice.
+Always provide your response in this exact format:
+Russian: [Clear Russian sentence in Cyrillic]
+Translation: [Concise English translation]
 
-      // Add an empty model message placeholder
+If the user asks a question, answer it in Russian first, then provide the translation.
+Focus on being natural, like a real person in Moscow.
+Include cultural tips or student-specific advice when relevant.`;
+
+      // Set placeholder model message
       const modelMessage: Message = {
         role: "model",
         parts: [{ text: "" }],
@@ -197,70 +297,8 @@ export function ScenarioChat({
 
       setMessages([...newMessagesList, modelMessage]);
 
-      let fullResponseText = "";
-      try {
-        let streamText = "";
-        fullResponseText = await chatWithTutorStream(
-          [...history, { role: "user", parts: [{ text: textToSend }] }],
-          selectedScenario?.title,
-          (chunk) => {
-            streamText += chunk;
+      const fullResponseText = await getAIResponse(newMessagesList, systemPrompt);
 
-            const parts = streamText.split("\n");
-            let russian = "";
-            let translation = "";
-
-            parts.forEach((p: string) => {
-              if (p.toLowerCase().startsWith("russian:"))
-                russian = p.replace(/russian:/i, "").trim();
-              if (p.toLowerCase().startsWith("translation:"))
-                translation = p.replace(/translation:/i, "").trim();
-            });
-
-            setMessages((prev) => {
-              const updated = [...prev];
-              const target = updated[updated.length - 1];
-              if (target && target.role === "model") {
-                target.parts = [{ text: streamText }];
-                target.russian = russian || streamText;
-                target.translation = translation;
-              }
-              return updated;
-            });
-          },
-        );
-      } catch (streamError: any) {
-        console.warn("Streaming chat failed, falling back to non-streaming chat...", streamError);
-        const fallbackRes = await chatWithTutor(
-          [...history, { role: "user", parts: [{ text: textToSend }] }],
-          selectedScenario?.title
-        );
-        fullResponseText = fallbackRes.text;
-
-        const parts = fullResponseText.split("\n");
-        let russian = "";
-        let translation = "";
-
-        parts.forEach((p: string) => {
-          if (p.toLowerCase().startsWith("russian:"))
-            russian = p.replace(/russian:/i, "").trim();
-          if (p.toLowerCase().startsWith("translation:"))
-            translation = p.replace(/translation:/i, "").trim();
-        });
-
-        setMessages((prev) => {
-          const updated = [...prev];
-          const target = updated[updated.length - 1];
-          if (target && target.role === "model") {
-            target.parts = [{ text: fullResponseText }];
-            target.russian = russian || fullResponseText;
-            target.translation = translation;
-          }
-          return updated;
-        });
-      }
-
-      // Parse finally
       const parts = fullResponseText.split("\n");
       let finalRussian = "";
       let finalTranslation = "";
@@ -272,11 +310,24 @@ export function ScenarioChat({
           finalTranslation = p.replace(/translation:/i, "").trim();
       });
 
+      if (!finalRussian && fullResponseText) {
+        finalRussian = fullResponseText;
+      }
+
+      setMessages((prev) => {
+        const updated = [...prev];
+        const target = updated[updated.length - 1];
+        if (target && target.role === "model") {
+          target.parts = [{ text: fullResponseText }];
+          target.russian = finalRussian;
+          target.translation = finalTranslation;
+        }
+        return updated;
+      });
+
       // Auto-play Russian audio
       if (finalRussian) {
         handleSpeak(finalRussian);
-      } else if (fullResponseText && !finalTranslation) {
-        handleSpeak(fullResponseText);
       }
     } catch (error: any) {
       toast.error("Tutor is busy: " + error.message);
@@ -470,7 +521,7 @@ export function ScenarioChat({
                 animate={{ opacity: 1, y: 0 }}
                 className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                {m.role === "model" && (
+                {m.role !== "user" && (
                   <Avatar className="h-8 w-8 mt-1 border border-orange-100 bg-orange-50">
                     <AvatarFallback className="text-[10px] text-orange-600">
                       RT
@@ -489,15 +540,27 @@ export function ScenarioChat({
                     }`}
                   >
                     {/* Model message with Russian and Translation */}
-                    {m.role === "model" && m.russian ? (
+                    {m.role !== "user" && (m.russian || m.content) ? (
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-start gap-4">
-                          <p className="text-2xl md:text-3xl font-medium tracking-wide leading-relaxed text-neutral-900">
-                            {m.russian}
-                          </p>
-                          <div className="flex items-center gap-1 shrink-0 bg-neutral-100/80 p-1 rounded-lg">
-                            <AudioButton text={m.russian!} size="md" />
-                            <AudioButton text={m.russian!} slow={true} size="sm" />
+                          <div className="flex flex-col">
+                            <p className="text-2xl md:text-3xl font-medium tracking-wide leading-relaxed text-neutral-900">
+                              {m.isOpening ? m.content : m.russian}
+                            </p>
+                            {m.phonetic && (
+                              <p className="text-[11px] font-mono text-neutral-400 mt-1">
+                                [{m.phonetic}]
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0 bg-neutral-100/80 p-1 rounded-lg relative">
+                            {m.isOpening && isOpeningPlaying && (
+                              <span className="absolute -top-7 right-0 text-[10px] bg-orange-100 text-orange-600 font-bold px-2 py-0.5 rounded-full whitespace-nowrap animate-pulse">
+                                🔊 Playing...
+                              </span>
+                            )}
+                            <AudioButton text={m.isOpening ? m.content! : m.russian!} size="md" />
+                            <AudioButton text={m.isOpening ? m.content! : m.russian!} slow={true} size="sm" />
                           </div>
                         </div>
                         <div className="h-[1px] w-full my-1 bg-neutral-100" />
@@ -589,6 +652,14 @@ export function ScenarioChat({
       {/* Input Area */}
       <div className="p-3 md:p-6 bg-white/80 backdrop-blur-md border-t border-neutral-200 fixed bottom-16 md:bottom-0 left-0 right-0 md:relative z-40">
         <div className="max-w-3xl mx-auto">
+          {/* Suggestion Hint UI */}
+          {messages.length === 1 && selectedScenario?.openingMessage?.suggestion && (
+            <div className="mb-2.5 px-3 py-2 flex items-center gap-1.5 text-xs text-orange-600 bg-orange-50/50 rounded-xl border border-orange-100/50">
+              <span className="shrink-0">💡</span>
+              <span className="font-medium tracking-wide">{selectedScenario.openingMessage.suggestion}</span>
+            </div>
+          )}
+
           <div className="relative flex items-center gap-2 md:gap-3">
             <div className="relative flex-1 group">
               <Input

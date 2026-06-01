@@ -1,48 +1,55 @@
 export const SCENARIOS = [
   {
     id: 'taxi',
-    title: 'Booking a Taxi',
+    title: '🚕 Booking a Taxi',
     description: 'Practice ordering a taxi from the airport to your hotel.',
     icon: 'Car',
     culturalTip: 'In Russia, it is best to use apps like Yandex Go rather than calling a taxi on the street.',
-    initialMessage: "Hello! This is Yandex Go. Where would you like to go today?",
-    initialMessageRu: 'Здравствуйте! Это Яндекс Go. Куда вы хотите поехать сегодня?'
+    openingMessage: {
+      russian: 'Здравствуйте! Такси заказывали? Куда едем?',
+      phonetic: 'Zdra-STVOOY-teh! Tak-SEE za-KA-zih-va-li? Ku-DA YEH-dem?',
+      english: 'Hello! Did you order a taxi? Where are we going?',
+      suggestion: 'Try: Я хочу поехать в... (I want to go to...)'
+    }
   },
   {
-    id: 'directions',
-    title: 'Asking for Directions',
-    description: 'Learn how to find your way around Moscow and St. Petersburg.',
-    icon: 'MapPin',
-    culturalTip: 'Russians are very helpful with directions, but they might seem direct or serious at first.',
-    initialMessage: 'Hello! You look like you are looking for something. Can I help you with directions?',
-    initialMessageRu: 'Здравствуйте! Похоже, вы что-то ищете. Вам помочь с дорогой?'
+    id: 'airport',
+    title: '✈️ Airport Arrival',
+    description: 'Clear customs and immigration at Moscow Sheremetyevo Airport.',
+    icon: 'Plane',
+    culturalTip: 'Always keep your migration card printed and inside your passport, you receive it at border control.',
+    openingMessage: {
+      russian: 'Добро пожаловать в Шереметьево! Паспорт и визу, пожалуйста.',
+      phonetic: 'Dab-RO pa-ZHA-la-vat v She-re-MET-ye-va!',
+      english: 'Welcome to Sheremetyevo! Passport and visa please.',
+      suggestion: 'Try: Вот мой паспорт (Here is my passport)'
+    }
   },
   {
-    id: 'food',
-    title: 'Ordering Food',
-    description: 'Try ordering some delicious Borsch or Pelmeni at a local restaurant.',
-    icon: 'Utensils',
-    culturalTip: 'Tipping is usually around 10% in most Russian restaurants.',
-    initialMessage: 'Good evening! Welcome to our restaurant. Would you like to see the menu?',
-    initialMessageRu: 'Добрый вечер! Добро пожаловать в наш ресторан. Желаете посмотреть меню?'
-  },
-  {
-    id: 'hotel',
-    title: 'Checking into a Hotel',
-    description: 'Manage your arrival and check-in process smoothly.',
+    id: 'dormitory',
+    title: '🏢 Dormitory Check-In',
+    description: 'Manage campus student dormitory check-in with the security or receptionist.',
     icon: 'Hotel',
-    culturalTip: 'Always have your passport and visa ready for registration at the hotel.',
-    initialMessage: 'Hello! Welcome to our hotel. Do you have a reservation?',
-    initialMessageRu: 'Здравствуйте! Добро пожаловать в наш отель. У вас есть бронирование?'
+    culturalTip: 'Always have your passport, visa, and health certificate ready for dormitory check-in.',
+    openingMessage: {
+      russian: 'Здравствуйте! Вы забронировали номер? Ваша фамилия?',
+      phonetic: 'Zdra-STVOOY-teh! Vih za-bra-NEE-ra-va-li NO-mer?',
+      english: 'Hello! Do you have a reservation? Your last name?',
+      suggestion: 'Try: Да, моя фамилия... (Yes, my name is...)'
+    }
   },
   {
-    id: 'emergency',
-    title: 'Emergency Situations',
-    description: 'Important phrases for when things dont go as planned.',
-    icon: 'AlertCircle',
-    culturalTip: 'The emergency number in Russia is 112.',
-    initialMessage: 'Emergency service 112. What is your emergency?',
-    initialMessageRu: 'Служба экстренной помощи 112. Что у вас случилось?'
+    id: 'restaurant',
+    title: '🍴 Restaurant Dining',
+    description: 'Order authentic Borsch or Pelmeni at a local Russian restaurant.',
+    icon: 'Utensils',
+    culturalTip: 'Tipping is around 10% in Russia, and you can tip through digital QR codes on the receipt.',
+    openingMessage: {
+      russian: 'Добрый день! Столик на одного? Вот меню.',
+      phonetic: 'DOB-riy den! STO-lik na ad-na-VO?',
+      english: 'Good afternoon! Table for one? Here is the menu.',
+      suggestion: 'Try: Что вы рекомендуете? (What do you recommend?)'
+    }
   }
 ];
 
