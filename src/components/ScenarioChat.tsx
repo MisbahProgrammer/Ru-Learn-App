@@ -420,6 +420,111 @@ export function ScenarioChat({
     return { russian, english };
   };
 
+  const partitionMessage = (text: string, isEnglish: boolean) => {
+    if (!text) return { correction: "", message: "" };
+
+    const sentences = text.split(/(?<=[.!?])\s+/);
+    
+    const correctionSentences: string[] = [];
+    const messageSentences: string[] = [];
+
+    const isCorrectionSentence = (s: string) => {
+      const lower = s.toLowerCase();
+      if (isEnglish) {
+        return (
+          lower.includes("correct way") ||
+          lower.includes("correction") ||
+          lower.includes("correctly") ||
+          lower.includes("grammar") ||
+          lower.includes("instead of") ||
+          lower.includes("should be") ||
+          lower.includes("understood you") ||
+          lower.includes("understand you") ||
+          lower.includes("i got you") ||
+          lower.includes("right way")
+        );
+      } else {
+        return (
+          lower.includes("правильно") ||
+          lower.includes("ошибка") ||
+          lower.includes("исправление") ||
+          lower.includes("понял") ||
+          lower.includes("поняла") ||
+          lower.includes("хорошо!") ||
+          lower.includes("отлично!")
+        );
+      }
+    };
+
+    let inCorrectionHeader = true;
+    for (let i = 0; i < sentences.length; i++) {
+      const s = sentences[i];
+      const isCurrentCorr = isCorrectionSentence(s);
+      const isNextCorr = i + 1 < sentences.length && isCorrectionSentence(sentences[i + 1]);
+      
+      const isPreamble = isEnglish 
+        ? ["good!", "great!", "excellent!", "yes!", "hello!", "hi!"].includes(s.toLowerCase().trim()) || s.toLowerCase().includes("i understand") || s.toLowerCase().includes("i got you")
+        : ["хорошо!", "отлично!", "да!", "понял!", "понятно!"].includes(s.toLowerCase().trim()) || s.toLowerCase().includes("я вас понял") || s.toLowerCase().includes("я вас поняла");
+
+      if (inCorrectionHeader && (isCurrentCorr || (isPreamble && isNextCorr))) {
+        correctionSentences.push(s);
+      } else {
+        inCorrectionHeader = false;
+        messageSentences.push(s);
+      }
+    }
+
+    if (correctionSentences.length > 0 && messageSentences.length === 0) {
+      const hasCoreKeyword = correctionSentences.some(s => {
+        const lower = s.toLowerCase();
+        return isEnglish 
+          ? (lower.includes("correct") || lower.includes("grammar") || lower.includes("instead")) 
+          : (lower.includes("правильно") || lower.includes("исправл") || lower.includes("ошибк"));
+      });
+      if (!hasCoreKeyword) {
+        return { correction: "", message: text };
+      }
+    }
+
+    return {
+      correction: correctionSentences.join(" ").trim(),
+      message: messageSentences.join(" ").trim()
+    };
+  };
+
+  const highlightQuotesAndKeywords = (text: string, isEnglish: boolean) => {
+    if (!text) return "";
+    
+    let html = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    if (!isEnglish) {
+      html = html.replace(
+        /(Правильно:)/gi,
+        '<span class="text-emerald-600 font-bold">$1</span>'
+      );
+    } else {
+      html = html.replace(
+        /(The correct way:|correct way:)/gi,
+        '<span class="text-emerald-600 font-semibold">$1</span>'
+      );
+    }
+
+    html = html.replace(
+      /«([^»]+)»/g,
+      '«<span class="text-emerald-700 bg-emerald-50/80 px-1.5 py-0.5 rounded font-semibold border border-emerald-100">$1</span>»'
+    );
+    
+    html = html.replace(
+      /"([^"]+)"/g,
+      '"<span class="text-emerald-700 bg-emerald-50/80 px-1.5 py-0.5 rounded font-semibold border border-emerald-100">$1</span>"'
+    );
+
+    return <span dangerouslySetInnerHTML={{ __html: html }} />;
+  };
+
   const parseTutorResponse = (rawText: string) => {
     const parsed = parseMessage(rawText);
     return {
@@ -877,49 +982,90 @@ export function ScenarioChat({
                               const parsed = parseMessage(rawText);
                               const russianText = parsed.russian;
                               const englishText = parsed.english || m.translation || "";
+
+                              const { correction: ruCorr, message: ruMsg } = partitionMessage(russianText, false);
+                              const { correction: enCorr, message: enMsg } = partitionMessage(englishText, true);
+
+                              const hasCorrection = ruCorr.length > 0;
+                              const displayRuMsg = ruMsg || (hasCorrection ? "" : russianText);
+                              const displayEnMsg = enMsg || (hasCorrection ? "" : englishText);
+
                               return (
-                                <div className="flex flex-col gap-2">
-                                  {/* Russian text — always shown */}
-                                  <div className="flex justify-between items-start gap-4">
-                                    <div className="flex flex-col">
-                                      <p style={{
-                                        fontSize: '1rem',
-                                        fontWeight: '500',
-                                        color: '#111',
-                                        wordBreak: 'break-word',
-                                        whiteSpace: 'normal',
-                                        margin: 0
-                                      }}>
-                                        {russianText}
-                                      </p>
-                                      {m.phonetic && (
-                                        <p className="text-[11px] font-mono text-neutral-400 mt-1">
-                                          [{m.phonetic}]
+                                <div className="flex flex-col gap-2.5">
+                                  {/* Grammatical Correction Block if detected */}
+                                  {hasCorrection && (
+                                    <div className="p-3 md:p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-100 text-neutral-800 text-sm space-y-2">
+                                      <div className="flex items-center justify-between gap-2 border-b border-emerald-100/50 pb-1.5">
+                                        <div className="flex items-center gap-1.5 text-emerald-850 font-extrabold text-[10px] uppercase tracking-wider">
+                                          <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                          <span>Language Help • Исправление</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 shrink-0 bg-white/80 p-0.5 rounded-md border border-emerald-200/50">
+                                          <AudioButton text={ruCorr} size="sm" className="h-6 w-6" />
+                                          <AudioButton text={ruCorr} slow={true} size="sm" className="h-5 w-5" />
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="space-y-1.5">
+                                        {/* Russian Correction text */}
+                                        <div className="text-sm text-neutral-900 leading-relaxed font-normal">
+                                          {highlightQuotesAndKeywords(ruCorr, false)}
+                                        </div>
+                                        {/* English Translation Correction */}
+                                        {enCorr && (
+                                          <div className="text-xs text-neutral-600 italic font-light pt-1 border-t border-emerald-100/30">
+                                            {highlightQuotesAndKeywords(enCorr, true)}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* continuation message / general speech bubble text */}
+                                  {displayRuMsg && (
+                                    <div className="flex justify-between items-start gap-4 pt-0.5">
+                                      <div className="flex flex-col">
+                                        <p style={{
+                                          fontSize: '1rem',
+                                          fontWeight: '500',
+                                          color: '#111',
+                                          wordBreak: 'break-word',
+                                          whiteSpace: 'normal',
+                                          margin: 0
+                                        }}>
+                                          {displayRuMsg}
                                         </p>
-                                      )}
+                                        {m.phonetic && (
+                                          <p className="text-[11px] font-mono text-neutral-400 mt-1">
+                                            [{m.phonetic}]
+                                          </p>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-1 shrink-0 bg-neutral-100/80 p-1 rounded-lg relative">
+                                        {m.isOpening && isOpeningPlaying && (
+                                          <span className="absolute -top-7 right-0 text-[10px] bg-orange-100 text-orange-600 font-bold px-2 py-0.5 rounded-full whitespace-nowrap animate-pulse">
+                                            🔊 Playing...
+                                          </span>
+                                        )}
+                                        <AudioButton text={displayRuMsg} size="md" />
+                                        <AudioButton text={displayRuMsg} slow={true} size="sm" />
+                                      </div>
                                     </div>
-                                    <div className="flex items-center gap-1 shrink-0 bg-neutral-100/80 p-1 rounded-lg relative">
-                                      {m.isOpening && isOpeningPlaying && (
-                                        <span className="absolute -top-7 right-0 text-[10px] bg-orange-100 text-orange-600 font-bold px-2 py-0.5 rounded-full whitespace-nowrap animate-pulse">
-                                          🔊 Playing...
-                                        </span>
-                                      )}
-                                      <AudioButton text={russianText} size="md" />
-                                      <AudioButton text={russianText} slow={true} size="sm" />
-                                    </div>
-                                  </div>
-                                  {/* English translation — shown if exists */}
-                                  {englishText && (
+                                  )}
+
+                                  {/* continuation English translation */}
+                                  {displayEnMsg && (
                                     <p style={{
                                       fontSize: '0.85rem',
                                       fontStyle: 'italic',
                                       color: '#666',
-                                      marginTop: '6px',
+                                      marginTop: '1px',
                                       wordBreak: 'break-word',
-                                      borderTop: '1px solid #eee',
+                                      borderTop: '1px solid #f0f0f0',
                                       paddingTop: '6px'
+                                        + (displayRuMsg ? '6px' : '0px')
                                     }}>
-                                      {englishText}
+                                      {displayEnMsg}
                                     </p>
                                   )}
                                 </div>
