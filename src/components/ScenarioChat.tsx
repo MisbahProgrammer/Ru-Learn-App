@@ -349,41 +349,31 @@ export function ScenarioChat({
   };
 
   // Robust parser for format "Russian text (English translation)"
-  const parseTutorResponse = (text: string) => {
-    const cleanText = text.replace('[SCENARIO_COMPLETE]', '').trim();
-    let russian = cleanText;
-    let translation = "";
-
-    const lastBracketIdx = cleanText.lastIndexOf('(');
-    if (lastBracketIdx !== -1 && cleanText.endsWith(')')) {
-      russian = cleanText.substring(0, lastBracketIdx).trim();
-      translation = cleanText.substring(lastBracketIdx + 1, cleanText.length - 1).trim();
-    } else {
-      const match = cleanText.match(/(.+?)\s*\((.+?)\)/);
-      if (match) {
-        russian = match[1].trim();
-        translation = match[2].trim();
-      }
+  const parseTutorResponse = (rawText: string) => {
+    // Extract English from ROUND brackets ()
+    // that contain Latin characters
+    const englishRegex = /\(([^)]*[a-zA-Z][^)]*)\)/g;
+    const englishParts = [];
+    let match;
+    while ((match = englishRegex.exec(rawText)) !== null) {
+      englishParts.push(match[1]);
     }
+    const englishTranslation = englishParts.join(' ');
 
-    if (!translation && cleanText.toLowerCase().includes('translation:')) {
-      const parts = cleanText.split(/\n+/);
-      let r = "";
-      let t = "";
-      parts.forEach(p => {
-        if (p.toLowerCase().startsWith("russian:")) {
-          r = p.replace(/russian:/i, "").trim();
-        } else if (p.toLowerCase().startsWith("translation:")) {
-          t = p.replace(/translation:/i, "").trim();
-        }
-      });
-      if (r || t) {
-        russian = r || russian;
-        translation = t;
-      }
-    }
+    // Remove ALL bracketed content from Russian
+    // Remove () English AND [] phonetic
+    const russianOnly = rawText
+      .replace(/\([^)]*[a-zA-Z][^)]*\)/g, '') 
+      .replace(/\[[^\]]+\]/g, '')             
+      .replace(/\[SCENARIO_COMPLETE\]/g, '')  
+      .replace(/\s+/g, ' ')
+      .trim();
 
-    return { russian, translation };
+    return { 
+      russian: russianOnly, 
+      translation: englishTranslation,
+      english: englishTranslation
+    };
   };
 
   const initScenario = async (scenario: any) => {
@@ -764,46 +754,9 @@ export function ScenarioChat({
                     </Avatar>
                   )}
 
-                  <div
-                    className={`flex flex-col max-w-[80%] ${m.role === "user" ? "items-end" : "items-start"}`}
-                  >
-                    <div
-                      className={`p-4 rounded-2xl ${
-                        m.role === "user"
-                          ? "bg-neutral-900 text-white rounded-tr-none"
-                          : "bg-white border border-neutral-200 rounded-tl-none shadow-sm"
-                      }`}
-                    >
-                      {/* Model message with Russian and Translation */}
-                      {m.role !== "user" && (m.russian || m.content) ? (
-                        <div className="flex flex-col gap-2">
-                          <div className="flex justify-between items-start gap-4">
-                            <div className="flex flex-col">
-                              <p className="text-2xl md:text-3xl font-medium tracking-wide leading-relaxed text-neutral-900">
-                                {m.isOpening ? m.content : m.russian}
-                              </p>
-                              {m.phonetic && (
-                                <p className="text-[11px] font-mono text-neutral-400 mt-1">
-                                  [{m.phonetic}]
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 shrink-0 bg-neutral-100/80 p-1 rounded-lg relative">
-                              {m.isOpening && isOpeningPlaying && (
-                                <span className="absolute -top-7 right-0 text-[10px] bg-orange-100 text-orange-600 font-bold px-2 py-0.5 rounded-full whitespace-nowrap animate-pulse">
-                                  🔊 Playing...
-                                </span>
-                              )}
-                              <AudioButton text={m.isOpening ? m.content! : m.russian!} size="md" />
-                              <AudioButton text={m.isOpening ? m.content! : m.russian!} slow={true} size="sm" />
-                            </div>
-                          </div>
-                          <div className="h-[1px] w-full my-1 bg-neutral-100" />
-                          <p className="text-xs md:text-sm italic font-light text-neutral-500 opacity-80">
-                            {m.translation}
-                          </p>
-                        </div>
-                      ) : m.role === "user" ? (
+                  {m.role === "user" ? (
+                    <div className="flex flex-col max-w-[80%] items-end">
+                      <div className="p-4 rounded-2xl bg-neutral-900 text-white rounded-tr-none">
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center justify-between gap-4">
                             <p className="text-sm md:text-base">
@@ -834,29 +787,68 @@ export function ScenarioChat({
                             </div>
                           )}
                         </div>
-                      ) : (
-                        <div className="flex flex-col gap-2">
-                          <div className="flex justify-between items-start gap-4">
-                            <div className="prose prose-sm max-w-none prose-neutral">
-                              <ReactMarkdown>{m.parts[0].text}</ReactMarkdown>
-                            </div>
-                            <div className="flex items-center gap-1 shrink-0 bg-neutral-50/50 p-1 rounded-lg">
-                              <AudioButton text={m.parts[0].text} size="md" />
-                              <AudioButton text={m.parts[0].text} slow={true} size="sm" />
-                            </div>
-                          </div>
-                          {m.translation && (
-                            <div className="w-full text-left">
-                              <div className="h-[1px] w-full bg-neutral-100 my-1" />
-                              <p className="text-xs italic font-light text-neutral-500 opacity-80 leading-relaxed">
-                                {m.translation}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex flex-col min-w-[200px] w-auto max-w-[85%] items-start overflow-visible">
+                      <div className="p-4 rounded-2xl bg-white border border-neutral-200 rounded-tl-none shadow-sm w-auto min-w-[200px] break-words whitespace-normal overflow-visible">
+                        {/* Model message with Russian and Translation */}
+                        {m.russian || m.content ? (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex justify-between items-start gap-4">
+                              <div className="flex flex-col">
+                                <p className="text-lg font-medium tracking-wide leading-relaxed text-neutral-900 break-words whitespace-normal">
+                                  {m.isOpening ? m.content : m.russian}
+                                </p>
+                                {m.phonetic && (
+                                  <p className="text-[11px] font-mono text-neutral-400 mt-1">
+                                    [{m.phonetic}]
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0 bg-neutral-100/80 p-1 rounded-lg relative">
+                                {m.isOpening && isOpeningPlaying && (
+                                  <span className="absolute -top-7 right-0 text-[10px] bg-orange-100 text-orange-600 font-bold px-2 py-0.5 rounded-full whitespace-nowrap animate-pulse">
+                                    🔊 Playing...
+                                  </span>
+                                )}
+                                <AudioButton text={m.isOpening ? m.content! : m.russian!} size="md" />
+                                <AudioButton text={m.isOpening ? m.content! : m.russian!} slow={true} size="sm" />
+                              </div>
+                            </div>
+                            {m.translation && (
+                              <div className="w-full text-left">
+                                <div className="h-[1px] w-full bg-neutral-100 my-1 font-sans" />
+                                <p className="text-sm italic text-neutral-500 mt-2 break-words leading-relaxed whitespace-normal font-sans">
+                                  {m.translation}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex justify-between items-start gap-4">
+                              <div className="prose prose-sm max-w-none prose-neutral">
+                                <ReactMarkdown>{m.parts[0].text}</ReactMarkdown>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0 bg-neutral-50/50 p-1 rounded-lg">
+                                <AudioButton text={m.parts[0].text} size="md" />
+                                <AudioButton text={m.parts[0].text} slow={true} size="sm" />
+                              </div>
+                            </div>
+                            {m.translation && (
+                              <div className="w-full text-left">
+                                <div className="h-[1px] w-full bg-neutral-100 my-1" />
+                                <p className="text-xs italic font-light text-neutral-500 opacity-80 leading-relaxed">
+                                  {m.translation}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {m.role === "user" && (
                     <Avatar className="h-8 w-8 mt-1">
