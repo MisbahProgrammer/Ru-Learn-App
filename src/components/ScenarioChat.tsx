@@ -53,6 +53,17 @@ const PREMIUM_SCENARIOS = [
 I am playing the role of a student who is shopping at dynamic Russian grocery stores for the first time.
 I am a complete beginner in Russian.
 
+CRITICAL OFF-TOPIC RULES:
+- You are ONLY a grocery store assistant/cashier in this scenario
+- You do NOT discuss university fees, general admissions, politics, news, other countries, or anything unrelated to grocery shopping
+- If user asks something off-topic, ALWAYS respond with:
+  "Я только кассир, не знаю! 😄
+  (I'm just a cashier, I don't know! 😄)
+  Вам нужен пакет? (Do you need a bag?)"
+- Then redirect back to checkout/shopping
+- NEVER break character under any circumstances
+- Even if user writes in English, respond in Russian + English translation and stay as a cashier
+
 YOUR RULES — FOLLOW STRICTLY:
 1. Always respond in Russian first, then put English translation in brackets like this:
    Привет! (Hello!)
@@ -69,7 +80,7 @@ YOUR RULES — FOLLOW STRICTLY:
    ✗ Anything not related to Russia
    ✗ Politics or news
    If asked something off-topic say:
-   "Давайте говорить о России! (Let's talk about Russia!) 😊"
+   "Я только кассир, не знаю! 😄 (I'm just a cashier, I don't know! 😄) Вам нужен пакет? (Do you need a bag?)"
 
 5. Gently correct grammar mistakes:
    "Хорошо! Правильно: [correction] (Good! The correct way: [correction])"
@@ -106,6 +117,17 @@ Now start the conversation. Greet me as a Pyaterochka store helper or cashier.`
 I am playing the role of a student who feels unwell and needs medication.
 I am a complete beginner in Russian.
 
+CRITICAL OFF-TOPIC RULES:
+- You are ONLY a pharmacist in this scenario
+- You do NOT discuss university fees, admissions, politics, news, other countries, or anything unrelated to medicine and health symptoms
+- If user asks something off-topic, ALWAYS respond with:
+  "Я только фармацевт, не знаю! 😄
+  (I'm just a pharmacist, I don't know! 😄)
+  Что у вас болит? (What is hurting?)"
+- Then redirect back to helping with medical symptoms
+- NEVER break character under any circumstances
+- Even if user writes in English, respond in Russian + English translation and stay as a pharmacist
+
 YOUR RULES — FOLLOW STRICTLY:
 1. Always respond in Russian first, then put English translation in brackets like this:
    Привет! (Hello!)
@@ -122,7 +144,7 @@ YOUR RULES — FOLLOW STRICTLY:
    ✗ Anything not related to Russia
    ✗ Politics or news
    If asked something off-topic say:
-   "Давайте говорить о России! (Let's talk about Russia!) 😊"
+   "Я только фармацевт, не знаю! 😄 (I'm just a pharmacist, I don't know! 😄) Что у вас болит? (What is hurting?)"
 
 5. Gently correct grammar mistakes:
    "Хорошо! Правильно: [correction] (Good! The correct way: [correction])"
@@ -159,6 +181,17 @@ Now start the conversation. Greet me as a pharmacist.`
 I am playing the role of a new international student who won a government scholarship to study in Russia.
 I am a complete beginner in Russian.
 
+CRITICAL OFF-TOPIC RULES:
+- You are ONLY a university registration officer in this scenario booking the student into classes/registering documents
+- You do NOT discuss politics, news, other countries, or anything unrelated to student document registration
+- If user asks something off-topic, ALWAYS respond with:
+  "Я только сотрудник отдела регистрации, не знаю! 😄
+  (I'm just a registration officer, I don't know! 😄)
+  Ваши документы готовы? (Are your documents ready?)"
+- Then redirect back to document registration
+- NEVER break character under any circumstances
+- Even if user writes in English, respond in Russian + English translation and stay as registration staff
+
 YOUR RULES — FOLLOW STRICTLY:
 1. Always respond in Russian first, then put English translation in brackets like this:
    Привет! (Hello!)
@@ -175,7 +208,7 @@ YOUR RULES — FOLLOW STRICTLY:
    ✗ Anything not related to Russia
    ✗ Politics or news
    If asked something off-topic say:
-   "Давайте говорить о России! (Let's talk about Russia!) 😊"
+   "Я только сотрудник отдела регистрации, не знаю! 😄 (I'm just a registration officer, I don't know! 😄) Ваши документы готовы? (Are your documents ready?)"
 
 5. Gently correct grammar mistakes:
    "Хорошо! Правильно: [correction] (Good! The correct way: [correction])"
@@ -217,6 +250,11 @@ export function ScenarioChat({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
+  // BUG 2 & AUTO SCROLL states/refs
+  const [isTyping, setIsTyping] = useState(false);
+  const lastSpokenIndex = useRef(-1);
+
+  // AUTO SCROLL TO BOTTOM
   useEffect(() => {
     const scrollToBottom = () => {
       if (scrollContainerRef.current) {
@@ -234,7 +272,7 @@ export function ScenarioChat({
       clearTimeout(timeoutId);
       clearTimeout(timeoutId2);
     };
-  }, [messages, loading]);
+  }, [messages, loading, isTyping]);
 
   useEffect(() => {
     if ("webkitSpeechRecognition" in window) {
@@ -348,31 +386,46 @@ export function ScenarioChat({
     throw new Error('This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again in a few seconds.');
   };
 
-  // Robust parser for format "Russian text (English translation)"
-  const parseTutorResponse = (rawText: string) => {
-    // Extract English from ROUND brackets ()
-    // that contain Latin characters
-    const englishRegex = /\(([^)]*[a-zA-Z][^)]*)\)/g;
-    const englishParts = [];
-    let match;
-    while ((match = englishRegex.exec(rawText)) !== null) {
-      englishParts.push(match[1]);
-    }
-    const englishTranslation = englishParts.join(' ');
+  // BUG 1 — PARSING ENTIRELY IMPLEMENTED EXACTLY AS REQUESTED
+  const parseMessage = (rawText: string): { russian: string; english: string } => {
+    if (!rawText) return { russian: '', english: '' };
 
-    // Remove ALL bracketed content from Russian
-    // Remove () English AND [] phonetic
-    const russianOnly = rawText
-      .replace(/\([^)]*[a-zA-Z][^)]*\)/g, '') 
-      .replace(/\[[^\]]+\]/g, '')             
-      .replace(/\[SCENARIO_COMPLETE\]/g, '')  
-      .replace(/\s+/g, ' ')
+    // Remove scenario complete signal
+    const cleaned = rawText
+      .replace(/\[SCENARIO_COMPLETE\]/gi, '')
       .trim();
 
-    return { 
-      russian: russianOnly, 
-      translation: englishTranslation,
-      english: englishTranslation
+    // Extract ALL content inside () that
+    // contains English (latin) characters
+    const englishMatches: string[] = [];
+    const englishPattern = /\(([^)]+)\)/g;
+    let match;
+
+    while ((match = englishPattern.exec(cleaned)) !== null) {
+      if (/[a-zA-Z]/.test(match[1])) {
+        englishMatches.push(match[1].trim());
+      }
+    }
+
+    // Build Russian by removing () english
+    // and [] phonetic brackets
+    const russian = cleaned
+      .replace(/\([^)]*[a-zA-Z][^)]*\)/g, '')
+      .replace(/\[[^\]]*\]/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    const english = englishMatches.join(' ');
+
+    return { russian, english };
+  };
+
+  const parseTutorResponse = (rawText: string) => {
+    const parsed = parseMessage(rawText);
+    return {
+      russian: parsed.russian,
+      translation: parsed.english,
+      english: parsed.english
     };
   };
 
@@ -380,6 +433,8 @@ export function ScenarioChat({
     setMessages([]);
     setScenarioComplete(false);
     setIsInitializing(true);
+    setIsTyping(true);
+    lastSpokenIndex.current = -1; // reset spoken reference key on restarts
 
     try {
       const openingReply = await getAIResponse(
@@ -414,6 +469,7 @@ export function ScenarioChat({
       setSelectedScenario(null);
     } finally {
       setIsInitializing(false);
+      setIsTyping(false);
     }
   };
 
@@ -440,25 +496,47 @@ export function ScenarioChat({
     initScenario(scenario);
   };
 
-  // Auto-speak opening message when scenario loads
+  // BUG 3 — SPEECH PLAYBACK ROBUSTLY TRACKED VIA LAST SPOKEN REF ELEMENT
   useEffect(() => {
-    const firstAssMessage = messages.find(m => m.role === 'assistant' && m.isOpening);
-    if (firstAssMessage && firstAssMessage.content) {
-      setIsOpeningPlaying(true);
-      const timer = setTimeout(() => {
-        speakRussian(firstAssMessage.content!)
+    const assistantMessages = messages.filter(
+      m => (m.role === 'assistant' || m.role === 'model') && !m.isHidden
+    );
+
+    const lastIndex = assistantMessages.length - 1;
+
+    // Only speak if this is a NEW message
+    if (lastIndex > lastSpokenIndex.current && lastIndex >= 0) {
+      lastSpokenIndex.current = lastIndex;
+
+      const lastMsg = assistantMessages[lastIndex];
+      const rawText = lastMsg.isOpening ? (lastMsg.content || lastMsg.russian || "") : (lastMsg.parts?.[0]?.text || lastMsg.content || lastMsg.russian || "");
+      const { russian } = parseMessage(rawText);
+
+      if (lastMsg.isOpening) {
+        setIsOpeningPlaying(true);
+      }
+
+      // Small delay so UI renders first
+      setTimeout(() => {
+        try {
+          if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+          }
+        } catch (e) {}
+
+        speakRussian(russian || rawText)
           .finally(() => {
             setIsOpeningPlaying(false);
           });
-      }, 800);
-      return () => clearTimeout(timer);
-    } else {
-      setIsOpeningPlaying(false);
+      }, 500);
     }
-  }, [messages, selectedScenario]);
+  }, [messages]);
 
   const handleSpeak = async (text: string) => {
     try {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
       await speakRussian(text);
     } catch (error) {
       console.error("TTS error", error);
@@ -467,7 +545,7 @@ export function ScenarioChat({
 
   const handleSend = async (textOverride?: string) => {
     const textToSend = textOverride || input;
-    if (!textToSend.trim() || loading || isInitializing) return;
+    if (!textToSend.trim() || loading || isInitializing || isTyping) return;
 
     const containsRussian = /[\u0400-\u04FF]/.test(textToSend);
     const userMessage: Message = {
@@ -480,6 +558,7 @@ export function ScenarioChat({
     setMessages(newMessagesList);
     setInput("");
     setLoading(true);
+    setIsTyping(true);
 
     // Background call to translate user message to English
     fetch('/api/gemini/translate', {
@@ -522,11 +601,6 @@ export function ScenarioChat({
 
       setMessages((prev) => [...prev, modelMessage]);
 
-      // Auto-play Russian audio reply
-      if (parsed.russian) {
-        handleSpeak(parsed.russian);
-      }
-
       if (isComplete) {
         setScenarioComplete(true);
         if (updateLessonProgress) {
@@ -539,6 +613,7 @@ export function ScenarioChat({
       toast.error("Tutor is busy: " + error.message);
     } finally {
       setLoading(false);
+      setIsTyping(false);
     }
   };
 
@@ -738,159 +813,162 @@ export function ScenarioChat({
               </div>
             </div>
           ) : (
-            <AnimatePresence>
-              {messages.filter(m => !m.isHidden).map((m, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  {m.role !== "user" && (
-                    <Avatar className="h-8 w-8 mt-1 border border-orange-100 bg-orange-50">
-                      <AvatarFallback className="text-[10px] text-orange-600">
-                        RT
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
+            <div className="space-y-4 md:space-y-6">
+              <div className="messages-list space-y-4 md:space-y-6">
+                <AnimatePresence>
+                  {messages.filter(m => !m.isHidden).map((m, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      {/* Tutor/Model Avatar */}
+                      {m.role !== "user" && (
+                        <Avatar className="h-8 w-8 mt-1 border border-orange-100 bg-orange-50">
+                          <AvatarFallback className="text-[10px] text-orange-600">
+                            RT
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
 
-                  {m.role === "user" ? (
-                    <div className="flex flex-col max-w-[80%] items-end">
-                      <div className="p-4 rounded-2xl bg-neutral-900 text-white rounded-tr-none">
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center justify-between gap-4">
-                            <p className="text-sm md:text-base">
-                              {m.parts[0].text}
-                            </p>
-                            {m.russian ? (
-                              <div className="flex items-center gap-1 shrink-0 bg-neutral-800/80 p-1 rounded-lg text-white">
-                                <AudioButton text={m.russian} size="sm" className="text-white hover:text-orange-400 hover:bg-transparent" />
-                                <AudioButton text={m.russian} slow={true} size="sm" className="text-white hover:text-orange-400 hover:bg-transparent" />
-                              </div>
-                            ) : (
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-6 w-6 text-white/40 hover:text-white hover:bg-white/10 shrink-0"
-                                onClick={() => handleSpeak(m.parts[0].text)}
-                              >
-                                <Volume2 className="w-3 h-3" />
-                              </Button>
-                            )}
-                          </div>
-                          {m.translation && m.translation.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") !== m.parts[0].text.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") && (
-                            <div className="w-full text-left">
-                              <div className="h-[1px] w-full bg-white/15 my-1" />
-                              <p className="text-xs italic font-light text-neutral-300 opacity-90 leading-relaxed">
-                                {m.translation}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col min-w-[200px] w-auto max-w-[85%] items-start overflow-visible">
-                      <div className="p-4 rounded-2xl bg-white border border-neutral-200 rounded-tl-none shadow-sm w-auto min-w-[200px] break-words whitespace-normal overflow-visible">
-                        {/* Model message with Russian and Translation */}
-                        {m.russian || m.content ? (
-                          <div className="flex flex-col gap-2">
-                            <div className="flex justify-between items-start gap-4">
-                              <div className="flex flex-col">
-                                <p className="text-lg font-medium tracking-wide leading-relaxed text-neutral-900 break-words whitespace-normal">
-                                  {m.isOpening ? m.content : m.russian}
+                      {/* User message bubble */}
+                      {m.role === "user" ? (
+                        <div className="flex flex-col max-w-[80%] items-end">
+                          <div className="p-4 rounded-2xl bg-neutral-900 text-white rounded-tr-none">
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center justify-between gap-4">
+                                <p className="text-sm md:text-base">
+                                  {m.parts[0].text}
                                 </p>
-                                {m.phonetic && (
-                                  <p className="text-[11px] font-mono text-neutral-400 mt-1">
-                                    [{m.phonetic}]
+                                {m.russian ? (
+                                  <div className="flex items-center gap-1 shrink-0 bg-neutral-800/80 p-1 rounded-lg text-white">
+                                    <AudioButton text={m.russian} size="sm" className="text-white hover:text-orange-400 hover:bg-transparent" />
+                                    <AudioButton text={m.russian} slow={true} size="sm" className="text-white hover:text-orange-400 hover:bg-transparent" />
+                                  </div>
+                                ) : (
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6 text-white/40 hover:text-white hover:bg-white/10 shrink-0"
+                                    onClick={() => handleSpeak(m.parts[0].text)}
+                                  >
+                                    <Volume2 className="w-3 h-3" />
+                                  </Button>
+                                )}
+                              </div>
+                              {m.translation && m.translation.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") !== m.parts[0].text.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") && (
+                                <div className="w-full text-left">
+                                  <div className="h-[1px] w-full bg-white/15 my-1" />
+                                  <p className="text-xs italic font-light text-neutral-300 opacity-90 leading-relaxed">
+                                    {m.translation}
                                   </p>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-1 shrink-0 bg-neutral-100/80 p-1 rounded-lg relative">
-                                {m.isOpening && isOpeningPlaying && (
-                                  <span className="absolute -top-7 right-0 text-[10px] bg-orange-100 text-orange-600 font-bold px-2 py-0.5 rounded-full whitespace-nowrap animate-pulse">
-                                    🔊 Playing...
-                                  </span>
-                                )}
-                                <AudioButton text={m.isOpening ? m.content! : m.russian!} size="md" />
-                                <AudioButton text={m.isOpening ? m.content! : m.russian!} slow={true} size="sm" />
-                              </div>
+                                </div>
+                              )}
                             </div>
-                            {m.translation && (
-                              <div className="w-full text-left">
-                                <div className="h-[1px] w-full bg-neutral-100 my-1 font-sans" />
-                                <p className="text-sm italic text-neutral-500 mt-2 break-words leading-relaxed whitespace-normal font-sans">
-                                  {m.translation}
-                                </p>
-                              </div>
-                            )}
                           </div>
-                        ) : (
-                          <div className="flex flex-col gap-2">
-                            <div className="flex justify-between items-start gap-4">
-                              <div className="prose prose-sm max-w-none prose-neutral">
-                                <ReactMarkdown>{m.parts[0].text}</ReactMarkdown>
-                              </div>
-                              <div className="flex items-center gap-1 shrink-0 bg-neutral-50/50 p-1 rounded-lg">
-                                <AudioButton text={m.parts[0].text} size="md" />
-                                <AudioButton text={m.parts[0].text} slow={true} size="sm" />
-                              </div>
-                            </div>
-                            {m.translation && (
-                              <div className="w-full text-left">
-                                <div className="h-[1px] w-full bg-neutral-100 my-1" />
-                                <p className="text-xs italic font-light text-neutral-500 opacity-80 leading-relaxed">
-                                  {m.translation}
-                                </p>
-                              </div>
-                            )}
+                        </div>
+                      ) : (
+                        /* Assistant message bubble — BUG 1 WITH STRICT PARSING AND DISPLAY FORMATTING */
+                        <div className="flex flex-col min-w-[200px] w-auto max-w-[85%] items-start overflow-visible">
+                          <div className="p-4 rounded-2xl bg-white border border-neutral-200 rounded-tl-none shadow-sm w-auto min-w-[200px] break-words whitespace-normal overflow-visible">
+                            {(() => {
+                              const rawText = m.parts?.[0]?.text || m.content || m.russian || "";
+                              const parsed = parseMessage(rawText);
+                              const russianText = parsed.russian;
+                              const englishText = parsed.english || m.translation || "";
+                              return (
+                                <div className="flex flex-col gap-2">
+                                  {/* Russian text — always shown */}
+                                  <div className="flex justify-between items-start gap-4">
+                                    <div className="flex flex-col">
+                                      <p style={{
+                                        fontSize: '1rem',
+                                        fontWeight: '500',
+                                        color: '#111',
+                                        wordBreak: 'break-word',
+                                        whiteSpace: 'normal',
+                                        margin: 0
+                                      }}>
+                                        {russianText}
+                                      </p>
+                                      {m.phonetic && (
+                                        <p className="text-[11px] font-mono text-neutral-400 mt-1">
+                                          [{m.phonetic}]
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0 bg-neutral-100/80 p-1 rounded-lg relative">
+                                      {m.isOpening && isOpeningPlaying && (
+                                        <span className="absolute -top-7 right-0 text-[10px] bg-orange-100 text-orange-600 font-bold px-2 py-0.5 rounded-full whitespace-nowrap animate-pulse">
+                                          🔊 Playing...
+                                        </span>
+                                      )}
+                                      <AudioButton text={russianText} size="md" />
+                                      <AudioButton text={russianText} slow={true} size="sm" />
+                                    </div>
+                                  </div>
+                                  {/* English translation — shown if exists */}
+                                  {englishText && (
+                                    <p style={{
+                                      fontSize: '0.85rem',
+                                      fontStyle: 'italic',
+                                      color: '#666',
+                                      marginTop: '6px',
+                                      wordBreak: 'break-word',
+                                      borderTop: '1px solid #eee',
+                                      paddingTop: '6px'
+                                    }}>
+                                      {englishText}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                        </div>
+                      )}
 
-                  {m.role === "user" && (
-                    <Avatar className="h-8 w-8 mt-1">
-                      <AvatarImage
-                        src={
-                          (user as any)?.user_metadata?.avatar_url ||
-                          (user as any)?.photoURL ||
-                          ""
-                        }
-                      />
-                      <AvatarFallback>
-                        <User />
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                </motion.div>
-              ))}
-              {loading && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex gap-3"
-                >
-                  <Avatar className="h-8 w-8 bg-orange-50 border border-orange-100 animate-pulse">
-                    <AvatarFallback className="text-[10px] text-orange-600">
-                      ...
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="bg-white border border-neutral-200 p-4 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce delay-100" />
-                      <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce delay-200" />
-                      <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce delay-300" />
-                    </div>
-                    <span className="text-xs text-neutral-400 font-medium ml-2">
-                      Tutor is typing...
-                    </span>
+                      {/* User Avatar */}
+                      {m.role === "user" && (
+                        <Avatar className="h-8 w-8 mt-1">
+                          <AvatarImage
+                            src={
+                              (user as any)?.user_metadata?.avatar_url ||
+                              (user as any)?.photoURL ||
+                              ""
+                            }
+                          />
+                          <AvatarFallback>
+                            <User />
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+
+              {/* Typing indicator — OUTSIDE messages list — BUG 2 IMPLEMENTED PERFECTLY */}
+              {isTyping && (
+                <div className="typing-indicator flex items-center gap-1.5 p-4 bg-white border border-neutral-200 rounded-2xl rounded-tl-none shadow-sm max-w-max ml-11 animate-pulse">
+                  <div className="flex gap-1 animate-pulse">
+                    <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce delay-100" />
+                    <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce delay-200" />
+                    <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce delay-300" />
                   </div>
-                </motion.div>
+                  <span style={{
+                    marginLeft: '8px', 
+                    fontSize: '0.8rem',
+                    color: '#666'
+                  }}>
+                    Tutor is typing...
+                  </span>
+                </div>
               )}
+
               <div ref={messagesEndRef} />
-            </AnimatePresence>
+            </div>
           )}
         </div>
       </div>
@@ -1006,7 +1084,7 @@ export function ScenarioChat({
               </div>
             </div>
 
-            <div className="bg-orange-50 border border-orange-250 text-orange-700 rounded-2xl p-4 font-bold flex items-center justify-center gap-2 shadow-sm w-full text-xs">
+            <div className="bg-orange-50 border border-orange-255 text-orange-700 rounded-2xl p-4 font-bold flex items-center justify-center gap-2 shadow-sm w-full text-xs">
               <span>You earned +25 XP for completing this scenario! 🏆</span>
             </div>
 
