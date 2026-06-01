@@ -71,11 +71,11 @@ async function startServer() {
   // API Routes
   app.post('/api/gemini/chat', async (req, res) => {
     try {
-      const { messages, scenario } = req.body;
+      const { messages, scenario, systemInstruction: customSystemInstruction } = req.body;
       const ai = getAi();
       const formattedMessages = formatMessagesForGemini(messages, scenario);
       
-      const systemInstruction = `You are an expert Russian tutor and cultural guide. 
+      const systemInstruction = customSystemInstruction || `You are an expert Russian tutor and cultural guide. 
       The current scenario is: ${scenario || 'General conversation'}.
       User is a student who won a scholarship to Russia.
       You must conduct the conversation primarily in Russian to help the student practice.
@@ -104,11 +104,11 @@ async function startServer() {
 
   app.post('/api/gemini/chat-stream', async (req, res) => {
     try {
-      const { messages, scenario } = req.body;
+      const { messages, scenario, systemInstruction: customSystemInstruction } = req.body;
       const ai = getAi();
       const formattedMessages = formatMessagesForGemini(messages, scenario);
       
-      const systemInstruction = `You are an expert Russian tutor and cultural guide. 
+      const systemInstruction = customSystemInstruction || `You are an expert Russian tutor and cultural guide. 
       The current scenario is: ${scenario || 'General conversation'}.
       User is a student who won a scholarship to Russia.
       You must conduct the conversation primarily in Russian to help the student practice.
