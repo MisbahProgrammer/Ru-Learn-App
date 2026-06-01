@@ -87,13 +87,25 @@ async function startServer() {
       Focus on being natural, like a real person in Moscow.
       Include cultural tips or student-specific advice when relevant.`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents: formattedMessages,
-        config: {
-          systemInstruction,
-        },
-      });
+      let response;
+      try {
+        response = await ai.models.generateContent({
+          model: 'gemini-3.5-flash',
+          contents: formattedMessages,
+          config: {
+            systemInstruction,
+          },
+        });
+      } catch (geminiError: any) {
+        console.warn('Primary model gemini-3.5-flash is busy/quota exceeded, falling back to gemini-3.1-flash-lite. Error:', geminiError.message || geminiError);
+        response = await ai.models.generateContent({
+          model: 'gemini-3.1-flash-lite',
+          contents: formattedMessages,
+          config: {
+            systemInstruction,
+          },
+        });
+      }
 
       res.status(200).json({ text: response.text });
     } catch (error: any) {
@@ -124,13 +136,25 @@ async function startServer() {
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
 
-      const stream = await ai.models.generateContentStream({
-        model: 'gemini-3.5-flash',
-        contents: formattedMessages,
-        config: {
-          systemInstruction,
-        },
-      });
+      let stream;
+      try {
+        stream = await ai.models.generateContentStream({
+          model: 'gemini-3.5-flash',
+          contents: formattedMessages,
+          config: {
+            systemInstruction,
+          },
+        });
+      } catch (geminiError: any) {
+        console.warn('Primary model gemini-3.5-flash busy in stream, falling back to gemini-3.1-flash-lite. Error:', geminiError.message || geminiError);
+        stream = await ai.models.generateContentStream({
+          model: 'gemini-3.1-flash-lite',
+          contents: formattedMessages,
+          config: {
+            systemInstruction,
+          },
+        });
+      }
 
       for await (const chunk of stream) {
         if (chunk.text) {
@@ -158,10 +182,19 @@ Do not write any preamble, conversational greeting, explanations or quotation ma
 Text to translate:
 ${text}`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      });
+      let response;
+      try {
+        response = await ai.models.generateContent({
+          model: 'gemini-3.5-flash',
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        });
+      } catch (geminiError: any) {
+        console.warn('Primary model gemini-3.5-flash experienced translation error, falling back to gemini-3.1-flash-lite. Error:', geminiError.message || geminiError);
+        response = await ai.models.generateContent({
+          model: 'gemini-3.1-flash-lite',
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        });
+      }
 
       res.status(200).json({ translation: (response.text || '').trim() });
     } catch (error: any) {

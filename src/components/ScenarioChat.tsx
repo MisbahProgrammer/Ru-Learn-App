@@ -262,8 +262,6 @@ export function ScenarioChat({
     allMessages: Message[],
     systemPrompt: string
   ) => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    
     // Map with correct role alternate
     const apiMessages = allMessages.map(msg => ({
       role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
@@ -276,8 +274,8 @@ export function ScenarioChat({
       throw new Error('Invalid message order');
     }
 
-    if (!apiKey) {
-      console.info("Client API Key not found, routing through system-secure server Proxy securely...");
+    // ALWAYS try to route through the secure server proxy first (includes server-side fallback)
+    try {
       const response = await fetch('/api/gemini/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -287,44 +285,67 @@ export function ScenarioChat({
           systemInstruction: systemPrompt 
         }),
       });
-      if (!response.ok) {
-        throw new Error(`Proxy call failed: ${response.status}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.text) {
+          return data.text;
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData?.error && (errorData.error.includes('demand') || errorData.error.includes('quota') || errorData.error.includes('temporary'))) {
+          console.warn('Server proxy reported busy error, continuing to client fallback if possible...');
+        }
       }
-      const data = await response.json();
-      return data.text || 'Извините, повторите пожалуйста.';
+    } catch (proxyError) {
+      console.warn("Proxy call failed, checking client fallback...", proxyError);
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: systemPrompt }]
-          },
-          contents: apiMessages,
-          generationConfig: {
-            temperature: 0.8,
-            maxOutputTokens: 250
+    // Client-side fallback if proxy didn't work and we have a local API key
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (apiKey) {
+      const makeClientCall = async (modelName: string) => {
+        return fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              system_instruction: {
+                parts: [{ text: systemPrompt }]
+              },
+              contents: apiMessages,
+              generationConfig: {
+                temperature: 0.8,
+                maxOutputTokens: 250
+              }
+            })
           }
-        })
-      }
-    );
+        );
+      };
 
-    if (!response.ok) {
-      const err = await response.json()
-        .catch(() => ({}));
-      throw new Error(
-        err?.error?.message || 
-        `HTTP ${response.status}`
-      );
+      let response;
+      try {
+        response = await makeClientCall('gemini-3.5-flash');
+        if (!response.ok) {
+          console.warn('Client gemini-3.5-flash failed, trying gemini-3.1-flash-lite');
+          response = await makeClientCall('gemini-3.1-flash-lite');
+        }
+      } catch (clientErr) {
+        console.warn('Client gemini-3.5-flash request threw, trying gemini-3.1-flash-lite', clientErr);
+        try {
+          response = await makeClientCall('gemini-3.1-flash-lite');
+        } catch (liteErr: any) {
+          throw new Error(`All Gemini API calls failed: ${liteErr.message}`);
+        }
+      }
+
+      if (response && response.ok) {
+        const data = await response.json();
+        return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Извините, повторите пожалуйста.';
+      }
     }
 
-    const data = await response.json();
-    return data?.candidates?.[0]
-      ?.content?.parts?.[0]?.text?.trim()
-      || 'Извините, повторите пожалуйста.';
+    throw new Error('This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again in a few seconds.');
   };
 
   // Robust parser for format "Russian text (English translation)"
