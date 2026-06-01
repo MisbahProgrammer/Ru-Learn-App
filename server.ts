@@ -146,6 +146,30 @@ async function startServer() {
     }
   });
 
+  app.post('/api/gemini/translate', async (req, res) => {
+    try {
+      const { text } = req.body;
+      const ai = getAi();
+      
+      const prompt = `You are an expert translator. Translate the following text into English.
+If the text is already in English or mostly English, return it exactly as is without translation or explanations.
+Do not write any preamble, conversational greeting, explanations or quotation marks. Return ONLY the pure translation of the sentence itself.
+
+Text to translate:
+${text}`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.5-flash',
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      });
+
+      res.status(200).json({ translation: (response.text || '').trim() });
+    } catch (error: any) {
+      console.error('Gemini Translate Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post('/api/gemini/tts', async (req, res) => {
     try {
       const { text } = req.body;

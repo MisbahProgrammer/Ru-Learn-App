@@ -470,6 +470,27 @@ export function ScenarioChat({
     setInput("");
     setLoading(true);
 
+    // Background call to translate user message to English
+    fetch('/api/gemini/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: textToSend }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.translation) {
+          setMessages(prev =>
+            prev.map(m => {
+              if (m.role === 'user' && m.parts[0].text === textToSend && !m.translation) {
+                return { ...m, translation: data.translation };
+              }
+              return m;
+            })
+          );
+        }
+      })
+      .catch(err => console.warn('Background translation error:', err));
+
     try {
       // Send the full history including the hidden message
       const rawResponse = await getAIResponse(newMessagesList, '');
@@ -783,16 +804,34 @@ export function ScenarioChat({
                               </Button>
                             )}
                           </div>
+                          {m.translation && m.translation.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") !== m.parts[0].text.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") && (
+                            <div className="w-full text-left">
+                              <div className="h-[1px] w-full bg-white/15 my-1" />
+                              <p className="text-xs italic font-light text-neutral-300 opacity-90 leading-relaxed">
+                                {m.translation}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       ) : (
-                        <div className="flex justify-between items-start gap-4">
-                          <div className="prose prose-sm max-w-none prose-neutral">
-                            <ReactMarkdown>{m.parts[0].text}</ReactMarkdown>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="prose prose-sm max-w-none prose-neutral">
+                              <ReactMarkdown>{m.parts[0].text}</ReactMarkdown>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0 bg-neutral-50/50 p-1 rounded-lg">
+                              <AudioButton text={m.parts[0].text} size="md" />
+                              <AudioButton text={m.parts[0].text} slow={true} size="sm" />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1 shrink-0 bg-neutral-50/50 p-1 rounded-lg">
-                            <AudioButton text={m.parts[0].text} size="md" />
-                            <AudioButton text={m.parts[0].text} slow={true} size="sm" />
-                          </div>
+                          {m.translation && (
+                            <div className="w-full text-left">
+                              <div className="h-[1px] w-full bg-neutral-100 my-1" />
+                              <p className="text-xs italic font-light text-neutral-500 opacity-80 leading-relaxed">
+                                {m.translation}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
