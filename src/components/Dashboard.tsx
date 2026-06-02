@@ -558,7 +558,7 @@ export function Dashboard() {
                            YOU ARE ENROLLED
                          </div>
                        ) : (
-                         <Button onClick={handleUpgrade} className="w-full h-16 bg-neutral-900 hover:bg-black rounded-2xl text-xl font-bold transition-transform hover:scale-[1.02]">
+                         <Button onClick={handleUpgrade} className="w-full h-auto min-h-[3.5rem] py-3.5 px-4 bg-neutral-900 hover:bg-black rounded-2xl text-xs min-[360px]:text-sm sm:text-base md:text-lg lg:text-xl font-bold transition-transform hover:scale-[1.02] flex items-center justify-center text-center whitespace-normal leading-tight">
                            Activate Plan for $2/month
                          </Button>
                        )}
