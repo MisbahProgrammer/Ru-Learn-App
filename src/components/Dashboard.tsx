@@ -19,7 +19,9 @@ import {
   User,
   BookOpenCheck,
   Video,
-  BookText
+  BookText,
+  Smartphone,
+  Globe
 } from 'lucide-react';
 import { ALPHABET, SCENARIOS, CITY_IMAGES } from '@/constants';
 import { AlphabetView } from '@/components/AlphabetView';
@@ -30,6 +32,7 @@ import { LecturesView } from '@/components/LecturesView';
 import { GrammarView } from '@/components/GrammarView';
 import { DailyLesson } from '@/components/DailyLesson';
 import { WordOfTheDay } from '@/components/WordOfTheDay';
+import { MobileAppView } from '@/components/MobileAppView';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -46,6 +49,13 @@ export function Dashboard() {
   const { user, profile, signOut, isPremium, updateProfileState, updateLessonProgress } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [signingOut, setSigningOut] = useState(false);
+  const [viewMode, setViewMode] = useState<'web' | 'mobile'>('web');
+
+  React.useEffect(() => {
+    if (window.innerWidth < 768) {
+      setViewMode('mobile');
+    }
+  }, []);
 
   const handleLogout = async () => {
     if (signingOut) return; // prevent double click
@@ -181,6 +191,10 @@ export function Dashboard() {
     }
   };
 
+  if (viewMode === 'mobile') {
+    return <MobileAppView onBackToWeb={() => setViewMode('web')} />;
+  }
+
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
@@ -196,6 +210,15 @@ export function Dashboard() {
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
+          <Button
+            id="switch-to-mobile-button"
+            variant="outline"
+            onClick={() => setViewMode('mobile')}
+            className="rounded-xl border-orange-200 bg-orange-50 text-orange-600 hover:bg-orange-100 flex items-center gap-1.5 cursor-pointer text-xs h-9 font-bold px-3 transition-all"
+          >
+            <Smartphone className="w-4 h-4 text-orange-500" />
+            <span className="hidden sm:inline">Mobile App Simulator</span>
+          </Button>
           {isPremium ? (
             <div className="flex items-center gap-1.5 md:gap-2">
               <span className="hidden sm:inline-block text-xs md:text-sm font-semibold text-neutral-800">
