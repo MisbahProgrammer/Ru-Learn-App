@@ -59,12 +59,13 @@ export function GrammarView() {
               <p className="text-neutral-500 text-xs font-light">Complete all 4 essentials to fully master basic sentence construction logic.</p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {[
                 { id: 'grammar_sentence_logic', title: '1. Sentence Logic' },
                 { id: 'grammar_pronouns', title: '2. Personal Pronouns' },
                 { id: 'grammar_six_cases', title: '3. Noun Cases' },
                 { id: 'grammar_verbs_aspects', title: '4. Verbs & Adverbs' },
+                { id: 'grammar_adjectives_lesson22', title: '5. Adjectives (L22)' },
               ].map((lesson) => {
                 const isCompleted = !!lessonsCompleted[lesson.id];
                 return (
@@ -105,6 +106,9 @@ export function GrammarView() {
                 </TabsTrigger>
                 <TabsTrigger value="verbs" className="flex-1 md:flex-none rounded-xl px-4 md:px-8 py-3.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all text-sm font-semibold">
                   <Activity className="w-4 h-4 mr-2" /> Verbs & Adverbs
+                </TabsTrigger>
+                <TabsTrigger value="lesson22" className="flex-1 md:flex-none rounded-xl px-4 md:px-8 py-3.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all text-sm font-semibold">
+                  <BookText className="w-4 h-4 mr-2" /> Lesson 22 Adjectives
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -320,6 +324,275 @@ export function GrammarView() {
                             </div>
                             <span className="text-sm text-neutral-500 italic">Badly</span>
                          </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="lesson22" className="grid grid-cols-1 lg:grid-cols-2 gap-8 slide-in-from-bottom-2 animate-in duration-300">
+                {/* Section 1: Gender Agreement */}
+                <Card className="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
+                  <div className="p-8 md:p-10 bg-orange-600 text-white relative overflow-hidden">
+                    <BookText className="absolute -right-4 -top-4 w-32 h-32 text-orange-500/20" />
+                    <h3 className="text-2xl font-bold relative z-10">Adjectives Agreement</h3>
+                    <p className="text-orange-100 text-sm mt-2 relative z-10 leading-relaxed">In Russian, adjectives <strong>MUST matches the gender and number</strong> of the noun they describe.</p>
+                  </div>
+                  <CardContent className="p-8 md:p-10 space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="p-5 bg-blue-50/50 rounded-2xl border border-blue-100/30">
+                        <Badge className="bg-blue-600 text-white mb-2">👨 Masculine</Badge>
+                        <p className="text-xs text-neutral-400 font-mono">Endings: -ый / -ий</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="font-bold text-neutral-900">русский космонавт</span>
+                          <AudioButton text="русский космонавт" size="sm" />
+                        </div>
+                        <span className="text-xs text-neutral-500 italic">Russian astronaut</span>
+                      </div>
+
+                      <div className="p-5 bg-rose-50/50 rounded-2xl border border-rose-100/30">
+                        <Badge className="bg-rose-600 text-white mb-2">👩 Feminine</Badge>
+                        <p className="text-xs text-neutral-400 font-mono">Endings: -ая</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="font-bold text-neutral-900">русская певица</span>
+                          <AudioButton text="русская певица" size="sm" />
+                        </div>
+                        <span className="text-xs text-neutral-500 italic">Russian singer</span>
+                      </div>
+
+                      <div className="p-5 bg-amber-50/50 rounded-2xl border border-amber-100/30">
+                        <Badge className="bg-amber-600 text-white mb-2">📦 Neuter</Badge>
+                        <p className="text-xs text-neutral-400 font-mono">Endings: -ое</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="font-bold text-neutral-900">интересное задание</span>
+                          <AudioButton text="интересное задание" size="sm" />
+                        </div>
+                        <span className="text-xs text-neutral-500 italic">interesting task</span>
+                      </div>
+
+                      <div className="p-5 bg-emerald-50/50 rounded-2xl border border-emerald-100/30">
+                        <Badge className="bg-emerald-600 text-white mb-2">👥 Plural</Badge>
+                        <p className="text-xs text-neutral-400 font-mono">Endings: -ые / -ие</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="font-bold text-neutral-900">красивые цветы</span>
+                          <AudioButton text="красивые цветы" size="sm" />
+                        </div>
+                        <span className="text-xs text-neutral-500 italic">beautiful flowers</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Section 2: "What Kind of?" */}
+                <Card className="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
+                  <div className="p-8 md:p-10 bg-neutral-800 text-white relative overflow-hidden">
+                    <Sparkles className="absolute -right-4 -top-4 w-32 h-32 text-white/5" />
+                    <h3 className="text-2xl font-bold relative z-10">Asking &quot;What kind?&quot;</h3>
+                    <p className="text-neutral-400 text-sm mt-2 relative z-10 leading-relaxed">The word for &quot;which/what kind of&quot; changes based on gender as well!</p>
+                  </div>
+                  <CardContent className="p-8 md:p-10 space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-2xl border border-neutral-100">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-orange-600 font-mono font-bold text-base">М:</span>
+                            <span className="font-bold text-neutral-900">Какой это фильм?</span>
+                            <AudioButton text="Какой это фильм" size="sm" />
+                          </div>
+                          <span className="text-xs text-neutral-400 font-mono block">Kakoy eto fil\'m?</span>
+                        </div>
+                        <span className="text-sm text-neutral-500 italic">What movie is this?</span>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-2xl border border-neutral-100">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-orange-600 font-mono font-bold text-base">F:</span>
+                            <span className="font-bold text-neutral-900">Какая это книга?</span>
+                            <AudioButton text="Какая это книга" size="sm" />
+                          </div>
+                          <span className="text-xs text-neutral-400 font-mono block">Kakaya eta kniga?</span>
+                        </div>
+                        <span className="text-sm text-neutral-500 italic">What book is this?</span>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-2xl border border-neutral-100">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-orange-600 font-mono font-bold text-base">N:</span>
+                            <span className="font-bold text-neutral-900">Какое это задание?</span>
+                            <AudioButton text="Какое это задание" size="sm" />
+                          </div>
+                          <span className="text-xs text-neutral-400 font-mono block">Kakoye eto zadaniye?</span>
+                        </div>
+                        <span className="text-sm text-neutral-500 italic">What task is this?</span>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-2xl border border-neutral-100">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-orange-600 font-mono font-bold text-base">PL:</span>
+                            <span className="font-bold text-neutral-900">Какие это цветы?</span>
+                            <AudioButton text="Какие это цветы" size="sm" />
+                          </div>
+                          <span className="text-xs text-neutral-400 font-mono block">Kakiye eti tsvety?</span>
+                        </div>
+                        <span className="text-sm text-neutral-500 italic">What flowers are these?</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Section 3: Color Transitions */}
+                <Card className="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white lg:col-span-2">
+                  <div className="p-8 md:p-10 bg-slate-100 border-b border-neutral-200/50 relative overflow-hidden">
+                    <h3 className="text-2xl font-bold text-neutral-900">Colors Also Agree by Gender! 🎨</h3>
+                    <p className="text-neutral-500 text-sm mt-1 leading-relaxed">Colors act as standard adjectives, meaning they match their target noun perfectly.</p>
+                  </div>
+                  <CardContent className="p-8 md:p-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Dark Blue Example */}
+                      <div className="space-y-4 p-6 bg-blue-50/20 rounded-3xl border border-blue-100">
+                        <h4 className="font-bold text-blue-900 flex items-center gap-2">
+                          <span className="inline-block w-4 h-4 bg-blue-600 rounded-full" />
+                          синий (dark blue)
+                        </h4>
+                        <div className="space-y-2.5">
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-neutral-700">👦 Masc: <strong className="text-neutral-900">синий</strong> костюм</span>
+                            <span className="italic text-neutral-500">blue suit</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-neutral-700">👩 Fem: <strong className="text-neutral-900">синяя</strong> ручка</span>
+                            <span className="italic text-neutral-500">blue pen</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-neutral-700">📦 Neut: <strong className="text-neutral-900">синее</strong> море</span>
+                            <span className="italic text-neutral-500">blue sea</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-neutral-700">👥 Plur: <strong className="text-neutral-900">синие</strong> яблоки</span>
+                            <span className="italic text-neutral-500">blue apples</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Red Example */}
+                      <div className="space-y-4 p-6 bg-red-50/20 rounded-3xl border border-red-100">
+                        <h4 className="font-bold text-red-900 flex items-center gap-2">
+                          <span className="inline-block w-4 h-4 bg-red-600 rounded-full" />
+                          красный (red)
+                        </h4>
+                        <div className="space-y-2.5">
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-neutral-700">👦 Masc: <strong className="text-neutral-900">красный</strong> помидор</span>
+                            <span className="italic text-neutral-500">red tomato</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-neutral-700">👩 Fem: <strong className="text-neutral-900">красная</strong> площадь</span>
+                            <span className="italic text-neutral-500">Red Square</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-neutral-700">📦 Neut: <strong className="text-neutral-900">красное</strong> яблоко</span>
+                            <span className="italic text-neutral-500">red apple</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-neutral-700">👥 Plur: <strong className="text-neutral-900">красные</strong> цветы</span>
+                            <span className="italic text-neutral-500">red flowers</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Section 4: играть на vs играть в */}
+                <Card className="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
+                  <div className="p-8 md:p-10 bg-orange-50/50 border-b border-orange-100 relative overflow-hidden">
+                    <h3 className="text-xl font-bold text-neural-900">The Power of &quot;Играть&quot; 🎹⚽</h3>
+                    <p className="text-neutral-500 text-xs mt-1">Russian sets strict grammatic prepositions when playing instruments versus sports.</p>
+                  </div>
+                  <CardContent className="p-8 md:p-10 space-y-6">
+                    <div className="space-y-4">
+                      <div className="p-4 bg-orange-50/25 rounded-2xl border border-orange-100/50">
+                        <Badge className="bg-orange-600 text-white mb-2">🎹 играть на + Prepositional</Badge>
+                        <p className="text-sm text-neutral-600">Used strictly for <strong>musical instruments</strong>.</p>
+                        <div className="mt-3 space-y-1.5">
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="font-semibold text-neutral-900">играть на пианино</span>
+                            <AudioButton text="играть на пианино" size="sm" />
+                            <span className="text-neutral-400">—</span>
+                            <span className="text-neutral-500 italic">play piano</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="font-semibold text-neutral-900">играть на гитаре</span>
+                            <AudioButton text="играть на гитаре" size="sm" />
+                            <span className="text-neutral-400">—</span>
+                            <span className="text-neutral-500 italic">play guitar</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-emerald-50/25 rounded-2xl border border-emerald-100/50">
+                        <Badge className="bg-emerald-600 text-white mb-2">⚽ играть в + Accusative</Badge>
+                        <p className="text-sm text-neutral-600">Used strictly for <strong>games or sports</strong>.</p>
+                        <div className="mt-3">
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="font-semibold text-neutral-900">играть в футбол</span>
+                            <AudioButton text="играть в футбол" size="sm" />
+                            <span className="text-neutral-400">—</span>
+                            <span className="text-neutral-500 italic">play football</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Section 5: Adjective vs Adverb Comparison */}
+                <Card className="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
+                  <div className="p-8 md:p-10 bg-neutral-900 text-white relative overflow-hidden">
+                    <h3 className="text-xl font-bold">Good vs. Well & Easy vs. Easily ✨</h3>
+                    <p className="text-sm text-neutral-400 mt-1">Make sure not to confuse adjectives (describing nouns) with adverbs (describing actions)!</p>
+                  </div>
+                  <CardContent className="p-0">
+                    <div className="divide-y divide-neutral-100">
+                      <div className="p-6 md:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-none shrink-0">Adjective</Badge>
+                            <span className="font-bold text-neutral-900">Это лёгкий урок.</span>
+                            <AudioButton text="Это лёгкий урок" size="sm" />
+                          </div>
+                          <span className="text-xs text-neutral-400 italic block">This is an easy lesson.</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none shrink-0">Adverb</Badge>
+                            <span className="font-bold text-neutral-900">Это легко сделать.</span>
+                            <AudioButton text="Это легко сделать" size="sm" />
+                          </div>
+                          <span className="text-xs text-neutral-400 italic block">It is easy to do.</span>
+                        </div>
+                      </div>
+
+                      <div className="p-6 md:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-none shrink-0">Adjective</Badge>
+                            <span className="font-bold text-neutral-900">хороший друг</span>
+                            <AudioButton text="хороший друг" size="sm" />
+                          </div>
+                          <span className="text-xs text-neutral-400 italic block">good friend</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none shrink-0">Adverb</Badge>
+                            <span className="font-bold text-neutral-900">Здесь хорошо гулять.</span>
+                            <AudioButton text="Здесь хорошо гулять" size="sm" />
+                          </div>
+                          <span className="text-xs text-neutral-400 italic block">It is nice to walk here.</span>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
