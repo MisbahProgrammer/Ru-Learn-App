@@ -111,7 +111,13 @@ export default function App() {
           streak_count: 0,
           last_activity_date: null,
           lessons_completed: {},
-          xp_points: 0
+          xp_points: 0,
+          country: currentUser?.user_metadata?.country || '',
+          phone_number: currentUser?.user_metadata?.phone_number || '',
+          learning_reason: currentUser?.user_metadata?.learning_reason || '',
+          bio: currentUser?.user_metadata?.bio || '',
+          avatar_url: currentUser?.user_metadata?.avatar_url || '',
+          is_premium: false
         };
 
         const { data: insertedData, error: insertError } = await supabase
@@ -430,6 +436,7 @@ export default function App() {
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
             <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" replace />} />
+            <Route path="/community" element={user ? <Dashboard initialTab="community" /> : <Navigate to="/" replace />} />
             <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
             <Route path="*" element={<Navigate to={user ? "/dashboard" : "/"} replace />} />
           </Routes>

@@ -28,6 +28,7 @@ import { AlphabetView } from '@/components/AlphabetView';
 import { ScenarioChat } from '@/components/ScenarioChat';
 import { VocabularyView } from '@/components/VocabularyView';
 import { ProfileView } from '@/components/ProfileView';
+import { CommunityView } from '@/components/CommunityView';
 import { LecturesView } from '@/components/LecturesView';
 import { GrammarView } from '@/components/GrammarView';
 import { DailyLesson } from '@/components/DailyLesson';
@@ -45,11 +46,16 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 
-export function Dashboard() {
+export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
   const { user, profile, signOut, isPremium, updateProfileState, updateLessonProgress } = useAuth();
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [communityMemberCount, setCommunityMemberCount] = useState(0);
   const [signingOut, setSigningOut] = useState(false);
   const [viewMode, setViewMode] = useState<'web' | 'mobile'>('web');
+
+  React.useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   React.useEffect(() => {
     if (window.innerWidth < 768) {
@@ -237,7 +243,7 @@ export function Dashboard() {
           <DropdownMenu>
             <DropdownMenuTrigger className="relative h-8 w-8 rounded-full ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 overflow-hidden hover:bg-neutral-100">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.photoURL || ''} alt={displayName || ''} />
+                <AvatarImage src={profile?.avatar_url || profile?.avatarUrl || user?.photoURL || ''} alt={displayName || ''} />
                 <AvatarFallback className="bg-neutral-100 text-neutral-600">{avatarFallback || <User />}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
@@ -276,6 +282,9 @@ export function Dashboard() {
             <TabsList className="bg-transparent flex-col justify-start h-auto w-full p-0">
               <TabsTrigger value="home" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
                 <Home className="w-4 h-4" /> Home
+              </TabsTrigger>
+              <TabsTrigger value="community" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all font-medium">
+                <Globe className="w-4 h-4" /> Community {communityMemberCount > 0 ? `(${communityMemberCount})` : ''}
               </TabsTrigger>
               <TabsTrigger value="alphabet" className="w-full justify-start gap-3 h-12 bg-transparent data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all">
                 <BookOpen className="w-4 h-4" /> Alphabet
@@ -321,6 +330,9 @@ export function Dashboard() {
             <TabsList className="bg-transparent h-auto p-0 flex flex-row w-full justify-around">
                <TabsTrigger value="home" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
                  <Home className="w-5 h-5" /> Home
+               </TabsTrigger>
+               <TabsTrigger value="community" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
+                 <Globe className="w-5 h-5" /> Community
                </TabsTrigger>
                <TabsTrigger value="alphabet" className="flex-col gap-1 text-[10px] bg-transparent data-[state=active]:text-orange-600 transition-all font-bold uppercase tracking-tighter">
                  <BookOpen className="w-5 h-5" /> Alphabet
@@ -589,6 +601,10 @@ export function Dashboard() {
                     </CardContent>
                  </Card>
                </div>
+             </TabsContent>
+
+             <TabsContent value="community" className="flex-1 m-0 h-full overflow-hidden">
+                <CommunityView onTotalCountLoaded={setCommunityMemberCount} />
              </TabsContent>
 
              <TabsContent value="profile" className="flex-1 m-0 h-full overflow-hidden">
