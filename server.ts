@@ -94,6 +94,10 @@ async function startServer() {
           contents: formattedMessages,
           config: {
             systemInstruction,
+            temperature: 0.3,
+            maxOutputTokens: 200,
+            topP: 0.8,
+            topK: 20,
           },
         });
       } catch (geminiError: any) {
@@ -103,6 +107,10 @@ async function startServer() {
           contents: formattedMessages,
           config: {
             systemInstruction,
+            temperature: 0.3,
+            maxOutputTokens: 200,
+            topP: 0.8,
+            topK: 20,
           },
         });
       }
@@ -143,6 +151,10 @@ async function startServer() {
           contents: formattedMessages,
           config: {
             systemInstruction,
+            temperature: 0.3,
+            maxOutputTokens: 200,
+            topP: 0.8,
+            topK: 20,
           },
         });
       } catch (geminiError: any) {
@@ -152,6 +164,10 @@ async function startServer() {
           contents: formattedMessages,
           config: {
             systemInstruction,
+            temperature: 0.3,
+            maxOutputTokens: 200,
+            topP: 0.8,
+            topK: 20,
           },
         });
       }
