@@ -1,6 +1,23 @@
 -- SUPABASE DATABASE SCHEMA FOR RUSSIAN SCHOLAR
 -- Copy & Run this script in your Supabase SQL Editor (https://supabase.com dashboard under SQL Editor)
 
+-- =========================================================================
+-- SPECIAL NOTE FOR EXISTING DATABASES:
+-- If you ALREADY have the `users` table created from an older version,
+-- run these ALTER TABLE statements to add the missing columns immediately:
+--
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "country" TEXT;
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "phone_number" TEXT;
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "learning_reason" TEXT;
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "bio" TEXT;
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "avatar_url" TEXT;
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "streak_count" INTEGER DEFAULT 0;
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "last_activity_date" TIMESTAMPTZ;
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "lessons_completed" JSONB DEFAULT '{}'::jsonb;
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "xp_points" INTEGER DEFAULT 0;
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "is_premium" BOOLEAN DEFAULT FALSE;
+-- =========================================================================
+
 -- 1. Create the `users` table to store custom user profiles & memberships
 CREATE TABLE IF NOT EXISTS public.users (
     uid UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
@@ -10,7 +27,17 @@ CREATE TABLE IF NOT EXISTS public.users (
     "isPremium" BOOLEAN DEFAULT FALSE,
     "premiumUntil" TIMESTAMPTZ,
     "createdAt" TIMESTAMPTZ DEFAULT NOW(),
-    "billingHistory" JSONB DEFAULT '[]'::jsonb
+    "billingHistory" JSONB DEFAULT '[]'::jsonb,
+    country TEXT,
+    phone_number TEXT,
+    learning_reason TEXT,
+    bio TEXT,
+    avatar_url TEXT,
+    streak_count INTEGER DEFAULT 0,
+    last_activity_date TIMESTAMPTZ,
+    lessons_completed JSONB DEFAULT '{}'::jsonb,
+    xp_points INTEGER DEFAULT 0,
+    is_premium BOOLEAN DEFAULT FALSE
 );
 
 -- Enable Row Level Security (RLS)

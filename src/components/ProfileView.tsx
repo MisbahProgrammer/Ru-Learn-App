@@ -246,14 +246,29 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
         .getPublicUrl(filePath);
 
       // 4. Update the user record
-      const { error: dbError } = await supabase
-        .from('users')
-        .update({
-          avatar_url: publicUrl
-        })
-        .eq('uid', user.id);
+      try {
+        const { error: dbError } = await supabase
+          .from('users')
+          .update({
+            avatar_url: publicUrl
+          })
+          .eq('uid', user.id);
 
-      if (dbError) throw dbError;
+        if (dbError) {
+          console.warn("Could not save avatar url to database:", dbError);
+          // If column is missing, run local update but warn user
+          if (dbError.message?.includes('column') || dbError.code === '42703') {
+            toast.warning('Profile picture saved locally but your "users" table is missing the "avatar_url" column. Please run calculations in "/supabase_schema.sql" to fix your database schema!');
+          } else {
+            throw dbError;
+          }
+        } else {
+          toast.success('Profile picture updated on server!');
+        }
+      } catch (dbErr: any) {
+        console.error("Supabase DB error during avatar saving:", dbErr);
+        toast.info("Avatar saved locally, but database sync failed.");
+      }
 
       updateProfileState({
         ...profile,
@@ -262,7 +277,6 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
       });
 
       toast.dismiss(toastId);
-      toast.success('Profile picture updated!');
     } catch (err: any) {
       console.error(err);
       toast.dismiss(toastId);
@@ -297,7 +311,8 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
 
       if (!supabase) throw new Error('Supabase client is not initialized.');
 
-      const { error } = await supabase
+      // Race the actual Supabase update with an 8-second timeout to prevent infinite freezing/hanging
+      const updatePromise = supabase
         .from('users')
         .update({
           displayName,
@@ -308,7 +323,26 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
         })
         .eq('uid', user.id);
 
-      if (error) throw error;
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Connection timed out. Please check your internet or Supabase project status.')), 8000)
+      );
+
+      const { error } = (await Promise.race([updatePromise, timeoutPromise])) as any;
+
+      if (error) {
+        // Interpret missing column errors explicitly to guide the user on running migrations
+        const errMsg = error.message || String(error);
+        if (
+          errMsg.includes('column') || 
+          errMsg.includes('relation') || 
+          error.code === '42703'
+        ) {
+          throw new Error(
+            'Missing columns in your database table. Your Supabase "users" table does not have columns like "country", "phone_number", "learning_reason", or "bio". To fix this, please run the ALTER TABLE sql queries listed inside of "/supabase_schema.sql" in your Supabase SQL Editor.'
+          );
+        }
+        throw error;
+      }
 
       updateProfileState({
         ...profile,
@@ -322,7 +356,20 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
       toast.success('Profile saved successfully!');
     } catch (err: any) {
       console.error(err);
-      toast.error('Failed to save profile: ' + (err.message || String(err)));
+      const friendlyMessage = err.message || String(err);
+      toast.error('Failed to save profile: ' + friendlyMessage, {
+        duration: 8000
+      });
+      
+      // Fallback to local update so the UI operates correctly for the current tab state
+      updateProfileState({
+        ...profile,
+        displayName,
+        country,
+        phone_number: phoneNumberFull,
+        learning_reason: finalReason,
+        bio
+      });
     } finally {
       setSavingProfile(false);
     }
