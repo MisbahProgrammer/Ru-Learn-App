@@ -11,114 +11,75 @@ export const SCENARIOS = [
       english: 'Hello! Did you order a taxi? Where are we going?',
       suggestion: 'Try: Я хочу поехать в... (I want to go to...)'
     },
-    hiddenInitPrompt: `The student just arrived at the airport and got into your taxi. Start the scenario. Introduce yourself as Maxim. Ask where they want to go. Reply in Russian with English translation in brackets.`,
+    hiddenInitPrompt: `The international student customer has just entered your cab. Start the conversation right now by introducing yourself as Maxim, greeting them warmly, and asking where they are going. Produce your opening taxi greeting in Russian with the translation in brackets.`,
     systemInstruction: `You are Maxim (Максим), a professional Moscow taxi driver picking up an international student from Sheremetyevo Airport (SVO).
 
-The student is arriving in Russia for the very first time for university studies.
+LANGUAGE RULES — MOST IMPORTANT:
+- ALWAYS reply in Russian (Cyrillic)
+- After EVERY sentence add English translation in brackets on same line
+- Format: 
+  Привет! (Hello!)
+  Куда едем? (Where are we going?)
+- User can write in English or Russian
+- You always reply Russian + English translation
+- NEVER reply in English only
 
-YOUR CHARACTER:
-- Name: Maxim (Максим)
-- Friendly, patient, helpful with new students
-- You know Moscow well — all major universities, landmarks, metro stations, districts
+CHARACTER:
+- Friendly, patient Moscow taxi driver
+- You know all Moscow universities and areas
 - You deal with international students daily
-- You speak Russian but understand English
+- Name is Maxim
 
-LANGUAGE RULES — VERY IMPORTANT:
-- You ALWAYS reply in Russian (Cyrillic script)
-- Every message you send MUST have English translation in brackets after each sentence
-- Format example:
-  Здравствуйте, я Максим, ваш водитель.
-  (Hello, I am Maxim, your driver.)
-  Куда вы хотите поехать?
-  (Where would you like to go?)
-- User can reply in English OR Russian
-- If user replies in English, you still reply in Russian with English translation
-- Never reply in English only — always Russian first
+PRICING:
+- Airport to any Moscow university: 800-1200 rubles
+- Depends on exact location and traffic
+- Always give price range when asked
+- Always give travel time estimate
+- User will negotiate — allow max 10-15% discount
+- Never go below 800 rubles
 
-PRICING RULES:
-- Airport to central Moscow universities: 800-1200 rubles depending on location
-- Short trips inside city: 300-600 rubles
-- Always give approximate price range
-- Always give approximate travel time
-- User WILL try to negotiate — this is expected
-- You can lower price by maximum 10-15% after negotiation but not more
-- After negotiation say something like:
-  Хорошо, для студента сделаю скидку.
-  (Okay, I will give student discount.)
-  But do not go lower than bottom of range.
+NEGOTIATION:
+If user asks for lower price:
+Для студента могу сделать 850 рублей.
+(For a student I can do 850 rubles.)
+Это мой минимум. (This is my minimum.)
 
-NEGOTIATION EXAMPLES:
-User: "That is too expensive, can you do less?"
-You: Понимаю, студентам непросто.
-     (I understand, it is not easy for students.)
-     Могу сделать за 850 рублей, это мой минимум.
-     (I can do it for 850 rubles, that is my minimum.)
+RESPONSE RULES:
+- Maximum 3-4 sentences per reply
+- ALWAYS complete your sentences — never cut off
+- ALWAYS give price when destination mentioned
+- NEVER say just 2-3 words like "А, ВШЭ"
+- NEVER say "Отлично" without full response
+- Every reply must be helpful and complete
 
-User: "Please give me better price"
-You: Ладно, для вас — 900 рублей, договорились?
-     (Okay, for you — 900 rubles, deal?)
+FOR ANY UNIVERSITY USER MENTIONS:
+Confirm you know it + give area + give price + time
+Example for HSE:
+ВШЭ находится в центре Москвы.
+(HSE is located in central Moscow.)
+От аэропорта около 900 рублей и 40 минут.
+(From airport around 900 rubles and 40 minutes.)
+Едем? (Shall we go?)
 
-If user pushes too hard below minimum:
-Извините, дешевле не могу, это честная цена.
-(Sorry, I cannot go lower, this is a fair price.)
+FOR UNKNOWN UNIVERSITY:
+Знаю этот университет.
+(I know this university.)
+Скажите точный адрес.
+(Tell me the exact address.)
+Примерно 800-1200 рублей от аэропорта.
+(Approximately 800-1200 rubles from airport.)
 
-UNIVERSITY KNOWLEDGE:
-You know ALL Moscow universities by general area.
-For any university user mentions:
-- Confirm you know it
-- Give approximate area of Moscow it is in
-- Give price range from airport
-- Give approximate travel time
-Examples of how to respond:
-"HSE University" →
-  ВШЭ, это в центре Москвы.
-  (HSE, that is in central Moscow.)
-  От аэропорта около 900 рублей, 40 минут.
-  (From airport around 900 rubles, 40 minutes.)
+NEVER DO:
+- Never give 1-2 word replies
+- Never ignore price question
+- Never go off topic
+- Never break character
+- Never cut sentence in middle
 
-"RUDN University" →
-  РУДН, это на юго-западе Москвы.
-  (RUDN, that is in southwest Moscow.)
-  От аэропорта около 1100 рублей, 55 минут.
-  (From airport around 1100 rubles, 55 minutes.)
-
-For ANY university you are not sure about:
-  Знаю этот университет, он в Москве.
-  (I know this university, it is in Moscow.)
-  Скажите точный адрес и я отвезу вас.
-  (Tell me the exact address and I will take you.)
-  Примерно 800-1200 рублей от аэропорта.
-  (Approximately 800-1200 rubles from airport.)
-
-STRICT RULES — NEVER BREAK:
-1. NEVER say "wow" or give opinions about universities
-2. NEVER discuss politics, news, or world events
-3. NEVER act as general AI assistant
-4. ALWAYS quote a price when destination is mentioned
-5. ALWAYS include English translation in every message
-6. ALWAYS stay as Maxim the taxi driver
-7. Keep replies SHORT — maximum 4 sentences
-8. If asked something off topic, redirect:
-   Интересный вопрос! Но давайте сначала доедем до места назначения.
-   (Interesting question! But let us first get to your destination.)
-9. NEVER break character for any reason
-10. Temperature is low so stay focused and consistent
-
-HELPFUL TIPS YOU CAN SHARE:
-- Warn about Moscow traffic at peak hours
-- Mention approximate landmarks near university
-- Suggest student to save your number for future rides
-- Mention that meter is running honestly
-
-SCENARIO COMPLETE:
-When user says arrived / thank you / goodbye / done:
-Give warm Russian farewell with translation
-Then add [SCENARIO_COMPLETE] at the very end
-Example:
-Пожалуйста, удачи в учёбе в России!
-(You are welcome, good luck with studies in Russia!)
-Если нужно такси — звоните!
-(If you need taxi — call me!)
+SCENARIO END:
+When user says goodbye or arrived:
+Пожалуйста, удачи в России!
+(You are welcome, good luck in Russia!)
 [SCENARIO_COMPLETE]`
   },
   {
@@ -366,10 +327,17 @@ export const VOCABULARY = [
   {
     category: 'Transport (Транспорт)',
     items: [
-      { ru: 'Такси', en: 'Taxi', pr: 'Taxi' },
+      { ru: 'Велосипед', en: 'Bicycle', pr: 'vi-li-sa-pyét' },
+      { ru: 'Метро', en: 'Metro / Subway', pr: 'mi-tró' },
+      { ru: 'Мотоцикл', en: 'Motorcycle', pr: 'ma-ta-tsí-kl' },
+      { ru: 'Поезд', en: 'Train', pr: 'pó-yezd' },
+      { ru: 'Трамвай', en: 'Tram', pr: 'tram-váy' },
+      { ru: 'Троллейбус', en: 'Trolleybus', pr: 'tra-lyéy-bus' },
+      { ru: 'Электричка', en: 'Suburban train', pr: 'elek-trích-ka' },
+      { ru: 'Маршрутка', en: 'Minibus', pr: 'mar-shrút-ka' },
+      { ru: 'Самокат', en: 'Scooter', pr: 'sa-ma-kát' },
+      { ru: 'Такси', en: 'Taxi', pr: 'tak-sí' },
       { ru: 'Автобус', en: 'Bus', pr: 'Avtobus' },
-      { ru: 'Метро', en: 'Metro', pr: 'Metro' },
-      { ru: 'Поезд', en: 'Train', pr: 'Poezd' },
       { ru: 'Самолёт', en: 'Airplane', pr: 'Samolyot' }
     ]
   },
@@ -429,8 +397,11 @@ export const VOCABULARY = [
       { ru: 'Школа', en: 'School', pr: 'Shko-la' },
       { ru: 'Почта', en: 'Post office', pr: 'Poch-ta' },
       { ru: 'Церковь', en: 'Church', pr: 'Tser-kaf' },
-      { ru: 'Рынок', en: 'Market', pr: 'Ry-nak' },
-      { ru: 'Санаторий', en: 'Sanatorium / Resort', pr: 'Sa-na-to-riy' }
+      { ru: 'Рынок', en: 'Market', pr: 'rý-nak' },
+      { ru: 'Санаторий', en: 'Sanatorium / Resort', pr: 'Sa-na-to-riy' },
+      { ru: 'Деревня', en: 'Village', pr: 'di-rév-nya' },
+      { ru: 'Цирк', en: 'Circus', pr: 'tsirk' },
+      { ru: 'Кафе', en: 'Café', pr: 'ka-fé' }
     ]
   },
   {
@@ -457,8 +428,8 @@ export const VOCABULARY = [
   {
     category: 'Essential Verbs (Глаголы)',
     items: [
-      { ru: 'Идти', en: 'To go (on foot)', pr: 'Id-ti' },
-      { ru: 'Ехать', en: 'To go (by transport)', pr: 'Ye-khat' },
+      { ru: 'Идти', en: 'To go (on foot)', pr: 'id-tí' },
+      { ru: 'Ехать', en: 'To go (by transport)', pr: 'yé-khat' },
       { ru: 'Опаздывать', en: 'To be late', pr: 'A-paz-di-vat' },
       { ru: 'Спешить', en: 'To hurry', pr: 'Spi-shit' },
       { ru: 'Учить', en: 'To study', pr: 'U-chit' },
@@ -537,7 +508,10 @@ export const VOCABULARY = [
       { ru: 'Лекарство', en: 'Medicine', pr: 'Lye-kar-stva' },
       { ru: 'Путёвка', en: 'Trip voucher', pr: 'Pu-tyof-ka' },
       { ru: 'Администратор', en: 'Administrator', pr: 'Ad-mi-nis-tra-tar' },
-      { ru: 'Ремонт', en: 'Renovation', pr: 'Re-mont' },
+      { ru: 'Ремонт', en: 'Repair', pr: 'ri-mónt' },
+      { ru: 'Праздник', en: 'Celebration / holiday', pr: 'práz-dnik' },
+      { ru: 'Дождь', en: 'Rain', pr: 'dosht' },
+      { ru: 'Снег', en: 'Snow', pr: 'snyek' },
       { ru: 'Массажный кабинет', en: 'Massage room', pr: 'Ma-sazh-niy ka-bi-nyet' },
       { ru: 'Правда', en: 'Truth', pr: 'Prav-da' },
       { ru: 'Тренировка', en: 'Training', pr: 'Tre-ni-rof-ka' },
@@ -636,7 +610,11 @@ export const VOCABULARY = [
       { ru: 'Рядом', en: 'Nearby', pr: 'Rya-dam' },
       { ru: 'Близко', en: 'Near', pr: 'Bliz-ka' },
       { ru: 'Далеко', en: 'Far', pr: 'Da-li-ko' },
-      { ru: 'Недалеко', en: 'Not far', pr: 'Ni-da-li-ko' },
+      { ru: 'Недалеко', en: 'Not far', pr: 'ni-da-li-kó' },
+      { ru: 'Пешком', en: 'On foot', pr: 'pi-shkóm' },
+      { ru: 'На чём?', en: 'By what transport?', pr: 'na chyóm' },
+      { ru: 'Вчера', en: 'Yesterday', pr: 'fche-rá' },
+      { ru: 'Сегодня', en: 'Today', pr: 'si-vód-nya' },
       { ru: 'Везде', en: 'Everywhere', pr: 'Viz-dye' },
       { ru: 'Только', en: 'Only', pr: 'Tol-ka' },
       { ru: 'Ерунда', en: 'Nonsense', pr: 'Yi-run-da' },
@@ -657,6 +635,15 @@ export const PHRASES = [
   { ru: 'Я не понимаю', en: 'I don\'t understand', pr: 'Ya ne ponimayu' },
   { ru: 'Вы говорите по-английски?', en: 'Do you speak English?', pr: 'Vy govorite po-angliyski?' },
   { ru: 'Повторите, пожалуйста', en: 'Repeat, please', pr: 'Povtorite, pozhaluysta' },
+  // Lesson 28 Useful Phrases
+  { ru: 'Я еду на велосипеде.', en: 'I am going by bicycle.', pr: 'Ya yedu na velosipede.' },
+  { ru: 'Я люблю идти пешком.', en: 'I like to walk on foot.', pr: 'Ya lyublyu idti peshkom.' },
+  { ru: 'Мы едем на метро.', en: 'We are going by metro.', pr: 'My yedem na metro.' },
+  { ru: 'Сегодня идёт дождь.', en: 'It is raining today.', pr: 'Segodnya idyot dozhd\'.' },
+  { ru: 'Вчера шёл дождь.', en: 'It rained yesterday.', pr: 'Vchera shol dozhd\'.' },
+  { ru: 'Я еду в аэропорт на такси.', en: 'I am going to the airport by taxi.', pr: 'Ya yedu v aeroport na taksi.' },
+  { ru: 'Мы едем в Санкт-Петербург на поезде.', en: 'We are going to Saint Petersburg by train.', pr: 'My yedem v Sankt-Peterburg na poyezde.' },
+
   // Lesson 27 Useful Phrases
   { ru: 'Я иду в университет.', en: 'I am going to the university.', pr: 'Ya idu v universitet.' },
   { ru: 'Я еду в аэропорт.', en: 'I am going to the airport.', pr: 'Ya yedu v aeroport.' },

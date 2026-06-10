@@ -921,32 +921,48 @@ export const dailyLessons: DailyLessonData[] = [
   },
   {
     dayNumber: 28,
-    title: "Registering Your Student Card (Студенческий)",
+    title: "Lesson 28: Transport, Places & Motion Verbs",
     alphabetSection: {
-      letters: ["С", "Т", "Д"],
-      audioHint: "University credentials: С [s], Т [t], Д [d]"
+      letters: ["В", "М", "П"],
+      audioHint: "Transport and Action letters: В [v], М [m], П [p]"
     },
     vocabularySection: {
       words: [
-        { russian: "Студенческий", phonetic: "stoo-dyen-chees-keey", english: "Student ID card" },
-        { russian: "Пропуск", phonetic: "proh-poosk", english: "Campus security pass" },
-        { russian: "Читательский", phonetic: "chee-tah-tyel'-skeey", english: "Library card" },
-        { russian: "Кафедра", phonetic: "kah-fye-drah", english: "Academic department desk" }
+        { russian: "Велосипед", phonetic: "vi-li-sa-pyét", english: "Bicycle" },
+        { russian: "Метро", phonetic: "mi-tró", english: "Metro / Subway" },
+        { russian: "Деревня", phonetic: "di-rév-nya", english: "Village" },
+        { russian: "Ремонт", phonetic: "ri-mónt", english: "Repair" },
+        { russian: "Дождь", phonetic: "dosht", english: "Rain" },
+        { russian: "Пешком", phonetic: "pi-shkóm", english: "On foot" },
+        { russian: "Идти", phonetic: "id-tí", english: "To go (on foot)" },
+        { russian: "Ехать", phonetic: "yé-khat", english: "To go (by transport)" }
       ]
     },
     sentenceSection: {
       sentences: [
         {
-          russian: "Вот мой студенческий билет.",
-          phonetic: "Vot moy stoo-dyen-chees-keey bee-lyet.",
-          english: "Here is my student card.",
-          context: "Claiming library books or student tickets in museums."
+          russian: "Я еду на велосипеде.",
+          phonetic: "Ya yedu na velosipede.",
+          english: "I am going by bicycle.",
+          context: "Expressing active transport travel."
         },
         {
-          russian: "Мне нужно продлить пропуск.",
-          phonetic: "Mnye noozh-nah prahd-leet' proh-poosk.",
-          english: "I need to extend my campus pass expiration.",
-          context: "Dealing with administration during semester registration."
+          russian: "Я люблю идти пешком.",
+          phonetic: "Ya lyublyu idti peshkom.",
+          english: "I like to walk on foot.",
+          context: "Expressing active movement."
+        },
+        {
+          russian: "Сегодня идёт дождь.",
+          phonetic: "Segodnya idyot dozhd'.",
+          english: "It is raining today.",
+          context: "Describing today's weather."
+        },
+        {
+          russian: "Я еду в аэропорт на такси.",
+          phonetic: "Ya yedu v aeroport na taksi.",
+          english: "I am going to the airport by taxi.",
+          context: "Stated travel plans using transport option."
         }
       ]
     },

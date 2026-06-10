@@ -536,9 +536,10 @@ export function ScenarioChat({
         },
         {
           role: 'assistant',
-          content: parsed.russian,
+          content: openingReply,
+          parts: [{ text: openingReply }],
           russian: parsed.russian,
-          translation: parsed.translation,
+          translation: parsed.english, // parsed has direct English string
           phonetic: scenario.openingMessage?.phonetic,
           isOpening: true
         }
@@ -968,7 +969,7 @@ export function ScenarioChat({
                               const { correction: ruCorr, message: ruMsg } = partitionMessage(russianText, false);
                               const { correction: enCorr, message: enMsg } = partitionMessage(englishText, true);
 
-                              const hasCorrection = ruCorr.length > 0;
+                              const hasCorrection = !m.isOpening && ruCorr.length > 0;
                               const displayRuMsg = ruMsg || (hasCorrection ? "" : russianText);
                               const displayEnMsg = enMsg || (hasCorrection ? "" : englishText);
 
@@ -1009,7 +1010,7 @@ export function ScenarioChat({
                                       <div className="flex flex-col">
                                         <p style={{
                                           fontSize: '1rem',
-                                          fontWeight: '500',
+                                          fontWeight: '400',
                                           color: '#111',
                                           wordBreak: 'break-word',
                                           whiteSpace: 'normal',
@@ -1039,8 +1040,9 @@ export function ScenarioChat({
                                   {displayEnMsg && (
                                     <p style={{
                                       fontSize: '0.75rem',
+                                      opacity: 0.7,
                                       fontStyle: 'italic',
-                                      color: 'rgba(0, 0, 0, 0.5)',
+                                      color: '#4b5563',
                                       marginTop: '4px',
                                       display: 'block',
                                       wordBreak: 'break-word'
