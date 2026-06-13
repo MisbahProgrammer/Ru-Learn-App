@@ -37,6 +37,7 @@ import { MobileAppView } from '@/components/MobileAppView';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { StreakNoticeToast } from './ToastNotification';
 
 import { 
   DropdownMenu, 
@@ -133,12 +134,19 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = getLocalDateString(yesterday);
 
-  // Streak remains active if user's last activity is today or yesterday
-  const isStreakActive = lastActiveDateOnly === todayStr || lastActiveDateOnly === yesterdayStr;
+  // Streak remains active if user's last activity is today or yesterday, or is at risk
+  const isStreakActive = lastActiveDateOnly === todayStr || lastActiveDateOnly === yesterdayStr || !!profile?.streakAtRisk;
   const activeStreakVal = isStreakActive ? streakCount : 0;
 
   const currentDayOfWeek = (new Date().getDay() + 6) % 7; // 0 = Mon, 1 = Tue, ..., 6 = Sun
   const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  const getWeekDayDateString = (idx: number) => {
+    const today = new Date();
+    const dayOffset = idx - currentDayOfWeek;
+    today.setDate(today.getDate() + dayOffset);
+    return getLocalDateString(today);
+  };
 
   const displayName = user?.displayName || profile?.displayName || user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Scholar';
   const firstName = displayName.split(' ')[0];
@@ -366,6 +374,15 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
                   <h1 className="text-2xl md:text-3xl font-light tracking-tight mb-2">Welcome back, <span className="font-serif italic">{firstName}</span>.</h1>
                   <p className="text-neutral-500 text-sm md:text-base">Your journey to Russia starts here. You're part of the {profile?.scholarshipType || 'Scholar'} class.</p>
                   
+                  {profile?.streakAtRisk && (
+                    <div className="flex items-center gap-3 bg-red-50/80 border border-red-100 text-red-800 p-4 rounded-2xl text-sm mt-6 shadow-xs animate-pulse">
+                      <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+                      <div>
+                        <span className="font-bold text-red-700">Streak At Risk!</span> You missed yesterday. Complete 10 minutes of active learning today to save your streak! 🔥
+                      </div>
+                    </div>
+                  )}
+
                   {/* Streak & Countdown Widget */}
                   <div className="flex flex-col md:flex-row md:items-center gap-4 mt-6">
                     {/* Daily Streak Row */}
@@ -381,22 +398,23 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
                       <div className="h-8 w-[1px] bg-neutral-200 mx-2 hidden min-[360px]:block" />
                       <div className="flex justify-between items-center flex-1 gap-1.5 min-w-[150px]">
                         {weekDays.map((day, idx) => {
-                          const isCompleted = isStreakActive && (
-                            idx <= currentDayOfWeek && (currentDayOfWeek - idx) < activeStreakVal
-                          );
+                          const dateStr = getWeekDayDateString(idx);
+                          const isCompleted = !!(profile?.week_activity?.[dateStr]);
                           const isToday = idx === currentDayOfWeek;
+                          const isTodayActiveButNotEarned = isToday && !isCompleted;
+
                           return (
                             <div key={idx} className="flex flex-col items-center gap-1">
                               <span className="text-[9px] text-neutral-400 font-semibold">{day}</span>
                               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all relative ${
                                 isCompleted 
-                                  ? 'bg-orange-500 text-white shadow-xs' 
-                                  : isToday 
-                                    ? 'bg-orange-100 border border-orange-300 text-orange-700 animate-pulse' 
+                                  ? 'bg-emerald-500 text-white shadow-xs border border-emerald-600' 
+                                  : isTodayActiveButNotEarned 
+                                    ? 'bg-orange-100 border-2 border-orange-400 text-orange-700 animate-pulse outline outline-4 outline-orange-100/50' 
                                     : 'bg-neutral-100 text-neutral-400'
                               }`}>
                                 {isCompleted ? '✓' : ''}
-                                {isToday && !isCompleted && '•'}
+                                {isTodayActiveButNotEarned && '•'}
                               </div>
                             </div>
                           );
@@ -637,6 +655,12 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
           </div>
         </Tabs>
       </main>
+      {profile?.uid && (
+        <StreakNoticeToast 
+          uid={profile.uid} 
+          isTodayEarned={!!profile.week_activity?.[todayStr]} 
+        />
+      )}
     </div>
   );
 }

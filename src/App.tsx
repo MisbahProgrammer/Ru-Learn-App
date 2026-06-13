@@ -8,6 +8,14 @@ import { AlertCircle, Terminal } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import AuthCallback from './components/AuthCallback';
+import { ActiveTimeTracker } from './utils/activeTimeTracker';
+import { 
+  processStreakOnLoad, 
+  earnStreakToday, 
+  syncStreakWithDatabase, 
+  getLocalDateString, 
+  StreakData 
+} from './utils/streakService';
 
 interface AuthContextType {
   user: any | null;
@@ -110,6 +118,8 @@ export default function App() {
           billingHistory: [],
           streak_count: 0,
           last_activity_date: null,
+          longest_streak: 0,
+          week_activity: {},
           lessons_completed: {},
           xp_points: 0,
           country: currentUser?.user_metadata?.country || '',
@@ -135,10 +145,14 @@ export default function App() {
             .eq('uid', uid)
             .maybeSingle();
           if (secondRetry) {
+            const { streakData, atRisk } = processStreakOnLoad(secondRetry);
             setProfile({
               ...secondRetry,
-              streak_count: secondRetry.streak_count ?? 0,
-              last_activity_date: secondRetry.last_activity_date ?? null,
+              streak_count: streakData.currentStreak,
+              last_activity_date: streakData.lastActiveDate ? `${streakData.lastActiveDate}T00:00:00.000Z` : null,
+              longest_streak: streakData.longestStreak,
+              week_activity: streakData.weekActivity,
+              streakAtRisk: atRisk,
               lessons_completed: secondRetry.lessons_completed ?? {},
               xp_points: secondRetry.xp_points ?? 0
             });
@@ -146,18 +160,29 @@ export default function App() {
         } else {
           setProfile({
             ...insertedData,
-            streak_count: insertedData.streak_count ?? 0,
-            last_activity_date: insertedData.last_activity_date ?? null,
+            streak_count: 0,
+            last_activity_date: null,
+            longest_streak: 0,
+            week_activity: {},
             lessons_completed: insertedData.lessons_completed ?? {},
             xp_points: insertedData.xp_points ?? 0
           });
         }
       } else {
-        // 3. When restoring or updating an existing profile, never touch or reset trialStartDate field
+        // 3. Process existing user profile streak calculation on load
+        const { streakData, atRisk } = processStreakOnLoad(data);
+        
+        if (streakData.currentStreak !== data.streak_count || data.longest_streak === undefined) {
+          syncStreakWithDatabase(uid, false, streakData);
+        }
+
         setProfile({
           ...data,
-          streak_count: data.streak_count ?? 0,
-          last_activity_date: data.last_activity_date ?? null,
+          streak_count: streakData.currentStreak,
+          last_activity_date: streakData.lastActiveDate ? `${streakData.lastActiveDate}T00:00:00.000Z` : null,
+          longest_streak: streakData.longestStreak,
+          week_activity: streakData.weekActivity,
+          streakAtRisk: atRisk,
           lessons_completed: data.lessons_completed ?? {},
           xp_points: data.xp_points ?? 0
         });
@@ -278,6 +303,8 @@ export default function App() {
       billingHistory: [],
       streak_count: 0,
       last_activity_date: null,
+      longest_streak: 0,
+      week_activity: {},
       lessons_completed: {},
       xp_points: 0
     });
@@ -342,57 +369,31 @@ export default function App() {
     const oldXp = profile.xp_points || 0;
     const updatedXp = alreadyCompleted ? oldXp : oldXp + 10;
 
-    // 3. Streak check based on last_activity_date
-    const getLocalDateString = (d: Date) => {
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-
-    const todayStr = getLocalDateString(new Date());
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = getLocalDateString(yesterday);
-
+    // 3. Keep existing streak parameters intact! ActiveTimeTracker handles streak extension when 10 active mins are earned.
     const lastActive = profile.last_activity_date;
-    const lastActiveDateOnly = lastActive ? lastActive.split('T')[0] : null;
+    const streakCount = profile.streak_count ?? 0;
+    const longestStreak = profile.longest_streak ?? 0;
+    const weekActivity = profile.week_activity ?? {};
 
-    let newStreak = profile.streak_count || 0;
-    if (!lastActiveDateOnly) {
-      newStreak = 1;
-    } else if (lastActiveDateOnly === todayStr) {
-      // If today -> no change
-    } else if (lastActiveDateOnly === yesterdayStr) {
-      // If yesterday -> streak_count + 1
-      newStreak = (profile.streak_count || 0) + 1;
-    } else {
-      // If older -> reset to 1
-      newStreak = 1;
-    }
-
-    const nowIso = new Date().toISOString();
-
-    // 4. Update local profile context instantly (don't wait for DB)
     const updatedProfile = {
       ...profile,
       lessons_completed: lessonsCompleted,
       xp_points: updatedXp,
-      streak_count: newStreak,
-      last_activity_date: nowIso
+      streak_count: streakCount,
+      last_activity_date: lastActive,
+      longest_streak: longestStreak,
+      week_activity: weekActivity
     };
     setProfile(updatedProfile);
 
-    // 5. Saves to Supabase users table in background
+    // Saves progress to Supabase in background
     if (!profile.isGuest && user?.id) {
       try {
         supabase
           .from('users')
           .update({
             lessons_completed: lessonsCompleted,
-            xp_points: updatedXp,
-            streak_count: newStreak,
-            last_activity_date: nowIso
+            xp_points: updatedXp
           })
           .eq('uid', user.id)
           .then(({ error }) => {
@@ -405,6 +406,54 @@ export default function App() {
       }
     }
   };
+
+  // Track active time and earn streak
+  useEffect(() => {
+    if (!profile?.uid) return;
+
+    const todayStr = getLocalDateString();
+    const isTodayEarned = profile.last_activity_date 
+      ? (profile.last_activity_date.split('T')[0] === todayStr) 
+      : false;
+
+    const tracker = new ActiveTimeTracker(
+      profile.uid,
+      async () => {
+        const currentData: StreakData = {
+          currentStreak: profile.streak_count ?? 0,
+          lastActiveDate: profile.last_activity_date ? profile.last_activity_date.split('T')[0] : null,
+          longestStreak: profile.longest_streak ?? 0,
+          weekActivity: profile.week_activity ?? {}
+        };
+
+        const updated = earnStreakToday(currentData, todayStr);
+
+        setProfile((curr: any) => {
+          if (!curr) return null;
+          return {
+            ...curr,
+            streak_count: updated.currentStreak,
+            last_activity_date: `${updated.lastActiveDate}T00:00:00.000Z`,
+            longest_streak: updated.longestStreak,
+            week_activity: updated.weekActivity,
+            streakAtRisk: false // completed today, so not at risk
+          };
+        });
+
+        const success = await syncStreakWithDatabase(profile.uid, !!profile.isGuest, updated);
+        if (success) {
+          toast.success(`Streak extended! 10 active minutes completed today! 🔥 ${updated.currentStreak}-Day Streak`);
+        } else {
+          toast.warning('Offline backup saved, but failed to sync online.');
+        }
+      },
+      isTodayEarned
+    );
+
+    return () => {
+      tracker.destroy();
+    };
+  }, [profile?.uid, profile?.last_activity_date ? profile.last_activity_date.split('T')[0] : null]);
 
   const isPremium = profile?.isPremium || false;
 
