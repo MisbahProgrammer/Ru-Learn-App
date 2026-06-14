@@ -29,6 +29,7 @@ interface AuthContextType {
   updateProfileState: (data: any) => void;
   refreshProfile: () => Promise<void>;
   updateLessonProgress: (lessonId: string) => void;
+  saveDailyGoal: (minutes: number) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -127,7 +128,8 @@ export default function App() {
           learning_reason: currentUser?.user_metadata?.learning_reason || '',
           bio: currentUser?.user_metadata?.bio || '',
           avatar_url: currentUser?.user_metadata?.avatar_url || '',
-          is_premium: false
+          is_premium: false,
+          daily_goal_minutes: 10
         };
 
         const { data: insertedData, error: insertError } = await supabase
@@ -146,6 +148,9 @@ export default function App() {
             .maybeSingle();
           if (secondRetry) {
             const { streakData, atRisk } = processStreakOnLoad(secondRetry);
+            const goalBackupStr = localStorage.getItem(`daily_goal_backup_${uid}`);
+            const goalBackup = goalBackupStr ? parseInt(goalBackupStr, 10) : 10;
+
             setProfile({
               ...secondRetry,
               streak_count: streakData.currentStreak,
@@ -154,7 +159,8 @@ export default function App() {
               week_activity: streakData.weekActivity,
               streakAtRisk: atRisk,
               lessons_completed: secondRetry.lessons_completed ?? {},
-              xp_points: secondRetry.xp_points ?? 0
+              xp_points: secondRetry.xp_points ?? 0,
+              daily_goal_minutes: secondRetry.daily_goal_minutes ?? goalBackup
             });
           }
         } else {
@@ -165,7 +171,8 @@ export default function App() {
             longest_streak: 0,
             week_activity: {},
             lessons_completed: insertedData.lessons_completed ?? {},
-            xp_points: insertedData.xp_points ?? 0
+            xp_points: insertedData.xp_points ?? 0,
+            daily_goal_minutes: 10
           });
         }
       } else {
@@ -176,6 +183,9 @@ export default function App() {
           syncStreakWithDatabase(uid, false, streakData);
         }
 
+        const goalBackupStr = localStorage.getItem(`daily_goal_backup_${uid}`);
+        const goalBackup = goalBackupStr ? parseInt(goalBackupStr, 10) : 10;
+
         setProfile({
           ...data,
           streak_count: streakData.currentStreak,
@@ -184,7 +194,8 @@ export default function App() {
           week_activity: streakData.weekActivity,
           streakAtRisk: atRisk,
           lessons_completed: data.lessons_completed ?? {},
-          xp_points: data.xp_points ?? 0
+          xp_points: data.xp_points ?? 0,
+          daily_goal_minutes: data.daily_goal_minutes ?? goalBackup
         });
       }
     } catch (error) {
@@ -306,7 +317,8 @@ export default function App() {
       longest_streak: 0,
       week_activity: {},
       lessons_completed: {},
-      xp_points: 0
+      xp_points: 0,
+      daily_goal_minutes: 10
     });
     toast.success('Continuing as Guest. Progress will not be saved across sessions.');
   };
@@ -407,6 +419,48 @@ export default function App() {
     }
   };
 
+  const saveDailyGoal = async (minutes: number): Promise<boolean> => {
+    if (!profile) return false;
+
+    // 1. Update local state
+    setProfile((curr: any) => {
+      if (!curr) return null;
+      return {
+        ...curr,
+        daily_goal_minutes: minutes
+      };
+    });
+
+    // 2. Save in local backup key
+    localStorage.setItem(`daily_goal_backup_${profile.uid}`, minutes.toString());
+
+    // 3. Save to database if not guest
+    if (!profile.isGuest && user?.id) {
+      try {
+        const { error } = await supabase
+          .from('users')
+          .update({
+            daily_goal_minutes: minutes
+          })
+          .eq('uid', user.id);
+
+        if (error) {
+          // If the column does not exist on Supabase yet, ignore the error and use backup
+          if (error.message && error.message.includes('daily_goal_minutes')) {
+            console.warn('daily_goal_minutes column does not exist yet database level, saved to localStorage and state.');
+            return true;
+          }
+          throw error;
+        }
+        return true;
+      } catch (err: any) {
+        console.error('Failed to sync daily goal to database:', err);
+        return false;
+      }
+    }
+    return true;
+  };
+
   // Track active time and earn streak
   useEffect(() => {
     if (!profile?.uid) return;
@@ -415,6 +469,8 @@ export default function App() {
     const isTodayEarned = profile.last_activity_date 
       ? (profile.last_activity_date.split('T')[0] === todayStr) 
       : false;
+
+    const currentGoal = profile.daily_goal_minutes ?? 10;
 
     const tracker = new ActiveTimeTracker(
       profile.uid,
@@ -442,18 +498,19 @@ export default function App() {
 
         const success = await syncStreakWithDatabase(profile.uid, !!profile.isGuest, updated);
         if (success) {
-          toast.success(`Streak extended! 10 active minutes completed today! 🔥 ${updated.currentStreak}-Day Streak`);
+          toast.success(`Streak extended! ${currentGoal} active minutes completed today! 🔥 ${updated.currentStreak}-Day Streak`);
         } else {
           toast.warning('Offline backup saved, but failed to sync online.');
         }
       },
-      isTodayEarned
+      isTodayEarned,
+      currentGoal
     );
 
     return () => {
       tracker.destroy();
     };
-  }, [profile?.uid, profile?.last_activity_date ? profile.last_activity_date.split('T')[0] : null]);
+  }, [profile?.uid, profile?.last_activity_date ? profile.last_activity_date.split('T')[0] : null, profile?.daily_goal_minutes]);
 
   const isPremium = profile?.isPremium || false;
 
@@ -473,7 +530,8 @@ export default function App() {
       isPremium,
       updateProfileState,
       refreshProfile,
-      updateLessonProgress
+      updateLessonProgress,
+      saveDailyGoal
     }}>
       <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 overflow-x-hidden">
         {loading ? (

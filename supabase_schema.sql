@@ -15,6 +15,7 @@
 -- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "last_activity_date" TIMESTAMPTZ;
 -- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "longest_streak" INTEGER DEFAULT 0;
 -- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "week_activity" JSONB DEFAULT '{}'::jsonb;
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "daily_goal_minutes" INTEGER DEFAULT 10;
 -- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "lessons_completed" JSONB DEFAULT '{}'::jsonb;
 -- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "xp_points" INTEGER DEFAULT 0;
 -- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS "is_premium" BOOLEAN DEFAULT FALSE;
@@ -39,6 +40,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     last_activity_date TIMESTAMPTZ,
     longest_streak INTEGER DEFAULT 0,
     week_activity JSONB DEFAULT '{}'::jsonb,
+    daily_goal_minutes INTEGER DEFAULT 10,
     lessons_completed JSONB DEFAULT '{}'::jsonb,
     xp_points INTEGER DEFAULT 0,
     is_premium BOOLEAN DEFAULT FALSE

@@ -274,7 +274,7 @@ export function MobileAppView({ onBackToWeb }: { onBackToWeb?: () => void }) {
                   <div className="text-sm font-bold text-orange-400 flex items-center gap-1">
                     🔥 {activeStreakVal}-Day Streak
                   </div>
-                  <div className="text-[10px] text-neutral-400">Keep practicing daily to grow!</div>
+                  <div className="text-[10px] text-neutral-400">Target: {profile?.daily_goal_minutes || 10}m daily learning</div>
                 </div>
                 <div className="bg-neutral-800 text-neutral-200 rounded-xl px-2.5 py-1 text-xs font-bold border border-neutral-700 flex items-center gap-1 leading-none shrink-0">
                   🏆 {profile?.xp_points || 0} XP

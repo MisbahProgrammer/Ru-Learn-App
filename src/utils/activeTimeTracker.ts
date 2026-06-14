@@ -15,11 +15,16 @@ export class ActiveTimeTracker {
   private isCompleted: boolean = false;
   private lastActivityTime: number = Date.now();
   private idleThresholdMs: number = 60000; // 60 seconds of inactivity = idle
+  private goalSeconds: number = 600; // Default to 10 minutes
 
-  constructor(uid: string, onStreakEarned: () => void, isAlreadyEarned: boolean) {
+  constructor(uid: string, onStreakEarned: () => void, isAlreadyEarned: boolean, dailyGoalMinutes: number = 10) {
     this.uid = uid;
     this.onStreakEarned = onStreakEarned;
     this.isCompleted = isAlreadyEarned;
+    
+    // Fallback if NaN or invalid
+    const minutes = typeof dailyGoalMinutes === 'number' && dailyGoalMinutes > 0 ? dailyGoalMinutes : 10;
+    this.goalSeconds = minutes * 60;
 
     // Load previously accumulated active seconds for today from localStorage
     const todayStr = this.getTodayString();
@@ -27,7 +32,7 @@ export class ActiveTimeTracker {
     
     if (saved) {
       this.activeSeconds = parseInt(saved, 10);
-      if (this.activeSeconds >= 600) {
+      if (this.activeSeconds >= this.goalSeconds) {
         this.isCompleted = true;
       }
     }
@@ -106,8 +111,8 @@ export class ActiveTimeTracker {
       // Periodically update cached state to survive browser reloads
       localStorage.setItem(`active_seconds_${this.uid}_${todayStr}`, this.activeSeconds.toString());
 
-      // If progress hits the 10-minute threshold (600 seconds)
-      if (this.activeSeconds >= 600) {
+      // If progress hits the custom dynamic threshold
+      if (this.activeSeconds >= this.goalSeconds) {
         this.isCompleted = true;
         this.stopTracking();
         this.onStreakEarned();

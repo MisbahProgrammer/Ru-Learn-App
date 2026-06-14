@@ -21,7 +21,8 @@ import {
   Video,
   BookText,
   Smartphone,
-  Globe
+  Globe,
+  Target
 } from 'lucide-react';
 import { ALPHABET, SCENARIOS, CITY_IMAGES } from '@/constants';
 import { AlphabetView } from '@/components/AlphabetView';
@@ -34,6 +35,7 @@ import { GrammarView } from '@/components/GrammarView';
 import { DailyLesson } from '@/components/DailyLesson';
 import { WordOfTheDay } from '@/components/WordOfTheDay';
 import { MobileAppView } from '@/components/MobileAppView';
+import { DailyGoalModal } from '@/components/DailyGoalModal';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -48,11 +50,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
-  const { user, profile, signOut, isPremium, updateProfileState, updateLessonProgress } = useAuth();
+  const { user, profile, signOut, isPremium, updateProfileState, updateLessonProgress, saveDailyGoal } = useAuth();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [communityMemberCount, setCommunityMemberCount] = useState(0);
   const [signingOut, setSigningOut] = useState(false);
   const [viewMode, setViewMode] = useState<'web' | 'mobile'>('web');
+  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
 
   React.useEffect(() => {
     setActiveTab(initialTab);
@@ -378,7 +381,7 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
                     <div className="flex items-center gap-3 bg-red-50/80 border border-red-100 text-red-800 p-4 rounded-2xl text-sm mt-6 shadow-xs animate-pulse">
                       <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
                       <div>
-                        <span className="font-bold text-red-700">Streak At Risk!</span> You missed yesterday. Complete 10 minutes of active learning today to save your streak! 🔥
+                        <span className="font-bold text-red-700">Streak At Risk!</span> You missed yesterday. Complete {profile?.daily_goal_minutes || 10} minutes of active learning today to save your streak! 🔥
                       </div>
                     </div>
                   )}
@@ -391,9 +394,18 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
                         <span className="text-sm font-bold text-orange-600 flex items-center gap-1">
                           🔥 {activeStreakVal}-Day Streak
                         </span>
-                        <span className="text-[10px] text-orange-850 font-bold flex items-center gap-1 bg-orange-100/50 px-1.5 py-0.5 rounded-md mt-0.5">
-                          🏆 {profile?.xp_points || 0} XP
-                        </span>
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                          <span className="text-[10px] text-orange-850 font-bold flex items-center gap-1 bg-orange-100/50 px-1.5 py-0.5 rounded-md">
+                            🏆 {profile?.xp_points || 0} XP
+                          </span>
+                          <button
+                            onClick={() => setIsGoalModalOpen(true)}
+                            className="text-[10px] text-orange-700 hover:text-orange-950 font-bold flex items-center gap-1 bg-orange-100/30 hover:bg-orange-100/70 px-1.5 py-0.5 rounded-md transition-all cursor-pointer border border-orange-200/30"
+                            title="Adjust Daily Learning Goal"
+                          >
+                            <Target className="w-2.5 h-2.5 shrink-0 text-orange-500" /> Goal: {profile?.daily_goal_minutes || 10}m
+                          </button>
+                        </div>
                       </div>
                       <div className="h-8 w-[1px] bg-neutral-200 mx-2 hidden min-[360px]:block" />
                       <div className="flex justify-between items-center flex-1 gap-1.5 min-w-[150px]">
@@ -656,10 +668,18 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
         </Tabs>
       </main>
       {profile?.uid && (
-        <StreakNoticeToast 
-          uid={profile.uid} 
-          isTodayEarned={!!profile.week_activity?.[todayStr]} 
-        />
+        <>
+          <StreakNoticeToast 
+            uid={profile.uid} 
+            isTodayEarned={!!profile.week_activity?.[todayStr]} 
+          />
+          <DailyGoalModal
+            isOpen={isGoalModalOpen}
+            onClose={() => setIsGoalModalOpen(false)}
+            currentGoal={profile.daily_goal_minutes ?? 10}
+            onSave={saveDailyGoal}
+          />
+        </>
       )}
     </div>
   );
