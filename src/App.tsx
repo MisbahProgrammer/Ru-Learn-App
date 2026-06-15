@@ -28,7 +28,7 @@ interface AuthContextType {
   isPremium: boolean;
   updateProfileState: (data: any) => void;
   refreshProfile: () => Promise<void>;
-  updateLessonProgress: (lessonId: string) => void;
+  updateLessonProgress: (lessonId: string, forceValue?: boolean) => void;
   saveDailyGoal: (minutes: number) => Promise<boolean>;
 }
 
@@ -368,18 +368,29 @@ export default function App() {
     }
   };
 
-  const updateLessonProgress = (lessonId: string) => {
+  const updateLessonProgress = (lessonId: string, forceValue?: boolean) => {
     if (!profile) return;
 
     const lessonsCompleted = { ...(profile.lessons_completed || {}) };
     const alreadyCompleted = !!lessonsCompleted[lessonId];
     
-    // 1. Mark lesson as complete in lessons_completed
-    lessonsCompleted[lessonId] = true;
+    const targetState = forceValue !== undefined ? forceValue : !alreadyCompleted;
+    
+    if (targetState === alreadyCompleted) {
+      return;
+    }
 
-    // 2. Add 10 XP if not already completed
+    if (targetState) {
+      lessonsCompleted[lessonId] = true;
+      toast.success("Module completed! +10 XP earned 🔥");
+    } else {
+      delete lessonsCompleted[lessonId];
+      toast.info("Module marked as incomplete");
+    }
+
+    // 2. Add or subtract 10 XP
     const oldXp = profile.xp_points || 0;
-    const updatedXp = alreadyCompleted ? oldXp : oldXp + 10;
+    const updatedXp = targetState ? oldXp + 10 : Math.max(0, oldXp - 10);
 
     // 3. Keep existing streak parameters intact! ActiveTimeTracker handles streak extension when 10 active mins are earned.
     const lastActive = profile.last_activity_date;
