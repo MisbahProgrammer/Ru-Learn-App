@@ -88,15 +88,15 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
 
   const alphabetLessons = ['alphabet_vocals', 'alphabet_consonants', 'alphabet_modifiers', 'alphabet_reading', 'alphabet_review'];
   const alphabetCompletedCount = alphabetLessons.filter(id => lessonsCompleted[id]).length;
-  const alphabetPercentage = dailyLessonsPercentage;
+  const alphabetPercentage = Math.round((alphabetCompletedCount / alphabetLessons.length) * 100);
 
-  const grammarLessons = ['grammar_sentence_logic', 'grammar_pronouns', 'grammar_six_cases', 'grammar_verbs_aspects'];
+  const grammarLessons = ['grammar_sentence_logic', 'grammar_pronouns', 'grammar_six_cases', 'grammar_verbs_aspects', 'grammar_adjectives_lesson22'];
   const grammarCompletedCount = grammarLessons.filter(id => lessonsCompleted[id]).length;
-  const grammarPercentage = dailyLessonsPercentage;
+  const grammarPercentage = Math.round((grammarCompletedCount / grammarLessons.length) * 100);
 
-  const scenarioLessons = ['scenario_taxi', 'scenario_directions', 'scenario_food', 'scenario_hotel', 'scenario_emergency'];
+  const scenarioLessons = ['taxi', 'airport', 'dormitory', 'restaurant', 'grocery', 'pharmacy', 'university'];
   const scenarioCompletedCount = scenarioLessons.filter(id => lessonsCompleted[id]).length;
-  const scenarioPercentage = dailyLessonsPercentage;
+  const scenarioPercentage = Math.round((scenarioCompletedCount / scenarioLessons.length) * 100);
 
   // Define learning path to automatically identify current lesson
   const ALL_LESSONS = [
@@ -110,12 +110,15 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
     { id: 'grammar_pronouns', title: 'Personal Pronouns & Objects', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
     { id: 'grammar_six_cases', title: 'Introduction to the 6 Cases', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
     { id: 'grammar_verbs_aspects', title: 'Verb Conjugations & Aspect Pairs', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
+    { id: 'grammar_adjectives_lesson22', title: 'Lesson 22 Adjectives', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
     
-    { id: 'scenario_taxi', title: 'Booking a Taxi Dialogue', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
-    { id: 'scenario_directions', title: 'Asking for Directions Dialogue', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
-    { id: 'scenario_food', title: 'Ordering Russian Dishes', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
-    { id: 'scenario_hotel', title: 'HSE/RUDN Dormitory Check-in', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
-    { id: 'scenario_emergency', title: 'Emergency Service 112 Dial', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+    { id: 'taxi', title: 'Booking a Taxi Dialogue', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+    { id: 'airport', title: 'Airport Arrivals Custom Check', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+    { id: 'dormitory', title: 'HSE/RUDN Dormitory Check-in', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+    { id: 'restaurant', title: 'Ordering Russian Dishes', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+    { id: 'grocery', title: 'Grocery Shopping Dialogue', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+    { id: 'pharmacy', title: 'Pharmacy Medical Assistance', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
+    { id: 'university', title: 'University Academic Enrollment', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage }
   ];
 
   const currentActiveLesson = ALL_LESSONS.find(l => !lessonsCompleted[l.id]) || ALL_LESSONS[0];
