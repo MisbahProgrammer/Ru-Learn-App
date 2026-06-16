@@ -92,64 +92,196 @@ export function AlphabetView() {
 
           {/* YouTube Video Tutorial Embed for Free Users */}
           {!isPremium && (
-            <div 
-              id="alphabet-video-tutorial-card" 
-              className="mt-6 bg-white border border-neutral-200 p-6 rounded-3xl shadow-xs max-w-5xl mb-8 flex flex-col lg:flex-row gap-6 items-stretch"
-            >
-              <div id="alphabet-video-text-container" className="flex-1 flex flex-col justify-between py-1">
+            <div id="alphabet-videos-section" className="mb-10 max-w-5xl">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="p-1 bg-red-50 text-red-600 rounded-lg">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </span>
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="bg-red-50 text-red-600 border border-red-100 text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full">
-                      Free Video Guide
-                    </span>
-                    <span className="text-neutral-400 text-xs font-medium">• Masterclass Tutorial</span>
-                  </div>
-                  <h3 id="alphabet-video-heading" className="text-lg font-bold text-neutral-800 leading-tight mb-2">
-                    Learn the Russian Alphabet Instantly
-                  </h3>
-                  <p id="alphabet-video-desc" className="text-neutral-500 text-sm font-light leading-relaxed mb-4">
-                    New to Cyrillic script? Watch this step-by-step video workshop. Understand how letters sound, how syllables work, and read your first Russian words perfectly with native tips!
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2 text-xs text-neutral-600">
-                      <span className="text-red-500 font-bold shrink-0 mt-0.5">●</span>
-                      <span>Listen to standard pronunciation for core vowels and consonants</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-xs text-neutral-600">
-                      <span className="text-red-500 font-bold shrink-0 mt-0.5">●</span>
-                      <span>Avoid common phonetic pitfalls made by English-speaking learners</span>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-2">
-                    <a
-                      href="https://www.youtube.com/watch?v=mg0HstYg5wA"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl shadow-xs transition-colors"
-                    >
-                      <span>Watch Original on YouTube</span>
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                      </svg>
-                    </a>
-                  </div>
+                  <h3 className="text-md font-bold text-neutral-800">Free Video Tutorials</h3>
+                  <p className="text-xs text-neutral-500 font-light">Interactive masterclasses to accelerate your Cyrillic reading and pronunciation.</p>
                 </div>
               </div>
-              
-              <div id="alphabet-video-player-container" className="w-full lg:w-[460px] shrink-0 flex flex-col justify-center">
-                <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-xs border border-neutral-100 bg-neutral-950">
-                  <iframe
-                    id="alphabet-youtube-iframe"
-                    src="https://www.youtube-nocookie.com/embed/mg0HstYg5wA?rel=0"
-                    title="Learn Russian Alphabet Video Masterclass"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    className="absolute top-0 left-0 w-full h-full"
-                  ></iframe>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Video 1 (Ultimate Cyrillic Pronunciation Guide) */}
+                <div 
+                  id="alphabet-video-card-1" 
+                  className="bg-white border border-neutral-200 rounded-3xl shadow-xs overflow-hidden flex flex-col hover:border-neutral-300 transition-colors"
+                >
+                  <div className="relative w-full aspect-video bg-neutral-950 border-b border-neutral-100">
+                    <iframe
+                      id="alphabet-youtube-iframe-1"
+                      src="https://www.youtube-nocookie.com/embed/pqMQpk6v99w?rel=0"
+                      title="Learn Russian Alphabet Tutorial 1"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="absolute top-0 left-0 w-full h-full"
+                    ></iframe>
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-red-50 text-red-600 border border-red-100 text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
+                          Part 1
+                        </span>
+                        <span className="text-neutral-400 text-xs font-medium">• Practice Workshop</span>
+                      </div>
+                      <h4 className="text-base font-bold text-neutral-800 leading-tight mb-2">
+                        Ultimate Cyrillic Pronunciation Guide
+                      </h4>
+                      <p className="text-neutral-500 text-xs font-light leading-relaxed mb-4">
+                        Deepen your comprehension with this interactive acoustic workshop. Fine-tune your listening ears, learn vowel reduction principles, and sound exactly like a native speaker!
+                      </p>
+                    </div>
+                    <div className="space-y-3 pt-2">
+                      <div className="space-y-1.5">
+                        <div className="flex items-start gap-2 text-xs text-neutral-600">
+                          <span className="text-red-500 font-bold shrink-0 mt-0.5">●</span>
+                          <span>Practice along with real examples of hard and soft signs</span>
+                        </div>
+                        <div className="flex items-start gap-2 text-xs text-neutral-600">
+                          <span className="text-red-500 font-bold shrink-0 mt-0.5">●</span>
+                          <span>Speed up your reading accuracy through syllable drills</span>
+                        </div>
+                      </div>
+                      <div className="pt-2">
+                        <a
+                          href="https://www.youtube.com/watch?v=pqMQpk6v99w"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+                        >
+                          <span>Watch on YouTube</span>
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Video 2 (Learn Russian Alphabet Instantly) */}
+                <div 
+                  id="alphabet-video-card-2" 
+                  className="bg-white border border-neutral-200 rounded-3xl shadow-xs overflow-hidden flex flex-col hover:border-neutral-300 transition-colors"
+                >
+                  <div className="relative w-full aspect-video bg-neutral-950 border-b border-neutral-100">
+                    <iframe
+                      id="alphabet-youtube-iframe-2"
+                      src="https://www.youtube-nocookie.com/embed/mg0HstYg5wA?rel=0"
+                      title="Learn Russian Alphabet Tutorial 2"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="absolute top-0 left-0 w-full h-full"
+                    ></iframe>
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-red-50 text-red-600 border border-red-100 text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
+                          Part 2
+                        </span>
+                        <span className="text-neutral-400 text-xs font-medium">• Masterclass</span>
+                      </div>
+                      <h4 className="text-base font-bold text-neutral-800 leading-tight mb-2">
+                        Learn the Russian Alphabet Instantly
+                      </h4>
+                      <p className="text-neutral-500 text-xs font-light leading-relaxed mb-4">
+                        New to Cyrillic script? Watch this step-by-step video workshop. Understand how letters sound, how syllables work, and read your first Russian words perfectly with native tips!
+                      </p>
+                    </div>
+                    <div className="space-y-3 pt-2">
+                      <div className="space-y-1.5">
+                        <div className="flex items-start gap-2 text-xs text-neutral-600">
+                          <span className="text-red-500 font-bold shrink-0 mt-0.5">●</span>
+                          <span>Listen to standard pronunciation for core vowels and consonants</span>
+                        </div>
+                        <div className="flex items-start gap-2 text-xs text-neutral-600">
+                          <span className="text-red-500 font-bold shrink-0 mt-0.5">●</span>
+                          <span>Avoid common phonetic pitfalls made by English-speaking learners</span>
+                        </div>
+                      </div>
+                      <div className="pt-2">
+                        <a
+                          href="https://www.youtube.com/watch?v=mg0HstYg5wA"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+                        >
+                          <span>Watch on YouTube</span>
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Video 3 (Learn Russian Cyrillic Letters & Writing) */}
+                <div 
+                  id="alphabet-video-card-3" 
+                  className="bg-white border border-neutral-200 rounded-3xl shadow-xs overflow-hidden flex flex-col hover:border-neutral-300 transition-colors"
+                >
+                  <div className="relative w-full aspect-video bg-neutral-950 border-b border-neutral-100">
+                    <iframe
+                      id="alphabet-youtube-iframe-3"
+                      src="https://www.youtube-nocookie.com/embed/lEj_yvc1mLQ?rel=0"
+                      title="Learn Russian Alphabet Tutorial 3"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="absolute top-0 left-0 w-full h-full"
+                    ></iframe>
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-red-50 text-red-600 border border-red-100 text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
+                          Part 3
+                        </span>
+                        <span className="text-neutral-400 text-xs font-medium">• Letter Reading</span>
+                      </div>
+                      <h4 className="text-base font-bold text-neutral-800 leading-tight mb-2">
+                        Super Simple Reading Drills
+                      </h4>
+                      <p className="text-neutral-500 text-xs font-light leading-relaxed mb-4">
+                        Master the sound linkages of the Cyrillic alphabet. Practice visual letter recognition, pair consonants with vowels smoothly, and start spelling real words like a pro!
+                      </p>
+                    </div>
+                    <div className="space-y-3 pt-2">
+                      <div className="space-y-1.5">
+                        <div className="flex items-start gap-2 text-xs text-neutral-600">
+                          <span className="text-red-500 font-bold shrink-0 mt-0.5">●</span>
+                          <span>Practice standard orthography rules & spelling principles</span>
+                        </div>
+                        <div className="flex items-start gap-2 text-xs text-neutral-600">
+                          <span className="text-red-500 font-bold shrink-0 mt-0.5">●</span>
+                          <span>Understand the exact visual forms and phonetic mappings</span>
+                        </div>
+                      </div>
+                      <div className="pt-2">
+                        <a
+                          href="https://www.youtube.com/watch?v=lEj_yvc1mLQ"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+                        >
+                          <span>Watch on YouTube</span>
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
