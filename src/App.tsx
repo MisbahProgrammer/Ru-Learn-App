@@ -40,6 +40,28 @@ export function useAuth() {
   return context;
 }
 
+const safeParseJSON = (val: any): Record<string, boolean> => {
+  if (!val) return {};
+  if (typeof val === 'object') return val;
+  try {
+    return JSON.parse(val);
+  } catch (e) {
+    console.error('Error parsing JSON field:', e);
+    return {};
+  }
+};
+
+const safeParseWeekActivity = (val: any): Record<string, any> => {
+  if (!val) return {};
+  if (typeof val === 'object') return val;
+  try {
+    return JSON.parse(val);
+  } catch (e) {
+    console.error('Error parsing week activity:', e);
+    return {};
+  }
+};
+
 function SetupWarning() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-neutral-50">
@@ -148,58 +170,138 @@ export default function App() {
             .maybeSingle();
           if (secondRetry) {
             const { streakData, atRisk } = processStreakOnLoad(secondRetry);
+            const streakBroke = (secondRetry.streak_count || 0) > 0 && streakData.currentStreak === 0;
+            let finalXp = secondRetry.xp_points ?? 0;
+            if (streakBroke) {
+              finalXp = 0;
+              try {
+                supabase
+                  .from('users')
+                  .update({ xp_points: 0 })
+                  .eq('uid', uid)
+                  .then(({ error }) => {
+                    if (error) console.error('Error resetting XP on broken streak fallback:', error);
+                  });
+              } catch (e) {
+                console.error('Failed to reset fallback XP:', e);
+              }
+              toast.error("Oh no! Your learning streak has broken. Your active XP has reset to 0 block. Keep studying daily to maintain your streak! 🔥");
+            }
+
             const goalBackupStr = localStorage.getItem(`daily_goal_backup_${uid}`);
             const goalBackup = goalBackupStr ? parseInt(goalBackupStr, 10) : 10;
 
-            setProfile({
+            const parsedProfile = {
               ...secondRetry,
               streak_count: streakData.currentStreak,
               last_activity_date: streakData.lastActiveDate ? `${streakData.lastActiveDate}T00:00:00.000Z` : null,
               longest_streak: streakData.longestStreak,
-              week_activity: streakData.weekActivity,
+              week_activity: safeParseWeekActivity(streakData.weekActivity),
               streakAtRisk: atRisk,
-              lessons_completed: secondRetry.lessons_completed ?? {},
-              xp_points: secondRetry.xp_points ?? 0,
+              lessons_completed: safeParseJSON(secondRetry.lessons_completed),
+              xp_points: finalXp,
               daily_goal_minutes: secondRetry.daily_goal_minutes ?? goalBackup
-            });
+            };
+            setProfile(parsedProfile);
+            localStorage.setItem(`profile_backup_${uid}`, JSON.stringify(parsedProfile));
           }
         } else {
-          setProfile({
+          const parsedProfile = {
             ...insertedData,
             streak_count: 0,
             last_activity_date: null,
             longest_streak: 0,
             week_activity: {},
-            lessons_completed: insertedData.lessons_completed ?? {},
+            lessons_completed: safeParseJSON(insertedData.lessons_completed),
             xp_points: insertedData.xp_points ?? 0,
             daily_goal_minutes: 10
-          });
+          };
+          setProfile(parsedProfile);
+          localStorage.setItem(`profile_backup_${uid}`, JSON.stringify(parsedProfile));
         }
       } else {
         // 3. Process existing user profile streak calculation on load
         const { streakData, atRisk } = processStreakOnLoad(data);
+        const streakBroke = (data.streak_count || 0) > 0 && streakData.currentStreak === 0;
+        let finalXp = data.xp_points ?? 0;
         
-        if (streakData.currentStreak !== data.streak_count || data.longest_streak === undefined) {
+        if (streakBroke) {
+          finalXp = 0;
+          try {
+            supabase
+              .from('users')
+              .update({ xp_points: 0 })
+              .eq('uid', uid)
+              .then(({ error }) => {
+                if (error) console.error('Error resetting XP in DB on broken streak:', error);
+              });
+          } catch (e) {
+            console.error('Failed to reset XP in DB during fetch:', e);
+          }
+          toast.error("Oh no! Your daily learning streak has broken. Your active XP has been reset to 0! Study today to rebuild your streak! 🔥");
+        }
+
+        if (streakData.currentStreak !== data.streak_count || data.longest_streak === undefined || streakBroke) {
           syncStreakWithDatabase(uid, false, streakData);
         }
 
         const goalBackupStr = localStorage.getItem(`daily_goal_backup_${uid}`);
         const goalBackup = goalBackupStr ? parseInt(goalBackupStr, 10) : 10;
 
-        setProfile({
+        const parsedProfile = {
           ...data,
           streak_count: streakData.currentStreak,
           last_activity_date: streakData.lastActiveDate ? `${streakData.lastActiveDate}T00:00:00.000Z` : null,
           longest_streak: streakData.longestStreak,
-          week_activity: streakData.weekActivity,
+          week_activity: safeParseWeekActivity(streakData.weekActivity),
           streakAtRisk: atRisk,
-          lessons_completed: data.lessons_completed ?? {},
-          xp_points: data.xp_points ?? 0,
+          lessons_completed: safeParseJSON(data.lessons_completed),
+          xp_points: finalXp,
           daily_goal_minutes: data.daily_goal_minutes ?? goalBackup
-        });
+        };
+        setProfile(parsedProfile);
+        localStorage.setItem(`profile_backup_${uid}`, JSON.stringify(parsedProfile));
       }
     } catch (error) {
-      console.error('Exception fetching profile:', error);
+      console.error('Exception fetching profile, loading local backup:', error);
+      const backupStr = localStorage.getItem(`profile_backup_${uid}`);
+      if (backupStr) {
+        try {
+          const cachedProfile = JSON.parse(backupStr);
+          const { streakData, atRisk } = processStreakOnLoad(cachedProfile);
+          const streakBroke = (cachedProfile.streak_count || 0) > 0 && streakData.currentStreak === 0;
+          
+          const updatedCachedProfile = {
+            ...cachedProfile,
+            streak_count: streakData.currentStreak,
+            last_activity_date: streakData.lastActiveDate ? `${streakData.lastActiveDate}T00:00:00.000Z` : null,
+            longest_streak: streakData.longestStreak,
+            week_activity: safeParseWeekActivity(streakData.weekActivity),
+            streakAtRisk: atRisk,
+            xp_points: streakBroke ? 0 : (cachedProfile.xp_points ?? 0)
+          };
+
+          if (streakBroke) {
+            toast.error("Oh no! Your daily learning streak has broken. Your active XP has been reset to 0! Study today to rebuild your streak! 🔥");
+            try {
+              supabase
+                .from('users')
+                .update({ xp_points: 0 })
+                .eq('uid', uid)
+                .then(({ error }) => {
+                  if (error) console.error('Error resetting XP in DB on backup load:', error);
+                });
+            } catch (err) {
+              console.error(err);
+            }
+          }
+
+          setProfile(updatedCachedProfile);
+          localStorage.setItem(`profile_backup_${uid}`, JSON.stringify(updatedCachedProfile));
+        } catch (e) {
+          console.error('Failed to parse backup profile:', e);
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -212,7 +314,17 @@ export default function App() {
   };
 
   const updateProfileState = (updatedProfile: any) => {
-    setProfile(curr => curr ? { ...curr, ...updatedProfile } : updatedProfile);
+    setProfile(curr => {
+      const merged = curr ? { ...curr, ...updatedProfile } : updatedProfile;
+      if (merged) {
+        if (merged.isGuest) {
+          localStorage.setItem('guest_profile', JSON.stringify(merged));
+        } else {
+          localStorage.setItem(`profile_backup_${merged.uid}`, JSON.stringify(merged));
+        }
+      }
+      return merged;
+    });
   };
 
   useEffect(() => {
@@ -249,6 +361,8 @@ export default function App() {
       if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
+        localStorage.removeItem('guest_user');
+        localStorage.removeItem('guest_profile');
         setLoading(false);
         navigate('/', { replace: true });
         markResolved();
@@ -256,14 +370,57 @@ export default function App() {
       }
 
       const activeUser = session?.user || null;
-      setEnhancedUser(activeUser);
       if (activeUser) {
+        setEnhancedUser(activeUser);
         if (event === 'SIGNED_IN') {
           navigate('/dashboard');
         }
         await fetchProfile(activeUser.id);
       } else {
-        setProfile(null);
+        // No active Supabase user - check if we have a persistent guest session in localStorage
+        const savedUserStr = localStorage.getItem('guest_user');
+        const savedProfileStr = localStorage.getItem('guest_profile');
+        if (savedUserStr && savedProfileStr) {
+          try {
+            const guestUserObj = JSON.parse(savedUserStr);
+            const guestProfileObj = JSON.parse(savedProfileStr);
+            
+            // Validate guest's streak
+            const { streakData, atRisk } = processStreakOnLoad(guestProfileObj);
+            const streakBroke = (guestProfileObj.streak_count || 0) > 0 && streakData.currentStreak === 0;
+            
+            const updatedGuestProfile = {
+              ...guestProfileObj,
+              streak_count: streakData.currentStreak,
+              last_activity_date: streakData.lastActiveDate ? `${streakData.lastActiveDate}T00:00:00.000Z` : null,
+              longest_streak: streakData.longestStreak,
+              week_activity: safeParseWeekActivity(streakData.weekActivity),
+              streakAtRisk: atRisk,
+              xp_points: streakBroke ? 0 : (guestProfileObj.xp_points ?? 0)
+            };
+
+            if (streakBroke) {
+              toast.error("Oh no! Your daily learning streak has broken. Your active XP has been reset to 0! 🔥");
+            }
+            
+            localStorage.setItem('guest_profile', JSON.stringify(updatedGuestProfile));
+            setEnhancedUser(guestUserObj);
+            setProfile(updatedGuestProfile);
+            
+            // If they are on the landing page/login root page, auto redirect to dashboard
+            const path = window.location.pathname;
+            if (path === '/' || path === '' || path === '/login') {
+              navigate('/dashboard');
+            }
+          } catch (e) {
+            console.error('Error reloading persistent guest profile:', e);
+            setUser(null);
+            setProfile(null);
+          }
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
         setLoading(false);
       }
       markResolved();
@@ -296,31 +453,75 @@ export default function App() {
   };
 
   const signInAsGuest = () => {
-    const guestUser: any = {
-      id: 'guest-' + Math.random().toString(36).substr(2, 9),
-      email: 'guest@scholar.com',
-      user_metadata: {
-        full_name: 'Guest Scholar',
-        name: 'Guest Scholar'
-      },
-      isGuest: true
-    };
+    const savedUserStr = localStorage.getItem('guest_user');
+    const savedProfileStr = localStorage.getItem('guest_profile');
+    
+    let guestUser: any = null;
+    let guestProfile: any = null;
+    
+    if (savedUserStr && savedProfileStr) {
+      try {
+        guestUser = JSON.parse(savedUserStr);
+        guestProfile = JSON.parse(savedProfileStr);
+      } catch (e) {
+        console.error('Failed to parse guest storage:', e);
+      }
+    }
+    
+    if (!guestUser || !guestProfile) {
+      guestUser = {
+        id: 'guest-' + Math.random().toString(36).substr(2, 9),
+        email: 'guest@scholar.com',
+        user_metadata: {
+          full_name: 'Guest Scholar',
+          name: 'Guest Scholar'
+        },
+        isGuest: true
+      };
+      
+      guestProfile = {
+        uid: guestUser.id,
+        displayName: 'Guest Scholar',
+        isPremium: true, // Let guests try everything
+        isGuest: true,
+        billingHistory: [],
+        streak_count: 0,
+        last_activity_date: null,
+        longest_streak: 0,
+        week_activity: {},
+        lessons_completed: {},
+        xp_points: 0,
+        daily_goal_minutes: 10
+      };
+      
+      localStorage.setItem('guest_user', JSON.stringify(guestUser));
+      localStorage.setItem('guest_profile', JSON.stringify(guestProfile));
+    } else {
+      // Validate guest's streak if they are logging/signing back in
+      const { streakData, atRisk } = processStreakOnLoad(guestProfile);
+      const streakBroke = (guestProfile.streak_count || 0) > 0 && streakData.currentStreak === 0;
+      
+      guestProfile = {
+        ...guestProfile,
+        streak_count: streakData.currentStreak,
+        last_activity_date: streakData.lastActiveDate ? `${streakData.lastActiveDate}T00:00:00.000Z` : null,
+        longest_streak: streakData.longestStreak,
+        week_activity: safeParseWeekActivity(guestProfile.week_activity),
+        streakAtRisk: atRisk,
+        xp_points: streakBroke ? 0 : (guestProfile.xp_points ?? 0)
+      };
+
+      if (streakBroke) {
+        toast.error("Oh no! Your daily learning streak has broken. Your active XP has been reset to 0! 🔥");
+      }
+      
+      localStorage.setItem('guest_profile', JSON.stringify(guestProfile));
+    }
+    
     setEnhancedUser(guestUser);
-    setProfile({
-      uid: guestUser.id,
-      displayName: 'Guest Scholar',
-      isPremium: true, // Let guests try everything
-      isGuest: true,
-      billingHistory: [],
-      streak_count: 0,
-      last_activity_date: null,
-      longest_streak: 0,
-      week_activity: {},
-      lessons_completed: {},
-      xp_points: 0,
-      daily_goal_minutes: 10
-    });
-    toast.success('Continuing as Guest. Progress will not be saved across sessions.');
+    setProfile(guestProfile);
+    toast.success('Successfully logged in as Guest Scholar! Your progress is saved! 🎉');
+    navigate('/dashboard');
   };
 
   const signOut = async () => {
@@ -329,6 +530,8 @@ export default function App() {
       if (user?.isGuest) {
         setUser(null);
         setProfile(null);
+        localStorage.removeItem('guest_user');
+        localStorage.removeItem('guest_profile');
         navigate('/', { replace: true });
         return;
       }
@@ -371,7 +574,7 @@ export default function App() {
   const updateLessonProgress = (lessonId: string, forceValue?: boolean) => {
     if (!profile) return;
 
-    const lessonsCompleted = { ...(profile.lessons_completed || {}) };
+    const lessonsCompleted = safeParseJSON(profile.lessons_completed);
     const alreadyCompleted = !!lessonsCompleted[lessonId];
     
     const targetState = forceValue !== undefined ? forceValue : !alreadyCompleted;
@@ -396,7 +599,7 @@ export default function App() {
     const lastActive = profile.last_activity_date;
     const streakCount = profile.streak_count ?? 0;
     const longestStreak = profile.longest_streak ?? 0;
-    const weekActivity = profile.week_activity ?? {};
+    const weekActivity = safeParseWeekActivity(profile.week_activity);
 
     const updatedProfile = {
       ...profile,
@@ -408,6 +611,13 @@ export default function App() {
       week_activity: weekActivity
     };
     setProfile(updatedProfile);
+
+    // Save to appropriate localStorage cache
+    if (profile.isGuest) {
+      localStorage.setItem('guest_profile', JSON.stringify(updatedProfile));
+    } else {
+      localStorage.setItem(`profile_backup_${profile.uid}`, JSON.stringify(updatedProfile));
+    }
 
     // Saves progress to Supabase in background
     if (!profile.isGuest && user?.id) {
@@ -436,10 +646,16 @@ export default function App() {
     // 1. Update local state
     setProfile((curr: any) => {
       if (!curr) return null;
-      return {
+      const updated = {
         ...curr,
         daily_goal_minutes: minutes
       };
+      if (curr.isGuest) {
+        localStorage.setItem('guest_profile', JSON.stringify(updated));
+      } else {
+        localStorage.setItem(`profile_backup_${curr.uid}`, JSON.stringify(updated));
+      }
+      return updated;
     });
 
     // 2. Save in local backup key
@@ -497,7 +713,7 @@ export default function App() {
 
         setProfile((curr: any) => {
           if (!curr) return null;
-          return {
+          const updatedVal = {
             ...curr,
             streak_count: updated.currentStreak,
             last_activity_date: `${updated.lastActiveDate}T00:00:00.000Z`,
@@ -505,6 +721,12 @@ export default function App() {
             week_activity: updated.weekActivity,
             streakAtRisk: false // completed today, so not at risk
           };
+          if (curr.isGuest) {
+            localStorage.setItem('guest_profile', JSON.stringify(updatedVal));
+          } else {
+            localStorage.setItem(`profile_backup_${curr.uid}`, JSON.stringify(updatedVal));
+          }
+          return updatedVal;
         });
 
         const success = await syncStreakWithDatabase(profile.uid, !!profile.isGuest, updated);

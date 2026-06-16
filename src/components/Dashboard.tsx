@@ -88,7 +88,7 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
 
   const alphabetLessons = [
     'alphabet_vocals', 'alphabet_consonants', 'alphabet_modifiers', 'alphabet_reading', 'alphabet_review',
-    'alphabet_video_1', 'alphabet_video_2', 'alphabet_video_3'
+    'alphabet_video_1', 'alphabet_video_2', 'alphabet_video_3', 'alphabet_video_4'
   ];
   const alphabetCompletedCount = alphabetLessons.filter(id => lessonsCompleted[id]).length;
   const alphabetPercentage = Math.round((alphabetCompletedCount / alphabetLessons.length) * 100);

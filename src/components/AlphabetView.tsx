@@ -106,7 +106,7 @@ export function AlphabetView() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Video 1 (Ultimate Cyrillic Pronunciation Guide) */}
                 <div 
                   id="alphabet-video-card-1" 
@@ -116,7 +116,7 @@ export function AlphabetView() {
                     <iframe
                       id="alphabet-youtube-iframe-1"
                       src="https://www.youtube-nocookie.com/embed/FcmsH_qdmO0?rel=0"
-                      title="Learn Russian Alphabet Tutorial 1"
+                      title="Ultimate Cyrillic Pronunciation Guide"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
@@ -127,7 +127,7 @@ export function AlphabetView() {
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <span className="bg-red-50 text-red-600 border border-red-100 text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
-                          Part 1
+                          Ultimate Guide
                         </span>
                         <span className="text-neutral-400 text-xs font-medium">• Practice Workshop</span>
                       </div>
@@ -135,7 +135,7 @@ export function AlphabetView() {
                         Ultimate Cyrillic Pronunciation Guide
                       </h4>
                       <p className="text-neutral-500 text-xs font-light leading-relaxed mb-4">
-                        Deepen your comprehension with this interactive acoustic workshop. Fine-tune your listening ears, learn vowel reduction principles, and sound exactly like a native speaker!
+                        Deepen your comprehension with this interactive acoustic workshop. Learn vowel reduction, hard & soft qualities, and master how to sound like a native.
                       </p>
                     </div>
                     <div className="space-y-3 pt-2">
@@ -155,7 +155,7 @@ export function AlphabetView() {
                             const isCompleted = !!lessonsCompleted['alphabet_video_1'];
                             updateLessonProgress('alphabet_video_1');
                             if (!isCompleted) {
-                              toast.success("🎉 Success! Congratulations! You have completed Part 1: Ultimate Pronunciation Guide! +10 XP earned, progress updated on the main dashboard! 🔥");
+                              toast.success("🎉 Success! Congratulations! You have completed the Ultimate Cyrillic Pronunciation Guide! +10 XP earned, progress updated! 🔥");
                             }
                           }}
                           className={`w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer ${
@@ -180,7 +180,7 @@ export function AlphabetView() {
                   </div>
                 </div>
 
-                {/* Video 2 (Learn Russian Alphabet Instantly) */}
+                {/* Video 2 (Learn the Russian Alphabet Instantly - Part 1) */}
                 <div 
                   id="alphabet-video-card-2" 
                   className="bg-white border border-neutral-200 rounded-3xl shadow-xs overflow-hidden flex flex-col hover:border-neutral-300 transition-colors"
@@ -189,7 +189,7 @@ export function AlphabetView() {
                     <iframe
                       id="alphabet-youtube-iframe-2"
                       src="https://www.youtube-nocookie.com/embed/mg0HstYg5wA?rel=0"
-                      title="Learn Russian Alphabet Tutorial 2"
+                      title="Learn Russian Alphabet Instantly - Part 1"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
@@ -200,7 +200,7 @@ export function AlphabetView() {
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <span className="bg-red-50 text-red-600 border border-red-100 text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
-                          Part 2
+                          Part 1
                         </span>
                         <span className="text-neutral-400 text-xs font-medium">• Masterclass</span>
                       </div>
@@ -208,7 +208,7 @@ export function AlphabetView() {
                         Learn the Russian Alphabet Instantly
                       </h4>
                       <p className="text-neutral-500 text-xs font-light leading-relaxed mb-4">
-                        New to Cyrillic script? Watch this step-by-step video workshop. Understand how letters sound, how syllables work, and read your first Russian words perfectly with native tips!
+                        New to Cyrillic script? Start learning Russian from scratch! This step-by-step video workshop will guide you through the first letters, vowel/consonant pairs, and standard pronunciation.
                       </p>
                     </div>
                     <div className="space-y-3 pt-2">
@@ -228,7 +228,7 @@ export function AlphabetView() {
                             const isCompleted = !!lessonsCompleted['alphabet_video_2'];
                             updateLessonProgress('alphabet_video_2');
                             if (!isCompleted) {
-                              toast.success("🎉 Success! Congratulations! You have completed Part 2: Russian Alphabet Instantly! +10 XP earned, progress updated on the main dashboard! 🔥");
+                              toast.success("🎉 Success! Congratulations! You have completed Part 1: Learn Russian Alphabet Instantly! +10 XP earned, progress updated on the main dashboard! 🔥");
                             }
                           }}
                           className={`w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer ${
@@ -253,7 +253,7 @@ export function AlphabetView() {
                   </div>
                 </div>
 
-                {/* Video 3 (Learn Russian Cyrillic Letters & Writing) */}
+                {/* Video 3 (Learn Russian Alphabet Instantly - Part 2) */}
                 <div 
                   id="alphabet-video-card-3" 
                   className="bg-white border border-neutral-200 rounded-3xl shadow-xs overflow-hidden flex flex-col hover:border-neutral-300 transition-colors"
@@ -261,8 +261,81 @@ export function AlphabetView() {
                   <div className="relative w-full aspect-video bg-neutral-950 border-b border-neutral-100">
                     <iframe
                       id="alphabet-youtube-iframe-3"
+                      src="https://www.youtube-nocookie.com/embed/DpWW8Nut9Ik?rel=0"
+                      title="Learn Russian Alphabet Part 2"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="absolute top-0 left-0 w-full h-full"
+                    ></iframe>
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-red-50 text-red-600 border border-red-100 text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
+                          Part 2
+                        </span>
+                        <span className="text-neutral-400 text-xs font-medium">• Masterclass</span>
+                      </div>
+                      <h4 className="text-base font-bold text-neutral-800 leading-tight mb-2">
+                        Learn Russian Alphabet - Part 2
+                      </h4>
+                      <p className="text-neutral-500 text-xs font-light leading-relaxed mb-4">
+                        Advance to the next stage of your Russian alphabet masterclass. Deepen your understanding of letters and pronunciation, and write simple words with native tips.
+                      </p>
+                    </div>
+                    <div className="space-y-3 pt-2">
+                      <div className="space-y-1.5">
+                        <div className="flex items-start gap-2 text-xs text-neutral-600">
+                          <span className="text-red-500 font-bold shrink-0 mt-0.5">●</span>
+                          <span>Explore the next set of Cyrillic letters and pronunciation</span>
+                        </div>
+                        <div className="flex items-start gap-2 text-xs text-neutral-600">
+                          <span className="text-red-500 font-bold shrink-0 mt-0.5">●</span>
+                          <span>Practice simple syllables and write your first conversational phrases</span>
+                        </div>
+                      </div>
+                      <div className="pt-2">
+                        <button
+                          onClick={() => {
+                            const isCompleted = !!lessonsCompleted['alphabet_video_3'];
+                            updateLessonProgress('alphabet_video_3');
+                            if (!isCompleted) {
+                              toast.success("🎉 Success! Congratulations! You have completed Part 2: Russian Alphabet! +10 XP earned, progress updated on the main dashboard! 🔥");
+                            }
+                          }}
+                          className={`w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer ${
+                            lessonsCompleted['alphabet_video_3']
+                              ? 'bg-green-50 hover:bg-green-100 text-green-700 border border-green-200'
+                              : 'bg-red-600 hover:bg-red-700 text-white border border-transparent'
+                          }`}
+                        >
+                          {lessonsCompleted['alphabet_video_3'] ? (
+                            <>
+                              <svg className="w-4 h-4 text-green-600 shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                              <span>Completed ✓</span>
+                            </>
+                          ) : (
+                            <span>Mark as Completed</span>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Video 4 (Super Simple Reading Drills - Part 3) */}
+                <div 
+                  id="alphabet-video-card-4" 
+                  className="bg-white border border-neutral-200 rounded-3xl shadow-xs overflow-hidden flex flex-col hover:border-neutral-300 transition-colors"
+                >
+                  <div className="relative w-full aspect-video bg-neutral-950 border-b border-neutral-100">
+                    <iframe
+                      id="alphabet-youtube-iframe-4"
                       src="https://www.youtube-nocookie.com/embed/lEj_yvc1mLQ?rel=0"
-                      title="Learn Russian Alphabet Tutorial 3"
+                      title="Super Simple Reading Drills"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
@@ -298,19 +371,19 @@ export function AlphabetView() {
                       <div className="pt-2">
                         <button
                           onClick={() => {
-                            const isCompleted = !!lessonsCompleted['alphabet_video_3'];
-                            updateLessonProgress('alphabet_video_3');
+                            const isCompleted = !!lessonsCompleted['alphabet_video_4'];
+                            updateLessonProgress('alphabet_video_4');
                             if (!isCompleted) {
-                              toast.success("🎉 Success! Congratulations! You have completed Part 3: Cyrillic Reading Drills! +10 XP earned, progress updated on the main dashboard! 🔥");
+                              toast.success("🎉 Success! Congratulations! You have completed Part 4: Cyrillic Reading Drills! +10 XP earned, progress updated on the main dashboard! 🔥");
                             }
                           }}
                           className={`w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer ${
-                            lessonsCompleted['alphabet_video_3']
+                            lessonsCompleted['alphabet_video_4']
                               ? 'bg-green-50 hover:bg-green-100 text-green-700 border border-green-200'
                               : 'bg-red-600 hover:bg-red-700 text-white border border-transparent'
                           }`}
                         >
-                          {lessonsCompleted['alphabet_video_3'] ? (
+                          {lessonsCompleted['alphabet_video_4'] ? (
                             <>
                               <svg className="w-4 h-4 text-green-600 shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
