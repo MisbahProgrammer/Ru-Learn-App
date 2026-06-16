@@ -49,7 +49,7 @@ export function AlphabetView() {
           </div>
 
           {/* Duolingo Quiz / Lesson Trackers */}
-          <div className="mt-6 bg-white border border-neutral-200 p-6 rounded-3xl shadow-xs space-y-4 max-w-5xl mb-8">
+          <div className="mt-6 bg-white border border-neutral-200 p-6 rounded-3xl shadow-xs space-y-4 w-full mb-8">
             <div>
               <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
                 🎯 Alphabet Learning Path
@@ -92,7 +92,7 @@ export function AlphabetView() {
 
           {/* YouTube Video Tutorial Embed for Free Users */}
           {!isPremium && (
-            <div id="alphabet-videos-section" className="mb-10 max-w-5xl">
+            <div id="alphabet-videos-section" className="mb-10 w-full">
               <div className="flex items-center gap-2 mb-4">
                 <span className="p-1 bg-red-50 text-red-600 rounded-lg">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -106,7 +106,7 @@ export function AlphabetView() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Video 1 (Ultimate Cyrillic Pronunciation Guide) */}
                 <div 
                   id="alphabet-video-card-1" 
