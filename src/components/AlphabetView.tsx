@@ -115,7 +115,7 @@ export function AlphabetView() {
                   <div className="relative w-full aspect-video bg-neutral-950 border-b border-neutral-100">
                     <iframe
                       id="alphabet-youtube-iframe-1"
-                      src="https://www.youtube-nocookie.com/embed/pqMQpk6v99w?rel=0"
+                      src="https://www.youtube-nocookie.com/embed/FcmsH_qdmO0?rel=0"
                       title="Learn Russian Alphabet Tutorial 1"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
