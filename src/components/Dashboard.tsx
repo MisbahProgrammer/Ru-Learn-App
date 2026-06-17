@@ -93,13 +93,13 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
   const alphabetCompletedCount = alphabetLessons.filter(id => lessonsCompleted[id]).length;
   const alphabetPercentage = Math.round((alphabetCompletedCount / alphabetLessons.length) * 100);
 
-  const grammarLessons = ['grammar_sentence_logic', 'grammar_pronouns', 'grammar_six_cases', 'grammar_verbs_aspects', 'grammar_adjectives_lesson22'];
+  const grammarLessons = ['grammar_sentence_logic', 'grammar_pronouns', 'grammar_six_cases', 'grammar_verbs_aspects', 'grammar_adjectives_lesson22', 'grammar_lesson30'];
   const grammarCompletedCount = grammarLessons.filter(id => lessonsCompleted[id]).length;
   const grammarPercentage = Math.round((grammarCompletedCount / grammarLessons.length) * 100);
 
   const scenarioLessons = ['taxi', 'airport', 'dormitory', 'restaurant', 'grocery', 'pharmacy', 'university'];
   const scenarioCompletedCount = scenarioLessons.filter(id => lessonsCompleted[id]).length;
-  const scenarioPercentage = Math.round((scenarioCompletedCount / scenarioLessons.length) * 100);
+  const scenarioPercentage = Math.round((scenarioCompletedCount / scenarioLessons.length) * 105 / 100); // safety cap
 
   // Define learning path to automatically identify current lesson
   const ALL_LESSONS = [
@@ -114,6 +114,7 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
     { id: 'grammar_six_cases', title: 'Introduction to the 6 Cases', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
     { id: 'grammar_verbs_aspects', title: 'Verb Conjugations & Aspect Pairs', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
     { id: 'grammar_adjectives_lesson22', title: 'Lesson 22 Adjectives', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
+    { id: 'grammar_lesson30', title: 'Lesson 30 Verbs of Motion Past Tense', section: 'Grammar Essentials', tab: 'grammar', progress: grammarPercentage },
     
     { id: 'taxi', title: 'Booking a Taxi Dialogue', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },
     { id: 'airport', title: 'Airport Arrivals Custom Check', section: 'Voice Scenarios', tab: 'scenarios', progress: scenarioPercentage },

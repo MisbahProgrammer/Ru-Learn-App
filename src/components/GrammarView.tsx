@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/App';
 import { AudioButton } from '@/components/AudioButton';
+import { toast } from 'sonner';
 import { 
   BookText, 
   ArrowRightLeft, 
@@ -13,8 +14,44 @@ import {
   Sparkles,
   Info,
   Lightbulb,
-  CheckCircle2
+  CheckCircle2,
+  Video,
+  MapPin,
+  Compass,
+  CheckCircle,
+  HelpCircle,
+  AlertCircle
 } from 'lucide-react';
+
+interface GlossWord {
+  ru: string;
+  en: string;
+  highlight?: boolean;
+}
+
+export function WordGloss({ words, audioText }: { words: GlossWord[]; audioText?: string }) {
+  return (
+    <div className="flex flex-col gap-2 p-3.5 bg-neutral-50/50 hover:bg-neutral-50/90 rounded-2xl border border-neutral-100 transition-all duration-200">
+      <div className="flex flex-wrap items-end gap-x-4 gap-y-2.5">
+        {words.map((w, index) => (
+          <div key={index} className="flex flex-col items-center min-w-[36px] py-1">
+            <span className={`text-base font-bold tracking-tight ${w.highlight ? 'text-orange-600 font-extrabold underline decoration-wavy decoration-orange-300' : 'text-neutral-900'}`}>
+              {w.ru}
+            </span>
+            <span className={`text-[10px] select-none font-mono tracking-tight mt-1 max-w-[100px] text-center leading-tight ${w.highlight ? 'text-orange-500 font-bold' : 'text-neutral-400'}`}>
+              {w.en}
+            </span>
+          </div>
+        ))}
+      </div>
+      {audioText && (
+        <div className="flex items-center gap-1.5 mt-1 self-end">
+          <AudioButton text={audioText} size="sm" label="Pronounce" />
+        </div>
+      )}
+    </div>
+  );
+}
 
 const PRONOUNS = [
   { ru: 'Я', en: 'I', phonetic: 'Ya' },
@@ -30,7 +67,7 @@ const COMMON_SENTENCES = [
   { ru: 'Как дела?', en: 'How are things? (How are you?)', structure: 'Question word + Noun' },
   { ru: 'Меня зовут...', en: 'My name is...', structure: 'Reflexive construction' },
   { ru: 'Я хочу пить', en: 'I want to drink', structure: 'Verb + Infinitive' },
-  { ru: 'Где метро?', en: 'Where is the metro?', structure: 'Where + Subject' },
+  { ru: 'Где metro?', en: 'Where is the metro?', structure: 'Where + Subject' },
 ];
 
 export function GrammarView() {
@@ -56,16 +93,17 @@ export function GrammarView() {
               <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
                 🎯 Grammar Learning Path
               </h3>
-              <p className="text-neutral-500 text-xs font-light">Complete all 4 essentials to fully master basic sentence construction logic.</p>
+              <p className="text-neutral-500 text-xs font-light">Complete all 6 essentials to fully master basic sentence construction logic.</p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               {[
                 { id: 'grammar_sentence_logic', title: '1. Sentence Logic' },
                 { id: 'grammar_pronouns', title: '2. Personal Pronouns' },
                 { id: 'grammar_six_cases', title: '3. Noun Cases' },
                 { id: 'grammar_verbs_aspects', title: '4. Verbs & Adverbs' },
                 { id: 'grammar_adjectives_lesson22', title: '5. Adjectives (L22)' },
+                { id: 'grammar_lesson30', title: '6. Past Tense (L30)' },
               ].map((lesson) => {
                 const isCompleted = !!lessonsCompleted[lesson.id];
                 return (
@@ -73,6 +111,9 @@ export function GrammarView() {
                     key={lesson.id}
                     onClick={() => {
                       updateLessonProgress(lesson.id);
+                      if (!isCompleted) {
+                        toast.success(`🎉 Completed: ${lesson.title}! +10 XP earned!`);
+                      }
                     }}
                     className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left text-xs cursor-pointer ${
                       isCompleted 
@@ -92,9 +133,12 @@ export function GrammarView() {
             </div>
           </div>
 
-          <Tabs defaultValue="basics" className="flex flex-col w-full space-y-8 md:space-y-12">
+          <Tabs defaultValue="lesson30" className="flex flex-col w-full space-y-8 md:space-y-12">
             <div className="w-full">
               <TabsList className="bg-white border p-1 rounded-2xl h-auto flex flex-wrap md:flex-nowrap w-full md:w-auto shadow-sm">
+                <TabsTrigger value="lesson30" className="flex-1 md:flex-none rounded-xl px-4 md:px-8 py-3.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all text-sm font-semibold border-2 border-orange-500/10 data-[state=active]:border-transparent bg-amber-50/30">
+                  <Sparkles className="w-4 h-4 mr-2" /> Lesson 30 Progress
+                </TabsTrigger>
                 <TabsTrigger value="basics" className="flex-1 md:flex-none rounded-xl px-4 md:px-8 py-3.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all text-sm font-semibold">
                   <Sparkles className="w-4 h-4 mr-2" /> Sentence Logic
                 </TabsTrigger>
@@ -112,6 +156,623 @@ export function GrammarView() {
                 </TabsTrigger>
               </TabsList>
             </div>
+
+            <TabsContent value="lesson30" className="w-full space-y-8 slide-in-from-bottom-2 animate-in duration-300">
+              {/* Premium Lesson Header/Banner */}
+              <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-[2.5rem] p-8 md:p-12 mb-8 relative overflow-hidden shadow-lg shadow-orange-500/10">
+                <div className="absolute right-0 top-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3" />
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-3">
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider">
+                      🎓 Lesson 30 Mastery
+                    </div>
+                    <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-none text-white">
+                      LESSON 30 – GRAMMAR NOTES
+                    </h2>
+                    <p className="text-orange-50/90 text-sm md:text-base font-medium max-w-2xl leading-relaxed">
+                      Focus topic: <span className="font-bold underline decoration-wavy decoration-orange-300">Past Tense of ХОДИТЬ and ЕЗДИТЬ</span>. Under each Russian sentence, we have placed word-for-word English alignment with spelling transitions to let you instantly visualize grammar shifts!
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-center gap-2 bg-white/10 p-4 rounded-3xl border border-white/10 max-w-xs shrink-0 self-start md:self-auto">
+                    <div className="text-xs text-orange-200 uppercase font-mono tracking-widest text-center">Your Lesson Status</div>
+                    <button 
+                      onClick={() => {
+                        updateLessonProgress('grammar_lesson30');
+                        toast.success("🎉 Success! Lesson 30: Past Motility completed! +10 XP earned, progress updated! 🔥");
+                      }}
+                      className={`w-full font-bold text-xs py-2.5 px-5 rounded-2xl transition-all shadow-xs cursor-pointer ${
+                        lessonsCompleted['grammar_lesson30']
+                          ? 'bg-transparent border border-white text-white hover:bg-white/10 animate-pulse'
+                          : 'bg-white text-orange-600 hover:bg-orange-50'
+                      }`}
+                    >
+                      {lessonsCompleted['grammar_lesson30'] ? '✓ Completed' : 'Complete Lesson (+10 XP)'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content Sections: Grid for Desktop optimization */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                {/* 1. ХОДИТЬ in the Past Tense */}
+                <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden bg-white">
+                  <CardHeader className="bg-orange-50/40 p-6 md:p-8 border-b border-orange-100">
+                    <CardTitle className="text-xl flex items-center gap-3 text-orange-950 font-bold">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-700 text-sm font-bold font-mono">1</span>
+                      ХОДИТЬ in the Past Tense
+                    </CardTitle>
+                    <p className="text-xs text-neutral-500">ходить / to go regularly (on foot)</p>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8 space-y-6">
+                    <div className="p-4 bg-orange-50/20 rounded-2xl border border-orange-100/40 grid grid-cols-3 gap-2 text-center text-xs">
+                      <div>
+                        <div className="font-mono text-neutral-400">он (he)</div>
+                        <div className="font-bold text-base text-neutral-800">ходил</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-neutral-400">она (she)</div>
+                        <div className="font-bold text-base text-neutral-800">ходила</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-neutral-400">они/мы (they)</div>
+                        <div className="font-bold text-base text-neutral-800">ходили</div>
+                      </div>
+                    </div>
+                    <div className="space-y-3.5">
+                      <div className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">Example Sentences</div>
+                      <WordGloss 
+                        words={[
+                          { ru: 'Вчера', en: 'Yesterday' },
+                          { ru: 'я', en: 'I' },
+                          { ru: 'ходил', en: 'went (foot)', highlight: true },
+                          { ru: 'в', en: 'to' },
+                          { ru: 'университет.', en: 'university' }
+                        ]} 
+                        audioText="Вчера я ходил в университет."
+                      />
+                      <WordGloss 
+                        words={[
+                          { ru: 'Она', en: 'She' },
+                          { ru: 'ходила', en: 'went (foot)', highlight: true },
+                          { ru: 'в', en: 'to' },
+                          { ru: 'магазин.', en: 'shop' }
+                        ]} 
+                        audioText="Она ходила в магазин."
+                      />
+                      <WordGloss 
+                        words={[
+                          { ru: 'Мы', en: 'We' },
+                          { ru: 'ходили', en: 'went (foot)', highlight: true },
+                          { ru: 'в', en: 'to' },
+                          { ru: 'театр.', en: 'theatre' }
+                        ]} 
+                        audioText="Мы ходили в театр."
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 2. ЕЗДИТЬ in the Past Tense */}
+                <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden bg-white">
+                  <CardHeader className="bg-orange-50/40 p-6 md:p-8 border-b border-orange-100">
+                    <CardTitle className="text-xl flex items-center gap-3 text-orange-950 font-bold">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-700 text-sm font-bold font-mono">2</span>
+                      ЕЗДИТЬ in the Past Tense
+                    </CardTitle>
+                    <p className="text-xs text-neutral-500 font-light">ездить / to go regularly (by transport)</p>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8 space-y-6">
+                    <div className="p-4 bg-orange-50/20 rounded-2xl border border-orange-100/40 grid grid-cols-3 gap-2 text-center text-xs">
+                      <div>
+                        <div className="font-mono text-neutral-400">он (he)</div>
+                        <div className="font-bold text-base text-neutral-800">ездил</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-neutral-400">она (she)</div>
+                        <div className="font-bold text-base text-neutral-800">ездила</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-neutral-400">они/мы (they)</div>
+                        <div className="font-bold text-base text-neutral-800">ездили</div>
+                      </div>
+                    </div>
+                    <div className="space-y-3.5">
+                      <div className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">Example Sentences</div>
+                      <WordGloss 
+                        words={[
+                          { ru: 'Я', en: 'I' },
+                          { ru: 'ездил', en: 'went (veh)', highlight: true },
+                          { ru: 'в', en: 'to' },
+                          { ru: 'Москву.', en: 'Moscow' }
+                        ]} 
+                        audioText="Я ездил в Москву."
+                      />
+                      <WordGloss 
+                        words={[
+                          { ru: 'Она', en: 'She' },
+                          { ru: 'ездила', en: 'went (veh)', highlight: true },
+                          { ru: 'на', en: 'to' },
+                          { ru: 'море.', en: 'sea' }
+                        ]} 
+                        audioText="Она ездила на море."
+                      />
+                      <WordGloss 
+                        words={[
+                          { ru: 'Мы', en: 'We' },
+                          { ru: 'ездили', en: 'went (veh)', highlight: true },
+                          { ru: 'в', en: 'to' },
+                          { ru: 'аэропорт.', en: 'airport' }
+                        ]} 
+                        audioText="Мы ездили в аэропорт."
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 3. ГДЕ? vs КУДА? */}
+                <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden bg-white">
+                  <CardHeader className="bg-amber-50/40 p-6 md:p-8 border-b border-amber-100">
+                    <CardTitle className="text-xl flex items-center gap-3 text-neutral-900 font-bold">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-800 text-sm font-bold font-mono">3</span>
+                      ГДЕ? (Where?) vs КУДА? (Where to?)
+                    </CardTitle>
+                    <p className="text-xs text-neutral-500 font-light">The fundamental difference between Static Locations and Destination Targets</p>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2.5 p-4 rounded-2xl bg-teal-50/30 border border-teal-100/40">
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-teal-100 text-teal-800 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                          ГДЕ? ➔ Location
+                        </div>
+                        <p className="text-[11px] text-neutral-500 leading-snug">Requires any form of <strong>БЫТЬ</strong> (was/were) and the <strong>Prepositional Case</strong>.</p>
+                        <WordGloss 
+                          words={[
+                            { ru: 'Я', en: 'I' },
+                            { ru: 'был', en: 'was', highlight: true },
+                            { ru: 'в', en: 'at/in' },
+                            { ru: 'университете.', en: 'university (Loc)' }
+                          ]} 
+                          audioText="Я был в университете."
+                        />
+                      </div>
+                      <div className="space-y-2.5 p-4 rounded-2xl bg-orange-50/30 border border-orange-100/40">
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-100 text-orange-850 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                          КУДА? ➔ Direction
+                        </div>
+                        <p className="text-[11px] text-neutral-500 leading-snug">Requires verbs of motion (e.g. <strong>ХОДИТЬ</strong>) and the <strong>Accusative Case</strong>.</p>
+                        <WordGloss 
+                          words={[
+                            { ru: 'Я', en: 'I' },
+                            { ru: 'ходил', en: 'went', highlight: true },
+                            { ru: 'в', en: 'to' },
+                            { ru: 'университет.', en: 'university (Acc)' }
+                          ]} 
+                          audioText="Я ходил в университет."
+                        />
+                      </div>
+                    </div>
+                    <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200/50 flex gap-3.5 items-start">
+                      <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold text-xs text-amber-900 uppercase tracking-widest">Easy Rule</div>
+                        <p className="text-xs text-amber-850 leading-relaxed mt-0.5">
+                          If you ask <strong>Где?</strong>, use forms of <strong>был/была/были</strong>. If you ask <strong>Куда?</strong>, use motion forms of <strong>ходил/ходила/ходили</strong>!
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 4. БЫЛ vs ХОДИЛ */}
+                <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden bg-white">
+                  <CardHeader className="bg-orange-50/40 p-6 md:p-8 border-b border-orange-100">
+                    <CardTitle className="text-xl flex items-center gap-3 text-orange-950 font-bold">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-700 text-sm font-bold font-mono">4</span>
+                      БЫЛ vs ХОДИЛ (On Foot Comparison)
+                    </CardTitle>
+                    <p className="text-xs text-neutral-500">Comparing active motion against passive status (on foot, local scope)</p>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8 space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-center text-xs font-bold font-mono text-neutral-500 bg-neutral-50 py-2 rounded-xl">
+                      <div>БЫЛ (Location - Где?)</div>
+                      <div>ХОДИЛ (Motion - Куда?)</div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-3 border-b border-neutral-100/50">
+                        <WordGloss 
+                          words={[
+                            { ru: 'Максим', en: 'Maxim' },
+                            { ru: 'был', en: 'was', highlight: true },
+                            { ru: 'в', en: 'at' },
+                            { ru: 'университете.', en: 'university (Loc)' }
+                          ]} 
+                          audioText="Максим был в университете."
+                        />
+                        <WordGloss 
+                          words={[
+                            { ru: 'Максим', en: 'Maxim' },
+                            { ru: 'ходил', en: 'went', highlight: true },
+                            { ru: 'в', en: 'to' },
+                            { ru: 'университет.', en: 'university (Acc)' }
+                          ]} 
+                          audioText="Максим ходил в университет."
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <WordGloss 
+                          words={[
+                            { ru: 'Таня', en: 'Tanya' },
+                            { ru: 'была', en: 'was', highlight: true },
+                            { ru: 'в', en: 'in' },
+                            { ru: 'библиотеке.', en: 'library (Loc)' }
+                          ]} 
+                          audioText="Таня была в библиотеке."
+                        />
+                        <WordGloss 
+                          words={[
+                            { ru: 'Таня', en: 'Tanya' },
+                            { ru: 'ходила', en: 'went', highlight: true },
+                            { ru: 'в', en: 'to' },
+                            { ru: 'библиотеку.', en: 'library (Acc)' }
+                          ]} 
+                          audioText="Таня ходила в библиотеку."
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 5. БЫЛ vs ЕЗДИЛ */}
+                <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden bg-white">
+                  <CardHeader className="bg-orange-50/40 p-6 md:p-8 border-b border-orange-100">
+                    <CardTitle className="text-xl flex items-center gap-3 text-orange-950 font-bold">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-700 text-sm font-bold font-mono">5</span>
+                      БЫЛ vs ЕЗДИЛ (Transport Comparison)
+                    </CardTitle>
+                    <p className="text-xs text-neutral-500">Comparing passive status against distance vehicle transit</p>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8 space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-center text-xs font-bold font-mono text-neutral-500 bg-neutral-50 py-2 rounded-xl">
+                      <div>БЫЛ (Location - Где?)</div>
+                      <div>ЕЗДИЛ (Motion - Куда?)</div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-3 border-b border-neutral-100/50">
+                        <WordGloss 
+                          words={[
+                            { ru: 'Джон', en: 'John' },
+                            { ru: 'был', en: 'was', highlight: true },
+                            { ru: 'в', en: 'at' },
+                            { ru: 'банке.', en: 'bank (Loc)' }
+                          ]} 
+                          audioText="Джон был в банке."
+                        />
+                        <WordGloss 
+                          words={[
+                            { ru: 'Джон', en: 'John' },
+                            { ru: 'ездил', en: 'went (veh)', highlight: true },
+                            { ru: 'в', en: 'to' },
+                            { ru: 'банк.', en: 'bank (Acc)' }
+                          ]} 
+                          audioText="Джон ездил в банк."
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <WordGloss 
+                          words={[
+                            { ru: 'Джулия', en: 'Julia' },
+                            { ru: 'была', en: 'was', highlight: true },
+                            { ru: 'на', en: 'at' },
+                            { ru: 'конференции.', en: 'conference (Loc)' }
+                          ]} 
+                          audioText="Джулия была на конференции."
+                        />
+                        <WordGloss 
+                          words={[
+                            { ru: 'Джулия', en: 'Julia' },
+                            { ru: 'ездила', en: 'went (veh)', highlight: true },
+                            { ru: 'на', en: 'to' },
+                            { ru: 'конференцию.', en: 'conference (Acc)' }
+                          ]} 
+                          audioText="Джулия ездила на конференцию."
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 6. Past Forms Summary Table */}
+                <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden bg-white">
+                  <CardHeader className="bg-amber-50/40 p-6 md:p-8 border-b border-amber-100">
+                    <CardTitle className="text-xl flex items-center gap-3 text-neutral-900 font-bold">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-800 text-sm font-bold font-mono">6</span>
+                      Past Forms Conjugations Summary
+                    </CardTitle>
+                    <p className="text-xs text-neutral-500">Gender based suffix shifts for past motion & action</p>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-xs md:text-sm">
+                        <thead>
+                          <tr className="border-b border-neutral-100 font-mono text-neutral-400">
+                            <th className="pb-3 pr-2">Subject / Gender</th>
+                            <th className="pb-3 px-2">ХОДИТЬ (on foot)</th>
+                            <th className="pb-3 px-2">ЕЗДИТЬ (transport)</th>
+                            <th className="pb-3 pl-2">БЫТЬ (status)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-neutral-100">
+                          <tr className="hover:bg-neutral-50/50">
+                            <td className="py-3 font-semibold text-neutral-800">Мужской род (Masculine)<br/><span className="text-[10px] text-neutral-400 font-mono">он (he)</span></td>
+                            <td className="py-3 px-2 font-mono text-orange-600 font-extrabold">ходил</td>
+                            <td className="py-3 px-2 font-mono text-orange-600 font-extrabold">ездил</td>
+                            <td className="py-3 pl-2 font-mono text-teal-600 font-extrabold">был</td>
+                          </tr>
+                          <tr className="hover:bg-neutral-50/50">
+                            <td className="py-3 font-semibold text-neutral-800">Женский род (Feminine)<br/><span className="text-[10px] text-neutral-400 font-mono">она (she)</span></td>
+                            <td className="py-3 px-2 font-mono text-orange-600 font-extrabold">ходила</td>
+                            <td className="py-3 px-2 font-mono text-orange-600 font-extrabold">ездила</td>
+                            <td className="py-3 pl-2 font-mono text-teal-600 font-extrabold">была</td>
+                          </tr>
+                          <tr className="hover:bg-neutral-50/50">
+                            <td className="py-3 font-semibold text-neutral-800">Множ. число (Plural)<br/><span className="text-[10px] text-neutral-400 font-mono">они/мы/вы (they)</span></td>
+                            <td className="py-3 px-2 font-mono text-orange-600 font-extrabold">ходили</td>
+                            <td className="py-3 px-2 font-mono text-orange-600 font-extrabold">ездили</td>
+                            <td className="py-3 pl-2 font-mono text-teal-600 font-extrabold">были</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 7. Common Place Patterns */}
+                <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden bg-white">
+                  <CardHeader className="bg-orange-50/40 p-6 md:p-8 border-b border-orange-100">
+                    <CardTitle className="text-xl flex items-center gap-3 text-orange-950 font-bold">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-700 text-sm font-bold font-mono">7</span>
+                      Common Place Patterns (On Foot)
+                    </CardTitle>
+                    <p className="text-xs text-neutral-500">Combining target events and local walking destinations</p>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8 space-y-3.5">
+                    <WordGloss 
+                      words={[
+                        { ru: 'Я', en: 'I' },
+                        { ru: 'ходил', en: 'went', highlight: true },
+                        { ru: 'в', en: 'to' },
+                        { ru: 'гости.', en: 'visit' }
+                      ]} 
+                      audioText="Я ходил в гости."
+                    />
+                    <WordGloss 
+                      words={[
+                        { ru: 'Мы', en: 'We' },
+                        { ru: 'ходили', en: 'went', highlight: true },
+                        { ru: 'в', en: 'to' },
+                        { ru: 'клуб', en: 'club' },
+                        { ru: 'на', en: 'for' },
+                        { ru: 'дискотеку.', en: 'disco' }
+                      ]} 
+                      audioText="Мы ходили в клуб на дискотеку."
+                    />
+                    <WordGloss 
+                      words={[
+                        { ru: 'Она', en: 'She' },
+                        { ru: 'ходила', en: 'went', highlight: true },
+                        { ru: 'в', en: 'to' },
+                        { ru: 'ресторан', en: 'restaurant' },
+                        { ru: 'на', en: 'for' },
+                        { ru: 'свадьбу.', en: 'wedding' }
+                      ]} 
+                      audioText="Она ходила в ресторан на свадьбу."
+                    />
+                    <WordGloss 
+                      words={[
+                        { ru: 'Они', en: 'They' },
+                        { ru: 'ходили', en: 'went', highlight: true },
+                        { ru: 'в', en: 'to' },
+                        { ru: 'театр', en: 'theatre' },
+                        { ru: 'на', en: 'for' },
+                        { ru: 'балет.', en: 'ballet' }
+                      ]} 
+                      audioText="Они ходили в театр на балет."
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* 8. Using ЕЗДИЛ */}
+                <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden bg-white">
+                  <CardHeader className="bg-orange-50/40 p-6 md:p-8 border-b border-orange-100">
+                    <CardTitle className="text-xl flex items-center gap-3 text-orange-950 font-bold">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-700 text-sm font-bold font-mono">8</span>
+                      Using ЕЗДИЛ (Long Distance Transit)
+                    </CardTitle>
+                    <p className="text-xs text-neutral-500">Form constructions featuring vehicular travels or transitions</p>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8 space-y-3.5">
+                    <WordGloss 
+                      words={[
+                        { ru: 'Летом', en: 'Summer' },
+                        { ru: 'она', en: 'she' },
+                        { ru: 'ездила', en: 'went (veh)', highlight: true },
+                        { ru: 'на', en: 'to' },
+                        { ru: 'море.', en: 'sea' }
+                      ]} 
+                      audioText="Летом она ездила на море."
+                    />
+                    <WordGloss 
+                      words={[
+                        { ru: 'Они', en: 'They' },
+                        { ru: 'ездили', en: 'went (veh)', highlight: true },
+                        { ru: 'в', en: 'to' },
+                        { ru: 'Москву.', en: 'Moscow' }
+                      ]} 
+                      audioText="Они ездили в Москву."
+                    />
+                    <WordGloss 
+                      words={[
+                        { ru: 'Мы', en: 'We' },
+                        { ru: 'ездили', en: 'went (veh)', highlight: true },
+                        { ru: 'в', en: 'to' },
+                        { ru: 'аэропорт.', en: 'airport' }
+                      ]} 
+                      audioText="Мы ездили в аэропорт."
+                    />
+                    <WordGloss 
+                      words={[
+                        { ru: 'Он', en: 'He' },
+                        { ru: 'ездил', en: 'went (veh)', highlight: true },
+                        { ru: 'на', en: 'to' },
+                        { ru: 'стадион', en: 'stadium' },
+                        { ru: 'на', en: 'for' },
+                        { ru: 'футбольный', en: 'football' },
+                        { ru: 'матч.', en: 'match' }
+                      ]} 
+                      audioText="Он ездил на стадион на футбольный матч."
+                    />
+                    <WordGloss 
+                      words={[
+                        { ru: 'Она', en: 'She' },
+                        { ru: 'ездила', en: 'went (veh)', highlight: true },
+                        { ru: 'в', en: 'to' },
+                        { ru: 'командировку.', en: 'business-trip' }
+                      ]} 
+                      audioText="Она ездила в командировку."
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* 9. В ГОСТЯХ vs В ГОСТИ */}
+                <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden bg-white">
+                  <CardHeader className="bg-amber-50/40 p-6 md:p-8 border-b border-amber-100">
+                    <CardTitle className="text-xl flex items-center gap-3 text-neutral-900 font-bold">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-800 text-sm font-bold font-mono">9</span>
+                      В ГОСТЯХ vs В ГОСТИ
+                    </CardTitle>
+                    <p className="text-xs text-neutral-500 font-light">Crucial difference between being a guest and going to visit</p>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2.5 p-4 rounded-2xl bg-teal-50/20 border border-teal-100/40">
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-teal-100 text-teal-800 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                          В ГОСТЯХ ➔ Location (Где?)
+                        </div>
+                        <p className="text-xs text-neutral-500">To be currently visiting or hanging out at friends' home.</p>
+                        <WordGloss 
+                          words={[
+                            { ru: 'Я', en: 'I' },
+                            { ru: 'был', en: 'was' },
+                            { ru: 'в', en: 'at' },
+                            { ru: 'гостях.', en: "guests' (Loc)", highlight: true }
+                          ]} 
+                          audioText="Я был в гостях."
+                        />
+                      </div>
+                      <div className="space-y-2.5 p-4 rounded-2xl bg-orange-50/20 border border-orange-100/40">
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-100 text-orange-850 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                          В ГОСТИ ➔ Destination (Куда?)
+                        </div>
+                        <p className="text-xs text-neutral-500">To head over towards friends' place as a destination.</p>
+                        <WordGloss 
+                          words={[
+                            { ru: 'Вечером', en: 'In-evening' },
+                            { ru: 'я', en: 'I' },
+                            { ru: 'иду', en: 'go' },
+                            { ru: 'в', en: 'to' },
+                            { ru: 'гости.', en: 'guests (Acc)', highlight: true }
+                          ]} 
+                          audioText="Вечером я иду в гости."
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 10. Most Common Mistakes */}
+                <Card className="rounded-[1.8rem] border-2 border-red-500/10 shadow-sm overflow-hidden bg-red-50/10">
+                  <CardHeader className="bg-red-50/40 p-6 md:p-8 border-b border-red-100 flex items-start gap-4">
+                    <div className="bg-red-100 p-2 rounded-xl text-red-600 mt-0.5 shrink-0 animate-pulse">
+                      <AlertCircle className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl flex items-center gap-3 text-red-950 font-black">
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-800 text-sm font-bold font-mono">10</span>
+                        Most Common Mistakes
+                      </CardTitle>
+                      <p className="text-xs text-red-900/75 mt-0.5 font-medium">Verify you do not blend location nouns with active motility vectors!</p>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8 space-y-6">
+                    <div className="space-y-4">
+                      {/* Mistake 1 */}
+                      <div className="space-y-2 p-4 bg-white rounded-2xl border border-red-100 shadow-2xs">
+                        <div className="flex items-center gap-2 text-xs font-bold text-red-600">
+                          <span className="w-5 h-5 rounded-full bg-red-100 text-red-700 flex items-center justify-center">✗</span>
+                          Incorrect blending (Mixing Locative)
+                        </div>
+                        <div className="font-mono text-xs text-neutral-400">❌ Я был в университет. / ❌ Я ходил в университете.</div>
+                        <div className="flex items-center gap-2 text-xs font-bold text-green-600 pt-1">
+                          <span className="w-5 h-5 rounded-full bg-green-100 text-green-700 flex items-center justify-center">✓</span>
+                          Corrected:
+                        </div>
+                        <WordGloss 
+                          words={[
+                            { ru: 'Я', en: 'I' },
+                            { ru: 'был', en: 'was' },
+                            { ru: 'в', en: 'at' },
+                            { ru: 'университете.', en: 'university (Loc)', highlight: true }
+                          ]} 
+                          audioText="Я был в университете."
+                        />
+                        <WordGloss 
+                          words={[
+                            { ru: 'Я', en: 'I' },
+                            { ru: 'ходил', en: 'went' },
+                            { ru: 'в', en: 'to' },
+                            { ru: 'университет.', en: 'university (Acc)', highlight: true }
+                          ]} 
+                          audioText="Я ходил в университет."
+                        />
+                      </div>
+
+                      {/* Mistake 2 */}
+                      <div className="space-y-2 p-4 bg-white rounded-2xl border border-red-100 shadow-2xs">
+                        <div className="flex items-center gap-2 text-xs font-bold text-red-600">
+                          <span className="w-5 h-5 rounded-full bg-red-100 text-red-700 flex items-center justify-center">✗</span>
+                          Incorrect tracking (Mixing Accusative)
+                        </div>
+                        <div className="font-mono text-xs text-neutral-400">❌ Она была на конференцию. / ❌ Она ездила на конференции.</div>
+                        <div className="flex items-center gap-2 text-xs font-bold text-green-600 pt-1">
+                          <span className="w-5 h-5 rounded-full bg-green-100 text-green-700 flex items-center justify-center">✓</span>
+                          Corrected:
+                        </div>
+                        <WordGloss 
+                          words={[
+                            { ru: 'Она', en: 'She' },
+                            { ru: 'была', en: 'was' },
+                            { ru: 'на', en: 'at' },
+                            { ru: 'конференции.', en: 'conference (Loc)', highlight: true }
+                          ]} 
+                          audioText="Она была на конференции."
+                        />
+                        <WordGloss 
+                          words={[
+                            { ru: 'Она', en: 'She' },
+                            { ru: 'ездила', en: 'went (veh)' },
+                            { ru: 'на', en: 'to' },
+                            { ru: 'конференцию.', en: 'conference (Acc)', highlight: true }
+                          ]} 
+                          audioText="Она ездила на конференцию."
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+              </div>
+            </TabsContent>
 
             <TabsContent value="basics" className="w-full space-y-8 slide-in-from-bottom-2 animate-in duration-300">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

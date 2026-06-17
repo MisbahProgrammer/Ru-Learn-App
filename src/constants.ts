@@ -401,7 +401,17 @@ export const VOCABULARY = [
       { ru: 'Санаторий', en: 'Sanatorium / Resort', pr: 'Sa-na-to-riy' },
       { ru: 'Деревня', en: 'Village', pr: 'di-rév-nya' },
       { ru: 'Цирк', en: 'Circus', pr: 'tsirk' },
-      { ru: 'Кафе', en: 'Café', pr: 'ka-fé' }
+      { ru: 'Кафе', en: 'Café', pr: 'ka-fé' },
+      { ru: 'Столовая', en: 'Canteen', pr: 'sta-ló-va-ya' },
+      { ru: 'Центр', en: 'City centre', pr: 'tsyentr' },
+      { ru: 'Дворец', en: 'Palace', pr: 'dva-ryéts' },
+      { ru: 'Стадион', en: 'Stadium', pr: 'sta-di-ón' },
+      { ru: 'Бассейн', en: 'Swimming pool', pr: 'ba-séyn' },
+      { ru: 'Клуб', en: 'Club', pr: 'klup' },
+      { ru: 'Ресторан', en: 'Restaurant', pr: 'res-ta-rán' },
+      { ru: 'Кремль', en: 'Kremlin', pr: 'kreml\'' },
+      { ru: 'Красная площадь', en: 'Red Square', pr: 'krás-na-ya pló-shad\'' },
+      { ru: 'Петергоф', en: 'Peterhof', pr: 'pe-ter-góf' }
     ]
   },
   {
@@ -423,6 +433,30 @@ export const VOCABULARY = [
       { ru: 'Таксист', en: 'Taxi driver', pr: 'Tak-sist' },
       { ru: 'Шофёр', en: 'Chauffeur', pr: 'Sha-fyor' },
       { ru: 'Экскурсовод', en: 'Tour Guide', pr: 'Eks-kur-sa-vot' }
+    ]
+  },
+  {
+    category: 'Events & Activities (События и занятия)',
+    items: [
+      { ru: 'Балет', en: 'Ballet', pr: 'ba-lyét' },
+      { ru: 'Конференция', en: 'Conference', pr: 'kan-fe-rén-tsi-ya' },
+      { ru: 'Экскурсия', en: 'Excursion / tour', pr: 'eks-kúr-si-ya' },
+      { ru: 'Дискотека', en: 'Disco', pr: 'dis-ka-tyé-ka' },
+      { ru: 'Свадьба', en: 'Wedding', pr: 'svád-ba' },
+      { ru: 'Собрание', en: 'Meeting', pr: 'sa-brá-ni-ye' },
+      { ru: 'Вечеринка', en: 'Party', pr: 've-che-rín-ka' },
+      { ru: 'Футбольный матч', en: 'Football match', pr: 'fut-ból-niy mach' },
+      { ru: 'Лекция', en: 'Lecture', pr: 'lyék-tsi-ya' },
+      { ru: 'Игра', en: 'Game', pr: 'i-grá' }
+    ]
+  },
+  {
+    category: 'Travel & People (Путешествия и люди)',
+    items: [
+      { ru: 'Командировка', en: 'Business trip', pr: 'ka-man-di-róv-ka' },
+      { ru: 'Гости', en: 'Guests', pr: 'gós-ti' },
+      { ru: 'Москвич', en: 'Moscow resident', pr: 'mas-kvích' },
+      { ru: 'Турист', en: 'Tourist', pr: 'tu-ríst' }
     ]
   },
   {
@@ -474,7 +508,11 @@ export const VOCABULARY = [
       { ru: 'Начинать', en: 'To begin', pr: 'Na-chi-nat' },
       { ru: 'Выступать', en: 'To perform', pr: 'Vus-tu-pat' },
       { ru: 'Петь', en: 'To sing', pr: 'Pyet' },
-      { ru: 'Узнать', en: 'To find out', pr: 'Uz-nat' }
+      { ru: 'Узнать', en: 'To find out', pr: 'Uz-nat' },
+      { ru: 'Ходить', en: 'To go regularly (on foot)', pr: 'kha-dít' },
+      { ru: 'Ездить', en: 'To go regularly (by transport)', pr: 'yéz-dit' },
+      { ru: 'Встречать', en: 'To meet', pr: 'fstra-chát\'' },
+      { ru: 'Встретить', en: 'To meet (completed)', pr: 'fstré-tit\'' }
     ]
   },
   {
@@ -546,7 +584,8 @@ export const VOCABULARY = [
       { ru: 'День', en: 'Day', pr: 'Dyen' },
       { ru: 'Утро', en: 'Morning', pr: 'Ut-ra' },
       { ru: 'Вечер', en: 'Evening', pr: 'Vye-chyer' },
-      { ru: 'Неделя', en: 'Week', pr: 'Nee-dye-lya' }
+      { ru: 'Неделя', en: 'Week', pr: 'Nee-dye-lya' },
+      { ru: 'Англо-русский', en: 'English-Russian', pr: 'ang-la-rús-skiy' }
     ]
   },
   {
@@ -622,7 +661,8 @@ export const VOCABULARY = [
       { ru: 'Нужно', en: 'Need to', pr: 'Nuzh-na / Na-da' },
       { ru: 'Нельзя', en: 'Not allowed', pr: 'Nel-zya' },
       { ru: 'Приятно познакомиться', en: 'Nice to meet you', pr: 'Pri-yat-na paz-na-ko-mit-sa' },
-      { ru: 'Очень приятно', en: 'Very nice', pr: 'O-chen pri-yat-na' }
+      { ru: 'Очень приятно', en: 'Very nice', pr: 'O-chen pri-yat-na' },
+      { ru: 'Здорово', en: 'Great!', pr: 'zdó-ra-va' }
     ]
   }
 ];
@@ -696,5 +736,15 @@ export const PHRASES = [
   { ru: 'В бассейне нельзя есть и пить.', en: 'Eating and drinking are not allowed in the pool.', pr: 'V basseyne nelzya yest i pit.' },
   { ru: 'Можно купить овощи на рынке.', en: 'You can buy vegetables at the market.', pr: 'Mozhno kupit ovoshi na rynke.' },
   { ru: 'Мне нужно купить лекарство.', en: 'I need to buy medicine.', pr: 'Mne nuzhno kupit lekarstvo.' },
-  { ru: 'Где можно найти это?', en: 'Where can I find this?', pr: 'Gde mozhno nayti eto.' }
+  { ru: 'Где можно найти это?', en: 'Where can I find this?', pr: 'Gde mozhno nayti eto.' },
+  { ru: 'Я хожу́ в столо́вую ка́ждый день.', en: 'I go to the canteen every day.', pr: 'Ya kho-zhú f sta-ló-vu-yu kázh-diy dyen\'' },
+  { ru: 'Мы ча́сто хо́дим в теа́тр на бале́т.', en: 'We often go to the theatre for ballet.', pr: 'My chás-ta khó-dim v ti-átr na ba-lyét' },
+  { ru: 'Она е́здит на конфере́нцию ка́ждый год.', en: 'She goes to a conference every year.', pr: 'A-ná yéz-dit na kan-fe-rén-tsi-yu kázh-diy got' },
+  { ru: 'Я е́зжу на мо́ре ка́ждое ле́то.', en: 'I go to the sea every summer.', pr: 'Ya yéz-zhu na mó-re káz-da-ye lyé-ta' },
+  { ru: 'Вчера́ мы е́здили в аэропо́рт.', en: 'Yesterday we went to the airport.', pr: 'Fchi-rá my yéz-di-li v a-e-ra-pórt' },
+  { ru: 'Он ходи́л в го́сти.', en: 'He went to visit friends.', pr: 'On kha-díl f gós-ti' },
+  { ru: 'Мы е́здили в Петерго́ф на экску́рсию.', en: 'We went to Peterhof on an excursion.', pr: 'My yéz-di-li v Pi-tir-góf na eks-kúr-si-yu' },
+  { ru: 'Она была́ в командиро́вке.', en: 'She was on a business trip.', pr: 'A-ná by-lá f ka-man-di-róf-ke' },
+  { ru: 'Я встреча́л друзе́й в аэропорту́.', en: 'I met friends at the airport.', pr: 'Ya fstri-chál dru-zéy v a-e-ra-par-tú' },
+  { ru: 'В воскресе́нье мы были́ в цирке́.', en: 'On Sunday we were at the circus.', pr: 'V vas-kri-syén\'-ye my by-li v tsír-ke' }
 ];
