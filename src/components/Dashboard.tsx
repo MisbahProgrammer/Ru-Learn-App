@@ -392,6 +392,28 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
                     </div>
                   )}
 
+                  {/* Alert: Free Video Lectures available in Alphabet section */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 mt-6 bg-gradient-to-r from-orange-50 to-amber-50/50 border border-orange-100 rounded-2xl shadow-xs">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-orange-100 border border-orange-200 text-orange-600 rounded-xl mt-0.5 shrink-0">
+                        <Video className="w-5 h-5 text-orange-500" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-neutral-800">🎓 Free Cyrillic Alphabet Lectures!</h4>
+                        <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                          Complete our intensive step-by-step masterclasses (Parts 1 to 9) in the <span className="font-semibold text-neutral-700">Alphabet</span> tab to master Russian reading rules and earn extra XP.
+                        </p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setActiveTab('alphabet')}
+                      className="rounded-xl border-orange-200 bg-white text-orange-600 hover:bg-orange-100 hover:text-orange-700 font-bold text-xs shrink-0 px-4 py-2 h-9 transition-all cursor-pointer shadow-xs"
+                    >
+                      Go to Alphabet
+                    </Button>
+                  </div>
+
                   {/* Streak & Countdown Widget */}
                   <div className="flex flex-col md:flex-row md:items-center gap-4 mt-6">
                     {/* Daily Streak Row */}
