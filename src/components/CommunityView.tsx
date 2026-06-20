@@ -106,7 +106,14 @@ const MOCK_PROFILES = [
 ];
 
 export function CommunityView({ onTotalCountLoaded }: { onTotalCountLoaded?: (count: number) => void }) {
-  const [members, setMembers] = useState<any[]>([]);
+  // Initialize with mock profiles immediately to prevent empty/blank states and provide instant interactive design
+  const [members, setMembers] = useState<any[]>(() => {
+    const list = MOCK_PROFILES.map(m => ({
+      ...m,
+      lessons_completed_count: Object.keys(m.lessons_completed || {}).length
+    }));
+    return list;
+  });
   const [loading, setLoading] = useState(true);
   
   // Searching, Filtering, Sorting states
@@ -115,30 +122,49 @@ export function CommunityView({ onTotalCountLoaded }: { onTotalCountLoaded?: (co
   const [filterCountryName, setFilterCountryName] = useState('All');
   const [sortRule, setSortRule] = useState<'newest' | 'streak' | 'lessons'>('newest');
 
-  // Load profiles from database
+  // Trigger default total count load immediately
+  useEffect(() => {
+    onTotalCountLoaded?.(members.length);
+  }, []);
+
+  // Load profiles from database with a fast networking fallback race
   useEffect(() => {
     async function fetchAllProfiles() {
       if (!supabase) {
-        // Fallback to mock profiles if offline or not verified
-        setMembers(MOCK_PROFILES);
-        onTotalCountLoaded?.(MOCK_PROFILES.length);
         setLoading(false);
         return;
       }
 
       try {
-        const { data, error } = await supabase
+        // Query users with a strict 2-second network timeout race to prevent infinite hanging
+        const fetchPromise = supabase
           .from('users')
           .select('*');
 
+        const timeoutPromise = new Promise<any>((_, reject) =>
+          setTimeout(() => reject(new Error('Supabase request timed out after 2 seconds')), 2000)
+        );
+
+        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
         if (error) throw error;
 
-        // Merge real database profiles with mock profiles to guarantee a lively platform
         if (data && data.length > 0) {
-          // Map profiles to standard format
+          // Map profiles to standard format safely
           const formattedDbData = data.map(dbUser => {
-            const lessons = dbUser.lessons_completed || {};
-            const lessonsCount = typeof lessons === 'object' ? Object.keys(lessons).length : 0;
+            let lessons: Record<string, any> = {};
+            if (dbUser.lessons_completed) {
+              if (typeof dbUser.lessons_completed === 'object') {
+                lessons = dbUser.lessons_completed;
+              } else if (typeof dbUser.lessons_completed === 'string') {
+                try {
+                  lessons = JSON.parse(dbUser.lessons_completed);
+                } catch (e) {
+                  console.warn('Failed parsing lessons_completed column JSON string:', e);
+                }
+              }
+            }
+            const lessonsCount = typeof lessons === 'object' && lessons ? Object.keys(lessons).length : 0;
             return {
               uid: dbUser.uid,
               displayName: dbUser.displayName || dbUser.email?.split('@')[0] || 'Scholar',
@@ -154,32 +180,42 @@ export function CommunityView({ onTotalCountLoaded }: { onTotalCountLoaded?: (co
             };
           });
 
-          // Mix standard mocks for design density
+          // Mix in original curated mock accounts to guarantee rich user density
           const activeMockList = MOCK_PROFILES.filter(
-            mock => !formattedDbData.some(db => db.displayName.toLowerCase() === mock.displayName.toLowerCase())
+            mock => !formattedDbData.some(db => {
+              const dbName = (db.displayName || '').trim().toLowerCase();
+              const mockName = (mock.displayName || '').trim().toLowerCase();
+              return dbName === mockName || db.uid === mock.uid;
+            })
           );
           
-          const fullList = [...formattedDbData, ...activeMockList.map(m => ({
-            ...m,
-            lessons_completed_count: Object.keys(m.lessons_completed).length
-          }))];
+          const fullList = [
+            ...formattedDbData, 
+            ...activeMockList.map(m => ({
+              ...m,
+              lessons_completed_count: Object.keys(m.lessons_completed || {}).length
+            }))
+          ];
 
           setMembers(fullList);
           onTotalCountLoaded?.(fullList.length);
         } else {
-          setMembers(MOCK_PROFILES.map(m => ({
+          // No live users in database, display baseline community entries
+          const list = MOCK_PROFILES.map(m => ({
             ...m,
-            lessons_completed_count: Object.keys(m.lessons_completed).length
-          })));
-          onTotalCountLoaded?.(MOCK_PROFILES.length);
+            lessons_completed_count: Object.keys(m.lessons_completed || {}).length
+          }));
+          setMembers(list);
+          onTotalCountLoaded?.(list.length);
         }
       } catch (err) {
-        console.warn('Supabase fetch failed, displaying mock profiles:', err);
-        setMembers(MOCK_PROFILES.map(m => ({
+        console.warn('Supabase profile query failed, using baseline fallback community list:', err);
+        const list = MOCK_PROFILES.map(m => ({
           ...m,
-          lessons_completed_count: Object.keys(m.lessons_completed).length
-        })));
-        onTotalCountLoaded?.(MOCK_PROFILES.length);
+          lessons_completed_count: Object.keys(m.lessons_completed || {}).length
+        }));
+        setMembers(list);
+        onTotalCountLoaded?.(list.length);
       } finally {
         setLoading(false);
       }

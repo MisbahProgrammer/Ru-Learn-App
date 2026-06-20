@@ -50,11 +50,11 @@ CREATE TABLE IF NOT EXISTS public.users (
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
 -- 2. Create Security Policies for `users`
--- Allow users to read their own profile
-CREATE POLICY "Users can read their own profiles" 
+-- Allow anyone to read basic user profiles for the community board
+CREATE POLICY "Anyone can read user profiles" 
 ON public.users 
 FOR SELECT 
-USING (auth.uid() = uid);
+USING (true);
 
 -- Allow users to create their own profile during signup
 CREATE POLICY "Users can insert their own profiles" 
