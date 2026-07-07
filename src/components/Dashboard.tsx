@@ -25,7 +25,31 @@ import {
   Target
 } from 'lucide-react';
 import { ALPHABET, SCENARIOS, CITY_IMAGES } from '@/constants';
+import { CITIES_GUIDE, CityBlog } from '@/data/cities';
+import { 
+  MapPin, 
+  Users, 
+  CloudSnow, 
+  Sun, 
+  GraduationCap, 
+  Compass, 
+  Train, 
+  Coins, 
+  Utensils, 
+  Lightbulb, 
+  ChevronLeft, 
+  ChevronRight, 
+  ExternalLink 
+} from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { AlphabetView } from '@/components/AlphabetView';
+import { CityBlogModal } from '@/components/CityBlogModal';
 import { ScenarioChat } from '@/components/ScenarioChat';
 import { VocabularyView } from '@/components/VocabularyView';
 import { ProfileView } from '@/components/ProfileView';
@@ -54,6 +78,8 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
   const [communityMemberCount, setCommunityMemberCount] = useState(0);
   const [signingOut, setSigningOut] = useState(false);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<CityBlog | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
 
   React.useEffect(() => {
     setActiveTab(initialTab);
@@ -541,18 +567,55 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
                 </div>
 
                 <div>
-                  <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-neutral-400 mb-6">Discover Russia</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {CITY_IMAGES.map((city) => (
-                      <div key={city.name} className="relative aspect-square rounded-2xl overflow-hidden group">
-                        <img src={city.url} alt={city.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent flex flex-col justify-end p-4">
-                          <h4 className="text-white font-bold text-lg">{city.name}</h4>
-                          <p className="text-white/60 text-[10px] uppercase tracking-widest">{city.description}</p>
+                  <div className="flex justify-between items-baseline mb-6">
+                    <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-neutral-400">Discover Russia</h3>
+                    <span className="text-neutral-400 text-xs font-mono">{CITIES_GUIDE.length} Cities Guide</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {CITIES_GUIDE.map((city) => (
+                      <div 
+                        key={city.id} 
+                        onClick={() => {
+                          setSelectedCity(city);
+                        }}
+                        className="relative aspect-[4/5] sm:aspect-square md:aspect-[4/5] rounded-3xl overflow-hidden group cursor-pointer border border-neutral-100/50 shadow-sm hover:shadow-xl transition-all duration-300"
+                      >
+                        <img 
+                          src={city.coverImage} 
+                          alt={city.name} 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-5" />
+                        
+                        {/* Overlaid Badge */}
+                        <div className="absolute top-4 left-4">
+                          <Badge className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border-none font-bold tracking-wider uppercase text-[8px] px-2 py-0.5">
+                            {city.category}
+                          </Badge>
+                        </div>
+
+                        {/* Text details */}
+                        <div className="absolute bottom-5 left-5 right-5 text-white transition-transform duration-300 group-hover:-translate-y-1">
+                          <div className="flex items-baseline gap-1.5 mb-1">
+                            <h4 className="font-bold text-xl tracking-tight">{city.name}</h4>
+                            <span className="text-orange-400 font-serif italic text-sm">{city.russianName}</span>
+                          </div>
+                          <p className="text-white/70 text-[10px] uppercase tracking-widest leading-relaxed mb-3 line-clamp-1">{city.description}</p>
+                          <div className="flex justify-between items-center pt-2 border-t border-white/10 text-[10px] text-white/50 font-medium">
+                            <span className="flex items-center gap-1">🏫 {city.universities.length} Universities</span>
+                            <span className="text-orange-400 font-bold group-hover:underline flex items-center gap-0.5">Explore Guide →</span>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
+
+                  {/* Render the detailed interactive blog modal */}
+                  <CityBlogModal 
+                    isOpen={!!selectedCity} 
+                    onClose={() => setSelectedCity(null)} 
+                    city={selectedCity} 
+                  />
                 </div>
 
 
