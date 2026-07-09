@@ -58,57 +58,58 @@ export function CityBlogModal({ isOpen, onClose, city }: CityBlogModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[92vh] md:max-h-[85vh] overflow-y-auto p-0 rounded-3xl border-none shadow-2xl bg-white focus:outline-none">
+      <DialogContent className="max-w-4xl max-h-[95vh] md:max-h-[88vh] overflow-y-auto p-0 rounded-2xl md:rounded-3xl border-none shadow-2xl bg-white focus:outline-none">
         
         {/* Header Hero Section */}
-        <div className="relative h-64 md:h-80 w-full overflow-hidden">
+        <div className="relative h-72 sm:h-80 md:h-96 w-full overflow-hidden">
           <img 
             src={allImages[activeImageIndex]} 
             alt={city.name} 
             className="w-full h-full object-cover transition-all duration-700 ease-in-out" 
+            loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
           
           {/* Gallery navigation controls on hero */}
-          <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+          <div className="absolute inset-x-2 sm:inset-x-4 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-10">
             <Button 
               size="icon" 
               variant="secondary" 
               onClick={handlePrevImage}
-              className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/45 border-none text-white pointer-events-auto transition-all shadow-md"
+              className="w-8 h-8 sm:w-10 h-10 rounded-full bg-black/35 hover:bg-black/55 sm:bg-white/20 sm:backdrop-blur-md sm:hover:bg-white/45 border-none text-white pointer-events-auto transition-all shadow-md"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 h-6" />
             </Button>
             <Button 
               size="icon" 
               variant="secondary" 
               onClick={handleNextImage}
-              className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/45 border-none text-white pointer-events-auto transition-all shadow-md"
+              className="w-8 h-8 sm:w-10 h-10 rounded-full bg-black/35 hover:bg-black/55 sm:bg-white/20 sm:backdrop-blur-md sm:hover:bg-white/45 border-none text-white pointer-events-auto transition-all shadow-md"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5 sm:w-6 h-6" />
             </Button>
           </div>
 
           {/* Overlay titles */}
-          <div className="absolute bottom-6 left-6 right-6 text-white">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <Badge className="bg-orange-500 hover:bg-orange-600 border-none text-white font-bold tracking-wider uppercase text-[10px] px-2.5 py-0.5 shadow-sm">
+          <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 text-white z-10">
+            <div className="flex flex-wrap items-center gap-2 mb-1 sm:mb-2">
+              <Badge className="bg-orange-500 hover:bg-orange-600 border-none text-white font-bold tracking-wider uppercase text-[8px] sm:text-[10px] px-2 py-0.5 shadow-sm">
                 {city.category}
               </Badge>
-              <span className="text-white/60 text-xs font-mono">Photo {activeImageIndex + 1} of {allImages.length}</span>
+              <span className="text-white/60 text-[10px] font-mono">Photo {activeImageIndex + 1} of {allImages.length}</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-light tracking-tight flex items-baseline gap-2">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight flex flex-wrap items-baseline gap-1.5">
               <span className="font-semibold">{city.name}</span>
-              <span className="font-serif italic text-orange-400 text-xl md:text-2xl">{city.russianName}</span>
+              <span className="font-serif italic text-orange-400 text-base sm:text-xl md:text-2xl">{city.russianName}</span>
             </h2>
-            <p className="text-white/80 text-xs md:text-sm mt-1 max-w-2xl font-light leading-relaxed">
+            <p className="text-white/85 text-[11px] sm:text-xs md:text-sm mt-1 max-w-2xl font-light leading-relaxed line-clamp-3 sm:line-clamp-none">
               {city.description}
             </p>
           </div>
         </div>
 
         {/* Content Layout */}
-        <div className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Left Area: Navigation Tabs and Content (Col Span 8) */}
           <div className="lg:col-span-8 space-y-6">
@@ -301,7 +302,7 @@ export function CityBlogModal({ isOpen, onClose, city }: CityBlogModalProps) {
             <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100 space-y-3">
               <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block">Quick Facts</span>
               
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-3">
                 <div className="bg-white p-2.5 rounded-xl border border-neutral-100/80 shadow-3xs flex items-center gap-2">
                   <Users className="w-4 h-4 text-neutral-400 shrink-0" />
                   <div>
@@ -357,11 +358,12 @@ export function CityBlogModal({ isOpen, onClose, city }: CityBlogModalProps) {
         </div>
 
         {/* Modal Footer */}
-        <div className="border-t border-neutral-100 px-6 py-4 flex justify-between items-center bg-neutral-50/50">
-          <span className="text-[10px] text-neutral-400">Pursuing Russian Universities Entrance Exams • Discover Cities Guide</span>
+        <div className="border-t border-neutral-100 px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-center bg-neutral-50/50 gap-3">
+          <span className="text-[10px] text-neutral-400 hidden sm:inline">Pursuing Russian Universities Entrance Exams • Discover Cities Guide</span>
+          <span className="text-[10px] text-neutral-400 inline sm:hidden">Discover Cities Guide</span>
           <Button 
             onClick={onClose}
-            className="rounded-xl px-5 py-2 bg-neutral-900 hover:bg-black text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="rounded-xl px-4 sm:px-5 py-1.5 sm:py-2 bg-neutral-900 hover:bg-black text-white font-bold text-xs shadow-xs cursor-pointer w-full sm:w-auto"
           >
             Close Guide
           </Button>

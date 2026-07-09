@@ -45,11 +45,11 @@ export const CITIES_GUIDE: CityBlog[] = [
     russianName: 'Москва',
     category: 'Metropolis',
     description: 'The political, economic, and educational heart of Russia, where ancient history meets futuristic skyscrapers.',
-    coverImage: 'https://images.unsplash.com/photo-1513326738677-b964603b136d?auto=format&fit=crop&q=80&w=1000',
+    coverImage: 'https://images.unsplash.com/photo-1513326738677-b964603b136d?auto=format&fit=crop&q=70&w=800&fm=webp',
     galleryImages: [
-      'https://images.unsplash.com/photo-1520106212299-d99c443e45f8?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1561542320-9a18cd340469?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1599824419139-9d933e4f62bf?auto=format&fit=crop&q=80&w=800'
+      'https://images.unsplash.com/photo-1520106212299-d99c443e45f8?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1561542320-9a18cd340469?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1599824419139-9d933e4f62bf?auto=format&fit=crop&q=60&w=500&fm=webp'
     ],
     stats: {
       population: '13.1 Million',
@@ -108,11 +108,11 @@ export const CITIES_GUIDE: CityBlog[] = [
     russianName: 'Санкт-Петербург',
     category: 'Cultural Capital',
     description: 'The "Venice of the North," known for stunning canals, imperial palaces, and the magical White Nights of summer.',
-    coverImage: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&q=80&w=1000',
+    coverImage: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&q=70&w=800&fm=webp',
     galleryImages: [
-      'https://images.unsplash.com/photo-1555436169-20e93ea9a7ff?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1584611541300-d19717002940?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&q=80&w=800'
+      'https://images.unsplash.com/photo-1555436169-20e93ea9a7ff?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1584611541300-d19717002940?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&q=60&w=500&fm=webp'
     ],
     stats: {
       population: '5.6 Million',
@@ -171,11 +171,11 @@ export const CITIES_GUIDE: CityBlog[] = [
     russianName: 'Казань',
     category: 'Sports & Youth',
     description: 'The multicultural capital of Tatarstan, where Islamic minarets stand alongside Orthodox cathedral domes.',
-    coverImage: 'https://images.unsplash.com/photo-1588614959060-4d144f28b207?auto=format&fit=crop&q=80&w=1000',
+    coverImage: 'https://images.unsplash.com/photo-1588614959060-4d144f28b207?auto=format&fit=crop&q=70&w=800&fm=webp',
     galleryImages: [
-      'https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1616149562385-1d84e79478bb?auto=format&fit=crop&q=80&w=800'
+      'https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1616149562385-1d84e79478bb?auto=format&fit=crop&q=60&w=500&fm=webp'
     ],
     stats: {
       population: '1.3 Million',
@@ -209,7 +209,7 @@ export const CITIES_GUIDE: CityBlog[] = [
       },
       {
         title: 'Bauman Pedestrian Street',
-        description: 'The historic heartbeat of the city, lined with Tatar souvenir shops, delicious bakeries, street performers, and cafes.'
+        description: 'The heartbeat of the city, lined with Tatar souvenir shops, delicious bakeries, street performers, and cafes.'
       },
       {
         title: 'The Temple of All Religions',
@@ -234,11 +234,11 @@ export const CITIES_GUIDE: CityBlog[] = [
     russianName: 'Сочи',
     category: 'Resort Haven',
     description: 'The "Russian Riviera," where you can ski down snow-covered peaks in the morning and swim in the warm Black Sea in the afternoon.',
-    coverImage: 'https://images.unsplash.com/photo-1564151432541-698e4d20ae47?auto=format&fit=crop&q=80&w=1000',
+    coverImage: 'https://images.unsplash.com/photo-1486916856992-e4db22c8df33?auto=format&fit=crop&q=70&w=800&fm=webp',
     galleryImages: [
-      'https://images.unsplash.com/photo-1486916856992-e4db22c8df33?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=800'
+      'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1564151432541-698e4d20ae47?auto=format&fit=crop&q=60&w=500&fm=webp'
     ],
     stats: {
       population: '450,000',
@@ -297,11 +297,11 @@ export const CITIES_GUIDE: CityBlog[] = [
     russianName: 'Владивосток',
     category: 'Pacific Hub',
     description: 'Russia\'s gateway to Asia, a ruggedly beautiful hilly port city overlooking the Sea of Japan.',
-    coverImage: 'https://images.unsplash.com/photo-1619864205510-fe1783ae59ea?auto=format&fit=crop&q=80&w=1000',
+    coverImage: 'https://images.unsplash.com/photo-1579227111342-0199fe10e66b?auto=format&fit=crop&q=70&w=800&fm=webp',
     galleryImages: [
-      'https://images.unsplash.com/photo-1579227111342-0199fe10e66b?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1608962714217-193496924840?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1511316695149-ae1e1276a00a?auto=format&fit=crop&q=80&w=800'
+      'https://images.unsplash.com/photo-1608962714217-193496924840?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1511316695149-ae1e1276a00a?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1619864205510-fe1783ae59ea?auto=format&fit=crop&q=60&w=500&fm=webp'
     ],
     stats: {
       population: '610,000',
@@ -355,11 +355,11 @@ export const CITIES_GUIDE: CityBlog[] = [
     russianName: 'Новосибирск',
     category: 'Science & Tech',
     description: 'The scientific capital of Siberia, famous for its grand opera house and Akademgorodok (Academic Town) nested in a pine forest.',
-    coverImage: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=1000',
+    coverImage: 'https://images.unsplash.com/photo-1547989453-11e67ffb3885?auto=format&fit=crop&q=70&w=800&fm=webp',
     galleryImages: [
-      'https://images.unsplash.com/photo-1591382696684-38c427c7547a?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1547989453-11e67ffb3885?auto=format&fit=crop&q=80&w=800'
+      'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1591382696684-38c427c7547a?auto=format&fit=crop&q=60&w=500&fm=webp'
     ],
     stats: {
       population: '1.6 Million',
@@ -392,7 +392,7 @@ export const CITIES_GUIDE: CityBlog[] = [
       },
       {
         title: 'Novosibirsk Zoo (Shilo Zoo)',
-        description: 'One of the most prestigious zoos in Russia, stretching across a giant natural pine forest and containing rare snow leopards.'
+        description: 'One of the most prestigious zoos in Russia, stretching across a giant natural pine forest and containing rare snow footprints.'
       }
     ],
     transport: {
