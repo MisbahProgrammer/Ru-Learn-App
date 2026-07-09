@@ -22,7 +22,9 @@ import {
   BookText,
   Smartphone,
   Globe,
-  Target
+  Target,
+  Send,
+  Loader2
 } from 'lucide-react';
 import { ALPHABET, SCENARIOS, CITY_IMAGES } from '@/constants';
 import { CITIES_GUIDE, CityBlog } from '@/data/cities';
@@ -80,6 +82,105 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState<CityBlog | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
+
+  // Feedback Modal states
+  const [isSidebarFeedbackOpen, setIsSidebarFeedbackOpen] = useState(false);
+  const [sidebarFeedbackName, setSidebarFeedbackName] = useState('');
+  const [sidebarFeedbackEmail, setSidebarFeedbackEmail] = useState('');
+  const [sidebarFeedbackText, setSidebarFeedbackText] = useState('');
+  const [isSubmittingSidebarFeedback, setIsSubmittingSidebarFeedback] = useState(false);
+  const [sidebarFeedbackSuccess, setSidebarFeedbackSuccess] = useState(false);
+
+  React.useEffect(() => {
+    if (profile) {
+      setSidebarFeedbackName((prev) => prev || profile.displayName || '');
+    }
+    if (user?.email) {
+      setSidebarFeedbackEmail((prev) => prev || user.email);
+    }
+  }, [profile, user]);
+
+  const handleSidebarFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sidebarFeedbackText.trim()) return;
+
+    setIsSubmittingSidebarFeedback(true);
+
+    try {
+      if (user?.isGuest) {
+        const localFeedbacks = JSON.parse(localStorage.getItem('scholar_feedback_fallback') || '[]');
+        localFeedbacks.push({
+          id: `feed_${Math.random().toString(36).substr(2, 9)}`,
+          name: sidebarFeedbackName,
+          email: sidebarFeedbackEmail,
+          feedback: sidebarFeedbackText,
+          created_at: new Date().toISOString(),
+          is_guest: true
+        });
+        localStorage.setItem('scholar_feedback_fallback', JSON.stringify(localFeedbacks));
+        
+        toast.success('Thank you! Feedback saved locally (Guest Mode).');
+        setSidebarFeedbackSuccess(true);
+        setIsSubmittingSidebarFeedback(false);
+        return;
+      }
+
+      if (!supabase) throw new Error('Supabase client is not initialized.');
+
+      const { error } = await supabase
+        .from('feedback')
+        .insert([
+          {
+            user_id: user?.id || null,
+            name: sidebarFeedbackName,
+            email: sidebarFeedbackEmail,
+            feedback: sidebarFeedbackText
+          }
+        ]);
+
+      if (error) {
+        console.warn('Feedback submit to Supabase failed, trying schema fallback:', error);
+        if (error.message?.includes('relation "public.feedback" does not exist') || error.code === '42P01') {
+          const localFeedbacks = JSON.parse(localStorage.getItem('scholar_feedback_fallback') || '[]');
+          localFeedbacks.push({
+            id: `feed_${Math.random().toString(36).substr(2, 9)}`,
+            name: sidebarFeedbackName,
+            email: sidebarFeedbackEmail,
+            feedback: sidebarFeedbackText,
+            created_at: new Date().toISOString(),
+            pending_sync: true
+          });
+          localStorage.setItem('scholar_feedback_fallback', JSON.stringify(localFeedbacks));
+
+          toast.warning('Feedback saved locally! The "feedback" table is missing in Supabase. Please run the feedback SQL schema in "/supabase_schema.sql" to enable server-side feedback storage!');
+          setSidebarFeedbackSuccess(true);
+          return;
+        }
+        throw error;
+      }
+
+      toast.success('Feedback submitted successfully!');
+      setSidebarFeedbackSuccess(true);
+    } catch (err: any) {
+      console.error('Error submitting feedback:', err);
+      toast.error('Failed to send feedback: ' + (err.message || String(err)));
+      
+      const localFeedbacks = JSON.parse(localStorage.getItem('scholar_feedback_fallback') || '[]');
+      localFeedbacks.push({
+        id: `feed_${Math.random().toString(36).substr(2, 9)}`,
+        name: sidebarFeedbackName,
+        email: sidebarFeedbackEmail,
+        feedback: sidebarFeedbackText,
+        created_at: new Date().toISOString(),
+        error_saved: true
+      });
+      localStorage.setItem('scholar_feedback_fallback', JSON.stringify(localFeedbacks));
+      toast.info('Saved feedback locally to prevent data loss.');
+      setSidebarFeedbackSuccess(true);
+    } finally {
+      setIsSubmittingSidebarFeedback(false);
+    }
+  };
 
   React.useEffect(() => {
     setActiveTab(initialTab);
@@ -338,7 +439,25 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
               </TabsTrigger>
             </TabsList>
 
-            <div className="mt-auto p-4 bg-orange-50 rounded-2xl border border-orange-100">
+            {/* Sidebar Feedback Section */}
+            <div className="mt-auto p-4 bg-neutral-50 border border-neutral-150/80 rounded-2xl">
+              <h4 className="text-xs font-bold text-neutral-800 mb-1 flex items-center gap-1.5">
+                <MessageSquare className="w-3.5 h-3.5 text-orange-600" /> Share Feedback
+              </h4>
+              <p className="text-[10px] text-neutral-550 leading-normal mb-3">
+                Tell us what you think or what features you want next!
+              </p>
+              <Button 
+                onClick={() => setIsSidebarFeedbackOpen(true)}
+                variant="outline" 
+                size="sm"
+                className="w-full text-[10px] font-bold h-8 rounded-xl bg-white hover:bg-orange-50 hover:text-orange-600 border-neutral-200 hover:border-orange-200 transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+              >
+                <Send className="w-3 h-3 text-orange-500" /> Write Feedback
+              </Button>
+            </div>
+
+            <div className="mt-3 p-4 bg-orange-50 rounded-2xl border border-orange-100">
               <h4 className="text-xs font-bold text-orange-900 mb-1 flex items-center gap-1">
                 <Plane className="w-3 h-3" /> TRAVEL TIP
               </h4>
@@ -755,6 +874,109 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
             currentGoal={profile.daily_goal_minutes ?? 10}
             onSave={saveDailyGoal}
           />
+
+          {/* Sidebar Feedback Dialog */}
+          <Dialog open={isSidebarFeedbackOpen} onOpenChange={setIsSidebarFeedbackOpen}>
+            <DialogContent className="sm:max-w-[480px] rounded-3xl p-6 overflow-hidden">
+              <DialogHeader className="pb-4 border-b border-neutral-100">
+                <DialogTitle className="text-lg font-serif italic text-neutral-900 flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-orange-600" /> Share Your Feedback
+                </DialogTitle>
+                <DialogDescription className="text-neutral-500 text-xs mt-1">
+                  Tell us what you want to see next and how you are interacting with the platform. We read every submission!
+                </DialogDescription>
+              </DialogHeader>
+
+              {sidebarFeedbackSuccess ? (
+                <div className="flex flex-col items-center text-center py-8 space-y-3">
+                  <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center border border-green-200">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-lg text-neutral-900">Thank you for your feedback!</h3>
+                  <p className="text-neutral-500 text-xs max-w-sm leading-relaxed">
+                    Your response has been stored successfully. We appreciate you taking the time to help us improve Russian Scholar!
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      setSidebarFeedbackSuccess(false);
+                      setSidebarFeedbackText('');
+                    }}
+                    className="mt-2 rounded-xl text-xs font-semibold"
+                  >
+                    Submit Another Response
+                  </Button>
+                </div>
+              ) : (
+                <form onSubmit={handleSidebarFeedbackSubmit} className="space-y-4 pt-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Name */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-neutral-500">Your Name</label>
+                      <input 
+                        type="text"
+                        required
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                        placeholder="Your full name"
+                        value={sidebarFeedbackName}
+                        onChange={(e) => setSidebarFeedbackName(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-neutral-500">Your Email</label>
+                      <input 
+                        type="email"
+                        required
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                        placeholder="you@example.com"
+                        value={sidebarFeedbackEmail}
+                        onChange={(e) => setSidebarFeedbackEmail(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Feedback Message */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <label className="text-xs font-bold text-neutral-500">Feedback or Feature Suggestion</label>
+                      <span className="text-[10px] font-semibold text-neutral-400">
+                        {sidebarFeedbackText.length} / 1000
+                      </span>
+                    </div>
+                    <textarea
+                      required
+                      maxLength={1000}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all min-h-[120px] resize-none"
+                      placeholder="Tell us what you like, what bugs you've encountered, or what features you would love to have next..."
+                      value={sidebarFeedbackText}
+                      onChange={(e) => setSidebarFeedbackText(e.target.value.substring(0, 1000))}
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit"
+                    disabled={isSubmittingSidebarFeedback || !sidebarFeedbackText.trim()}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-11 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    {isSubmittingSidebarFeedback ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Sending Feedback...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        <span>Submit Feedback</span>
+                      </>
+                    )}
+                  </Button>
+                </form>
+              )}
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </div>

@@ -18,12 +18,15 @@ import {
   Globe,
   Phone,
   Award,
-  BookOpen
+  BookOpen,
+  MessageSquare,
+  Send
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { motion } from 'motion/react';
 
 const COUNTRIES = [
   { name: 'Pakistan', flag: '🇵🇰', code: '+92' },
@@ -141,12 +144,23 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
   const [uploadingImage, setUploadingImage] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
 
+  // Feedback form states
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackEmail, setFeedbackEmail] = useState('');
+  const [feedbackText, setFeedbackText] = useState('');
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+
   // Initialize fields from profile context
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.displayName || '');
       setCountry(profile.country || '');
       setBio(profile.bio || '');
+
+      // Pre-fill feedback details
+      setFeedbackName((prev) => prev || profile.displayName || '');
+      setFeedbackEmail((prev) => prev || user?.email || '');
 
       // Parse phone number to extract country code split
       const phoneFull = profile.phone_number || '';
@@ -429,6 +443,94 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
       toast.success('Your subscription has been cancelled.');
     } catch (e: any) {
       toast.error('Failed to cancel subscription: ' + e.message);
+    }
+  };
+
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackText.trim()) return;
+
+    setSubmittingFeedback(true);
+
+    try {
+      if (user?.isGuest) {
+        // Guest mode fallback: Save to localStorage
+        const localFeedbacks = JSON.parse(localStorage.getItem('scholar_feedback_fallback') || '[]');
+        localFeedbacks.push({
+          id: `feed_${Math.random().toString(36).substr(2, 9)}`,
+          name: feedbackName,
+          email: feedbackEmail,
+          feedback: feedbackText,
+          created_at: new Date().toISOString(),
+          is_guest: true
+        });
+        localStorage.setItem('scholar_feedback_fallback', JSON.stringify(localFeedbacks));
+        
+        toast.success('Thank you! Feedback saved locally (Guest Mode).');
+        setFeedbackSuccess(true);
+        setSubmittingFeedback(false);
+        return;
+      }
+
+      if (!supabase) throw new Error('Supabase client is not initialized.');
+
+      // Try inserting into public.feedback
+      const { error } = await supabase
+        .from('feedback')
+        .insert([
+          {
+            user_id: user?.id || null,
+            name: feedbackName,
+            email: feedbackEmail,
+            feedback: feedbackText
+          }
+        ]);
+
+      if (error) {
+        console.warn('Feedback submit to Supabase failed, trying schema fallback:', error);
+        // If it's a missing table/column error, let's notify the user that they should run the schema SQL,
+        // but save it locally so they don't lose their input.
+        if (error.message?.includes('relation "public.feedback" does not exist') || error.code === '42P01') {
+          // Save to localStorage as fallback
+          const localFeedbacks = JSON.parse(localStorage.getItem('scholar_feedback_fallback') || '[]');
+          localFeedbacks.push({
+            id: `feed_${Math.random().toString(36).substr(2, 9)}`,
+            name: feedbackName,
+            email: feedbackEmail,
+            feedback: feedbackText,
+            created_at: new Date().toISOString(),
+            pending_sync: true
+          });
+          localStorage.setItem('scholar_feedback_fallback', JSON.stringify(localFeedbacks));
+
+          toast.warning('Feedback saved locally! The "feedback" table is missing in Supabase. Please run the feedback SQL schema in "/supabase_schema.sql" to enable server-side feedback storage!');
+          setFeedbackSuccess(true);
+          return;
+        }
+        throw error;
+      }
+
+      toast.success('Feedback submitted successfully!');
+      setFeedbackSuccess(true);
+    } catch (err: any) {
+      console.error('Error submitting feedback:', err);
+      toast.error('Failed to send feedback: ' + (err.message || String(err)));
+      
+      // Absolute fallback to local storage
+      const localFeedbacks = JSON.parse(localStorage.getItem('scholar_feedback_fallback') || '[]');
+      localFeedbacks.push({
+        id: `feed_${Math.random().toString(36).substr(2, 9)}`,
+        name: feedbackName,
+        email: feedbackEmail,
+        feedback: feedbackText,
+        created_at: new Date().toISOString(),
+        error_saved: true
+      });
+      localStorage.setItem('scholar_feedback_fallback', JSON.stringify(localFeedbacks));
+      toast.info('Saved feedback locally to prevent data loss.');
+      setFeedbackSuccess(true);
+    } finally {
+      setSubmittingFeedback(false);
     }
   };
 
@@ -778,9 +880,117 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
                 )}
               </CardContent>
             </Card>
+
+            {/* Feedback Section */}
+            <Card className="border border-neutral-100 shadow-md overflow-hidden">
+              <CardHeader className="bg-neutral-50/50 border-b border-neutral-100/80">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-orange-600" />
+                  Share Your Feedback
+                </CardTitle>
+                <CardDescription>
+                  Tell us what you want to see next and how you are interacting with the platform. We read every submission!
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {feedbackSuccess ? (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center text-center py-10 space-y-3"
+                  >
+                    <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center border border-green-200">
+                      <CheckCircle2 className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-bold text-lg text-neutral-900">Thank you for your feedback!</h3>
+                    <p className="text-neutral-500 text-xs max-w-md">
+                      Your response has been stored successfully. We appreciate you taking the time to help us improve Russian Scholar!
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => {
+                        setFeedbackSuccess(false);
+                        setFeedbackText('');
+                      }}
+                      className="mt-2 rounded-xl text-xs font-semibold"
+                    >
+                      Submit Another Response
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Name */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-neutral-500">Your Name</label>
+                        <input 
+                          type="text"
+                          required
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                          placeholder="Your full name"
+                          value={feedbackName}
+                          onChange={(e) => setFeedbackName(e.target.value)}
+                        />
+                      </div>
+
+                      {/* Email */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-neutral-500">Your Email</label>
+                        <input 
+                          type="email"
+                          required
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                          placeholder="you@example.com"
+                          value={feedbackEmail}
+                          onChange={(e) => setFeedbackEmail(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Feedback Message */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs font-bold text-neutral-500">Feedback or Feature Suggestion</label>
+                        <span className="text-[10px] font-semibold text-neutral-400">
+                          {feedbackText.length} / 1000 Characters
+                        </span>
+                      </div>
+                      <textarea
+                        required
+                        maxLength={1000}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all min-h-[120px] resize-none"
+                        placeholder="Tell us what you like, what bugs you've encountered, or what features you would love to have next..."
+                        value={feedbackText}
+                        onChange={(e) => setFeedbackText(e.target.value.substring(0, 1000))}
+                      />
+                    </div>
+
+                    <Button 
+                      type="submit"
+                      disabled={submittingFeedback || !feedbackText.trim()}
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-11 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    >
+                      {submittingFeedback ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Sending Feedback...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          <span>Submit Feedback</span>
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </ScrollArea>
     </div>
+
   );
 }

@@ -138,3 +138,32 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+
+-- 6. Create the `feedback` table to store users feedback submissions
+CREATE TABLE IF NOT EXISTS public.feedback (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    email TEXT NOT NULL,
+    name TEXT NOT NULL,
+    feedback TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable Row Level Security (RLS) on `feedback`
+ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
+
+-- 7. Create Security Policies for `feedback`
+-- Allow any user (authenticated or anonymous/guest) to submit feedback
+CREATE POLICY "Anyone can submit feedback" 
+ON public.feedback 
+FOR INSERT 
+WITH CHECK (true);
+
+-- Only Admin can view submitted feedback (Admin email: misbahrehman891@gmail.com)
+CREATE POLICY "Only Admin can view feedback" 
+ON public.feedback 
+FOR SELECT 
+USING (
+    auth.jwt() ->> 'email' = 'misbahrehman891@gmail.com'
+);
