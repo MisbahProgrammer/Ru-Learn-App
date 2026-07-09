@@ -16,6 +16,7 @@ import {
   Sparkles,
   MessageSquare,
   Lock,
+  AlertTriangle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
@@ -717,18 +718,39 @@ export function ScenarioChat({
       <div className="h-full bg-neutral-50/50">
         <div className="h-full overflow-y-auto">
           <div className="p-8 flex flex-col min-h-full">
-            <div className="mb-12">
-              <h2 className="text-4xl font-light tracking-tight mb-2">
-                Voice{" "}
-                <span className="font-serif italic font-medium text-orange-600">
-                  Scenarios
-                </span>
-              </h2>
-              <p className="text-neutral-500 font-light max-w-2xl leading-relaxed">
-                Pick a real-world situation you'll encounter in Russia. Each
-                session includes an AI tutor, voice practice, and cultural
-                context.
-              </p>
+            <div className="mb-12 space-y-6">
+              <div>
+                <h2 className="text-4xl font-light tracking-tight mb-2 flex items-center gap-3 flex-wrap">
+                  <span>Voice</span>{" "}
+                  <span className="font-serif italic font-medium text-orange-600">
+                    Scenarios
+                  </span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold bg-amber-150 text-amber-800 border border-amber-200/60 px-2.5 py-1 rounded-full flex items-center gap-1 select-none">
+                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+                    Testing & Beta
+                  </span>
+                </h2>
+                <p className="text-neutral-500 font-light max-w-2xl leading-relaxed">
+                  Pick a real-world situation you'll encounter in Russia. Each
+                  session includes an AI tutor, voice practice, and cultural
+                  context.
+                </p>
+              </div>
+
+              {/* Development Alert */}
+              <div className="flex items-start gap-3 p-4 bg-amber-50/80 border border-amber-200/70 rounded-2xl max-w-3xl shadow-3xs">
+                <div className="p-2 bg-amber-100/80 text-amber-700 rounded-xl shrink-0 mt-0.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                    Development & Testing Phase
+                  </h4>
+                  <p className="text-xs text-amber-800/90 mt-1 leading-relaxed font-light">
+                    The Voice Scenarios section is currently under active <span className="font-semibold">development and testing</span>. You may encounter temporary speech recognition errors, slow response times, or unexpected model responses. Thank you for your feedback as we refine this feature!
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-1 pb-40 md:pb-12 h-max">
@@ -837,8 +859,9 @@ export function ScenarioChat({
           <h3 className="font-bold text-xs md:text-sm tracking-tight truncate">
             {selectedScenario.title}
           </h3>
-          <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-orange-600 font-bold">
-            Live AI Practice
+          <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-orange-600 font-bold flex items-center gap-1.5 flex-wrap">
+            <span>Live AI Practice</span>
+            <span className="text-[8px] bg-amber-100 text-amber-800 border border-amber-200/50 px-1.5 py-0.5 rounded font-mono uppercase tracking-normal font-bold">Beta / Testing</span>
           </p>
         </div>
 

@@ -550,9 +550,14 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
                         <div className="p-2 bg-neutral-100 rounded-lg group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors">
                           <MessageSquare className="w-5 h-5" />
                         </div>
-                        Voice Scenarios
+                        <div className="flex items-center justify-between w-full gap-2">
+                          <span>Voice Scenarios</span>
+                          <Badge variant="outline" className="text-[9px] bg-amber-50 text-amber-800 border-amber-200/60 uppercase font-bold shrink-0">
+                            Beta
+                          </Badge>
+                        </div>
                        </CardTitle>
-                       <CardDescription>Practice real conversations for taxi, hotel, and dining.</CardDescription>
+                       <CardDescription>Practice real conversations. Still in development and testing (expect errors).</CardDescription>
                      </CardHeader>
                      <CardContent className="pt-0">
                        <div className="flex justify-between items-center text-xs text-neutral-400 mb-1">
