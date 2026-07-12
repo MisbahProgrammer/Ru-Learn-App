@@ -28,7 +28,8 @@ import {
   Award,
   BookOpen,
   MessageSquare,
-  Send
+  Send,
+  Sparkles
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
@@ -78,117 +79,69 @@ const REASONS = [
 
 const PREDEFINED_AVATARS = [
   {
-    id: 'scholar_orange',
-    name: '🎓 Academic Scholar',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#ea580c"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g1)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🎓</text></svg>`
+    id: 'sofia_linguist',
+    name: '👩‍🏫 Prof. Sofia (Linguist)',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_sofia" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ec4899"/><stop offset="100%" stop-color="#be123c"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_sofia)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">👩‍🏫</text></svg>`
   },
   {
-    id: 'linguist_blue',
-    name: '📚 Language Expert',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1d4ed8"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g2)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">📚</text></svg>`
+    id: 'dmitry_historian',
+    name: '👨‍🏫 Prof. Dmitry (Historian)',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_dmitry" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1d4ed8"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_dmitry)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">👨‍🏫</text></svg>`
   },
   {
-    id: 'cosmonaut_purple',
-    name: '🚀 Space Explorer',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#6d28d9"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g3)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🚀</text></svg>`
+    id: 'anna_scholar',
+    name: '👩‍🎓 Scholar Anna',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_anna" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#0891b2"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_anna)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">👩‍🎓</text></svg>`
+  },
+  {
+    id: 'ivan_scholar',
+    name: '👨‍🎓 Scholar Ivan',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_ivan" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#4338ca"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_ivan)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">👨‍🎓</text></svg>`
+  },
+  {
+    id: 'elena_hostess',
+    name: '👩‍🍳 Hostess Elena',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_elena" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#b45309"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_elena)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">👩‍🍳</text></svg>`
+  },
+  {
+    id: 'alex_explorer',
+    name: '👨‍🌾 Explorer Alex',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_alex" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#047857"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_alex)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">👨‍🌾</text></svg>`
+  },
+  {
+    id: 'maria_cosmonaut',
+    name: '👩‍🚀 Pioneer Maria',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_maria" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7e22ce"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_maria)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">👩‍🚀</text></svg>`
+  },
+  {
+    id: 'pavel_cosmonaut',
+    name: '👨‍🚀 Pioneer Pavel',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_pavel" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#14b8a6"/><stop offset="100%" stop-color="#0f766e"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_pavel)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">👨‍🚀</text></svg>`
   },
   {
     id: 'siberian_bear',
-    name: '🐻 Siberian Bear',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#eab308"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g4)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🐻</text></svg>`
+    name: '🐻 Siberian Bear (Misha)',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_bear" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fb923c"/><stop offset="100%" stop-color="#c2410c"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_bear)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🐻</text></svg>`
   },
   {
     id: 'matryoshka',
     name: '🪆 Matryoshka Doll',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ec4899"/><stop offset="100%" stop-color="#db2777"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g5)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🪆</text></svg>`
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_doll" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#be123c"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_doll)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🪆</text></svg>`
   },
   {
-    id: 'researcher',
-    name: '💡 Top Researcher',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g6" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#047857"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g6)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">💡</text></svg>`
+    id: 'academic_firebird',
+    name: '🔥 Academic Firebird',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_fire" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#ea580c"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_fire)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🔥</text></svg>`
   },
   {
-    id: 'samovar',
-    name: '🫖 Cozy Samovar',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g7" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#0891b2"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g7)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🫖</text></svg>`
-  },
-  {
-    id: 'firebird',
-    name: '🔥 Firebird',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g8" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#be123c"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g8)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🔥</text></svg>`
+    id: 'smart_owl',
+    name: '🦉 Wise Owl (Umnitsa)',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g_owl" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#64748b"/><stop offset="100%" stop-color="#334155"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g_owl)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🦉</text></svg>`
   }
 ];
 
-// Helper to crop & compress images client-side to ensure files are under 50KB and load extremely fast
-const compressImage = (file: File): Promise<Blob> => {
-  return new Promise((resolve) => {
-    // Safety timeout - resolve with original file if compression takes more than 4 seconds
-    const safetyTimeout = setTimeout(() => {
-      console.warn("Image compression timed out. Resolving original file.");
-      resolve(file);
-    }, 4000);
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          // Scale it to exactly 256x256 px. Keeps size extremely tiny (around 10-15KB max) and fast to load/save!
-          const width = 256;
-          const height = 256;
-          canvas.width = width;
-          canvas.height = height;
-          
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            clearTimeout(safetyTimeout);
-            resolve(file);
-            return;
-          }
-          
-          // Center crop the original image to a square before resizing!
-          const sourceSize = Math.min(img.width, img.height);
-          const sourceX = (img.width - sourceSize) / 2;
-          const sourceY = (img.height - sourceSize) / 2;
-
-          ctx.drawImage(
-            img, 
-            sourceX, sourceY, sourceSize, sourceSize, // crop parameters
-            0, 0, width, height                       // target parameters
-          );
-          
-          canvas.toBlob((blob) => {
-            clearTimeout(safetyTimeout);
-            if (blob) {
-              resolve(blob);
-            } else {
-              resolve(file);
-            }
-          }, 'image/jpeg', 0.82); // 0.82 quality is perfect and crisp for 256x256
-        } catch (err) {
-          console.error("Canvas compression failed, resolving original file:", err);
-          clearTimeout(safetyTimeout);
-          resolve(file);
-        }
-      };
-      img.onerror = () => {
-        clearTimeout(safetyTimeout);
-        resolve(file);
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.onerror = () => {
-      clearTimeout(safetyTimeout);
-      resolve(file);
-    };
-    reader.readAsDataURL(file);
-  });
-};
-
 export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   const { user, profile, isPremium, updateProfileState } = useAuth();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Profile fields state values
   const [displayName, setDisplayName] = useState('');
@@ -200,7 +153,6 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
   const [bio, setBio] = useState('');
 
   // UI operation states
-  const [uploadingImage, setUploadingImage] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [isAvatarSelectorOpen, setIsAvatarSelectorOpen] = useState(false);
 
@@ -328,117 +280,7 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
   }, [country]);
 
   const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-
-    setUploadingImage(true);
-    const toastId = toast.loading('Compressing and uploading profile picture...');
-
-    try {
-      // 1. Crop and compress image client-side to exactly 256x256px
-      const compressedBlob = await compressImage(file);
-
-      if (user.isGuest) {
-        // Read file content locally for offline simulator/guest support
-        const localReader = new FileReader();
-        localReader.onloadend = () => {
-          updateProfileState({
-            ...profile,
-            avatar_url: localReader.result as string,
-            avatarUrl: localReader.result as string
-          });
-          toast.dismiss(toastId);
-          toast.success('Avatar updated locally (Guest Mode).');
-        };
-        localReader.readAsDataURL(compressedBlob);
-        setUploadingImage(false);
-        return;
-      }
-
-      if (!supabase) throw new Error('Supabase client is not initialized.');
-
-      // 2. Upload compression blob to Supabase Storage bucket 'avatars' with fallback support
-      const fileExt = 'jpg';
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      let publicUrl = '';
-      let storageUploadedSuccessfully = false;
-
-      try {
-        const { data, error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(filePath, compressedBlob, {
-            contentType: 'image/jpeg',
-            upsert: true
-          });
-
-        if (uploadError) {
-          console.warn("Storage upload failed, falling back to base64 database storage:", uploadError);
-        } else {
-          // Get public URL
-          const { data: { publicUrl: retrievedUrl } } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(filePath);
-          publicUrl = retrievedUrl;
-          storageUploadedSuccessfully = true;
-        }
-      } catch (storageErr) {
-        console.warn("Storage exception, falling back to base64 database storage:", storageErr);
-      }
-
-      // If storage upload didn't succeed, convert blob to tiny base64 and save to users table directly!
-      if (!storageUploadedSuccessfully || !publicUrl) {
-        publicUrl = await new Promise<string>((res) => {
-          const reader = new FileReader();
-          reader.onloadend = () => res(reader.result as string);
-          reader.readAsDataURL(compressedBlob);
-        });
-      }
-
-      // 3. Update the user record
-      try {
-        const { error: dbError } = await supabase
-          .from('users')
-          .update({
-            avatar_url: publicUrl
-          })
-          .eq('uid', user.id);
-
-        if (dbError) {
-          console.warn("Could not save avatar url to database:", dbError);
-          if (dbError.message?.includes('column') || dbError.code === '42703') {
-            // Missing column, update local profile state so it still works in memory
-            toast.warning('Profile picture saved locally but your "users" table is missing the "avatar_url" column.');
-          } else {
-            throw dbError;
-          }
-        } else {
-          toast.success(storageUploadedSuccessfully ? 'Profile picture updated on server!' : 'Profile picture updated and stored securely!');
-        }
-      } catch (dbErr: any) {
-        console.error("Supabase DB error during avatar saving:", dbErr);
-        toast.info("Avatar saved locally, but database sync failed.");
-      }
-
-      updateProfileState({
-        ...profile,
-        avatar_url: publicUrl,
-        avatarUrl: publicUrl
-      });
-
-      toast.dismiss(toastId);
-    } catch (err: any) {
-      console.error(err);
-      toast.dismiss(toastId);
-      toast.error('Failed to upload image: ' + (err.message || String(err)));
-    } finally {
-      setUploadingImage(false);
-    }
+    setIsAvatarSelectorOpen(true);
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -696,9 +538,9 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
               <div className="md:col-span-1 space-y-6">
                 <Card className="overflow-hidden border border-neutral-100 shadow-md">
                   <div className="p-6 flex flex-col items-center text-center space-y-4">
-                    {/* Circle Avatar with Upload Layer */}
-                    <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
-                      <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-neutral-100 bg-neutral-50 shadow-md relative flex items-center justify-center">
+                    {/* Circle Avatar with Interactive Selection Overlay */}
+                    <div className="relative group cursor-pointer" onClick={handleAvatarClick} title="Select Scholar Avatar">
+                      <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-neutral-100 bg-neutral-50 shadow-md relative flex items-center justify-center transition-all duration-300 group-hover:border-orange-500/50 group-hover:shadow-lg">
                         {profile?.avatarUrl || profile?.avatar_url ? (
                           <img 
                             src={profile.avatarUrl || profile.avatar_url} 
@@ -711,17 +553,11 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
                           </div>
                         )}
                         
-                        {/* Cam Icon Overlay on Hover */}
-                        <div className="absolute inset-0 bg-black/45 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <Camera className="w-6 h-6 text-white" />
-                          <span className="text-[9px] text-white font-bold tracking-wider mt-1 uppercase">Change</span>
+                        {/* Elegant Selection Overlay on Hover */}
+                        <div className="absolute inset-0 bg-neutral-900/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <Sparkles className="w-5 h-5 text-white animate-pulse" />
+                          <span className="text-[9px] text-white font-medium tracking-wider mt-1 uppercase">Choose</span>
                         </div>
-
-                        {uploadingImage && (
-                          <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10">
-                            <Loader2 className="w-6 h-6 text-orange-600 animate-spin" />
-                          </div>
-                        )}
                       </div>
                       
                       {/* Flag Badge Overlay */}
@@ -731,14 +567,6 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
                         </div>
                       )}
                     </div>
-
-                    <input 
-                      type="file" 
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      accept="image/*"
-                      className="hidden"
-                    />
 
                     <div className="space-y-2 flex flex-col items-center">
                       <div>
