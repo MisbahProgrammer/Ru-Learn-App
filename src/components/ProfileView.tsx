@@ -4,6 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { 
   User, 
   Mail, 
   Calendar, 
@@ -68,62 +76,113 @@ const REASONS = [
   "Other (specify)"
 ];
 
-// Helper to compress images client-side to ensure files are under 500KB
+const PREDEFINED_AVATARS = [
+  {
+    id: 'scholar_orange',
+    name: '🎓 Academic Scholar',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#ea580c"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g1)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🎓</text></svg>`
+  },
+  {
+    id: 'linguist_blue',
+    name: '📚 Language Expert',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1d4ed8"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g2)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">📚</text></svg>`
+  },
+  {
+    id: 'cosmonaut_purple',
+    name: '🚀 Space Explorer',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#6d28d9"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g3)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🚀</text></svg>`
+  },
+  {
+    id: 'siberian_bear',
+    name: '🐻 Siberian Bear',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#eab308"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g4)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🐻</text></svg>`
+  },
+  {
+    id: 'matryoshka',
+    name: '🪆 Matryoshka Doll',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ec4899"/><stop offset="100%" stop-color="#db2777"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g5)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🪆</text></svg>`
+  },
+  {
+    id: 'researcher',
+    name: '💡 Top Researcher',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g6" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#047857"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g6)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">💡</text></svg>`
+  },
+  {
+    id: 'samovar',
+    name: '🫖 Cozy Samovar',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g7" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#0891b2"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g7)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🫖</text></svg>`
+  },
+  {
+    id: 'firebird',
+    name: '🔥 Firebird',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g8" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#be123c"/></linearGradient></defs><circle cx="50" cy="50" r="50" fill="url(#g8)"/><text x="50" y="52" font-family="system-ui" font-size="42" text-anchor="middle" dominant-baseline="middle">🔥</text></svg>`
+  }
+];
+
+// Helper to crop & compress images client-side to ensure files are under 50KB and load extremely fast
 const compressImage = (file: File): Promise<Blob> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
+    // Safety timeout - resolve with original file if compression takes more than 4 seconds
+    const safetyTimeout = setTimeout(() => {
+      console.warn("Image compression timed out. Resolving original file.");
+      resolve(file);
+    }, 4000);
+
     const reader = new FileReader();
-    reader.readAsDataURL(file);
     reader.onload = (event) => {
       const img = new Image();
-      img.src = event.target?.result as string;
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 600;
-        const MAX_HEIGHT = 600;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
+        try {
+          const canvas = document.createElement('canvas');
+          // Scale it to exactly 256x256 px. Keeps size extremely tiny (around 10-15KB max) and fast to load/save!
+          const width = 256;
+          const height = 256;
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            clearTimeout(safetyTimeout);
+            resolve(file);
+            return;
           }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
+          
+          // Center crop the original image to a square before resizing!
+          const sourceSize = Math.min(img.width, img.height);
+          const sourceX = (img.width - sourceSize) / 2;
+          const sourceY = (img.height - sourceSize) / 2;
 
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          resolve(file);
-          return;
-        }
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        let quality = 0.8;
-        const targetCompress = () => {
+          ctx.drawImage(
+            img, 
+            sourceX, sourceY, sourceSize, sourceSize, // crop parameters
+            0, 0, width, height                       // target parameters
+          );
+          
           canvas.toBlob((blob) => {
-            if (!blob) {
-              resolve(file);
-              return;
-            }
-            if (blob.size > 500 * 1024 && quality > 0.1) {
-              quality -= 0.1;
-              targetCompress();
-            } else {
+            clearTimeout(safetyTimeout);
+            if (blob) {
               resolve(blob);
+            } else {
+              resolve(file);
             }
-          }, 'image/jpeg', quality);
-        };
-        targetCompress();
+          }, 'image/jpeg', 0.82); // 0.82 quality is perfect and crisp for 256x256
+        } catch (err) {
+          console.error("Canvas compression failed, resolving original file:", err);
+          clearTimeout(safetyTimeout);
+          resolve(file);
+        }
       };
-      img.onerror = (e) => reject(e);
+      img.onerror = () => {
+        clearTimeout(safetyTimeout);
+        resolve(file);
+      };
+      img.src = event.target?.result as string;
     };
-    reader.onerror = (e) => reject(e);
+    reader.onerror = () => {
+      clearTimeout(safetyTimeout);
+      resolve(file);
+    };
+    reader.readAsDataURL(file);
   });
 };
 
@@ -143,6 +202,39 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
   // UI operation states
   const [uploadingImage, setUploadingImage] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [isAvatarSelectorOpen, setIsAvatarSelectorOpen] = useState(false);
+
+  const selectPredefinedAvatar = async (avatarSvg: string) => {
+    const dataUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent(avatarSvg);
+    
+    // Update local state first for immediate visual response
+    updateProfileState({
+      ...profile,
+      avatar_url: dataUrl,
+      avatarUrl: dataUrl
+    });
+
+    if (user && !user.isGuest && supabase) {
+      try {
+        const { error: dbError } = await supabase
+          .from('users')
+          .update({
+            avatar_url: dataUrl
+          })
+          .eq('uid', user.id);
+        
+        if (dbError) {
+          console.warn("Could not save predefined avatar to database:", dbError);
+        } else {
+          toast.success('Scholar avatar updated successfully!');
+        }
+      } catch (err) {
+        console.error("Failed to sync predefined avatar to database:", err);
+      }
+    } else if (user?.isGuest) {
+      toast.success('Scholar avatar updated locally (Guest Mode).');
+    }
+  };
 
   // Feedback form states
   const [feedbackName, setFeedbackName] = useState('');
@@ -247,7 +339,7 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
     const toastId = toast.loading('Compressing and uploading profile picture...');
 
     try {
-      // 1. Compress Image client-side to <500KB
+      // 1. Crop and compress image client-side to exactly 256x256px
       const compressedBlob = await compressImage(file);
 
       if (user.isGuest) {
@@ -269,26 +361,46 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
 
       if (!supabase) throw new Error('Supabase client is not initialized.');
 
-      // 2. Upload compression blob to Supabase Storage bucket 'avatars'
+      // 2. Upload compression blob to Supabase Storage bucket 'avatars' with fallback support
       const fileExt = 'jpg';
       const fileName = `${user.id}_${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      const { data, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, compressedBlob, {
-          contentType: 'image/jpeg',
-          upsert: true
+      let publicUrl = '';
+      let storageUploadedSuccessfully = false;
+
+      try {
+        const { data, error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, compressedBlob, {
+            contentType: 'image/jpeg',
+            upsert: true
+          });
+
+        if (uploadError) {
+          console.warn("Storage upload failed, falling back to base64 database storage:", uploadError);
+        } else {
+          // Get public URL
+          const { data: { publicUrl: retrievedUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
+          publicUrl = retrievedUrl;
+          storageUploadedSuccessfully = true;
+        }
+      } catch (storageErr) {
+        console.warn("Storage exception, falling back to base64 database storage:", storageErr);
+      }
+
+      // If storage upload didn't succeed, convert blob to tiny base64 and save to users table directly!
+      if (!storageUploadedSuccessfully || !publicUrl) {
+        publicUrl = await new Promise<string>((res) => {
+          const reader = new FileReader();
+          reader.onloadend = () => res(reader.result as string);
+          reader.readAsDataURL(compressedBlob);
         });
+      }
 
-      if (uploadError) throw uploadError;
-
-      // 3. Get the absolute URL link
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      // 4. Update the user record
+      // 3. Update the user record
       try {
         const { error: dbError } = await supabase
           .from('users')
@@ -299,14 +411,14 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
 
         if (dbError) {
           console.warn("Could not save avatar url to database:", dbError);
-          // If column is missing, run local update but warn user
           if (dbError.message?.includes('column') || dbError.code === '42703') {
-            toast.warning('Profile picture saved locally but your "users" table is missing the "avatar_url" column. Please run calculations in "/supabase_schema.sql" to fix your database schema!');
+            // Missing column, update local profile state so it still works in memory
+            toast.warning('Profile picture saved locally but your "users" table is missing the "avatar_url" column.');
           } else {
             throw dbError;
           }
         } else {
-          toast.success('Profile picture updated on server!');
+          toast.success(storageUploadedSuccessfully ? 'Profile picture updated on server!' : 'Profile picture updated and stored securely!');
         }
       } catch (dbErr: any) {
         console.error("Supabase DB error during avatar saving:", dbErr);
@@ -628,9 +740,64 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
                       className="hidden"
                     />
 
-                    <div>
-                      <h3 className="text-lg font-bold truncate max-w-[200px]">{displayName || 'Scholar'}</h3>
-                      <p className="text-xs text-neutral-400 font-light truncate max-w-[200px]">{user?.email}</p>
+                    <div className="space-y-2 flex flex-col items-center">
+                      <div>
+                        <h3 className="text-lg font-bold truncate max-w-[200px]">{displayName || 'Scholar'}</h3>
+                        <p className="text-xs text-neutral-400 font-light truncate max-w-[200px]">{user?.email}</p>
+                      </div>
+
+                      <Dialog open={isAvatarSelectorOpen} onOpenChange={setIsAvatarSelectorOpen}>
+                        <DialogTrigger 
+                          render={
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="text-[11px] h-7 px-3 rounded-xl border-neutral-200 hover:bg-neutral-50 flex items-center gap-1.5 font-medium text-neutral-600 transition-all shadow-3xs"
+                            >
+                              <Crown className="w-3.5 h-3.5 text-orange-500" /> Choose Scholar Avatar
+                            </Button>
+                          }
+                        />
+                        <DialogContent className="sm:max-w-[420px] rounded-3xl p-6 overflow-hidden bg-white border border-neutral-100 shadow-xl">
+                          <DialogHeader className="pb-3 border-b border-neutral-100">
+                            <DialogTitle className="text-base font-serif italic text-neutral-900 flex items-center gap-2">
+                              🎓 Scholar Avatar Collection
+                            </DialogTitle>
+                            <DialogDescription className="text-neutral-500 text-xs">
+                              Select an exclusive lightweight avatar. These are fast, high-quality, and completely bypass standard file uploads!
+                            </DialogDescription>
+                          </DialogHeader>
+                          
+                          <div className="grid grid-cols-4 gap-3 pt-4">
+                            {PREDEFINED_AVATARS.map((avatar) => {
+                              const avatarDataUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent(avatar.svg);
+                              const isSelected = profile?.avatar_url === avatarDataUrl || profile?.avatarUrl === avatarDataUrl;
+                              return (
+                                <button
+                                  key={avatar.id}
+                                  onClick={() => {
+                                    selectPredefinedAvatar(avatar.svg);
+                                    setIsAvatarSelectorOpen(false);
+                                  }}
+                                  className={`group relative aspect-square rounded-2xl p-1.5 flex flex-col items-center justify-center border transition-all ${
+                                    isSelected 
+                                      ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-500/20' 
+                                      : 'border-neutral-100 hover:border-neutral-200 hover:bg-neutral-50/50'
+                                  }`}
+                                >
+                                  <div 
+                                    className="w-12 h-12 rounded-full overflow-hidden shadow-xs group-hover:scale-105 transition-transform duration-200"
+                                    dangerouslySetInnerHTML={{ __html: avatar.svg }}
+                                  />
+                                  <span className="text-[9px] font-medium text-neutral-500 mt-1.5 text-center truncate w-full group-hover:text-neutral-700 transition-colors">
+                                    {avatar.name.split(' ').slice(1).join(' ') || avatar.name}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
 
                     <div className="w-full pt-4 border-t border-neutral-100 space-y-2.5 text-left">
