@@ -8,6 +8,7 @@ import { AlertCircle, Terminal } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import AuthCallback from './components/AuthCallback';
+import { LoadingScreen } from './components/LoadingScreen';
 import { ActiveTimeTracker } from './utils/activeTimeTracker';
 import { 
   processStreakOnLoad, 
@@ -768,9 +769,7 @@ export default function App() {
     }}>
       <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 overflow-x-hidden">
         {loading ? (
-          <div className="flex items-center justify-center h-screen">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>
-          </div>
+          <LoadingScreen />
         ) : (
           <Routes>
             <Route path="/auth/callback" element={<AuthCallback />} />

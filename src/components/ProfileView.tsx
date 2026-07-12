@@ -151,6 +151,35 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
 
+  // Admin feedbacks state
+  const [adminFeedbacks, setAdminFeedbacks] = useState<any[]>([]);
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
+
+  const isAdmin = user?.email === 'misbahrehman891@gmail.com';
+
+  const fetchFeedbacks = async () => {
+    if (!isAdmin || !supabase) return;
+    setLoadingFeedbacks(true);
+    try {
+      const { data, error } = await supabase
+        .from('feedback')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setAdminFeedbacks(data || []);
+    } catch (err) {
+      console.error('Error fetching feedbacks:', err);
+    } finally {
+      setLoadingFeedbacks(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchFeedbacks();
+    }
+  }, [user, isAdmin]);
+
   // Initialize fields from profile context
   useEffect(() => {
     if (profile) {
@@ -987,6 +1016,66 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
                 )}
               </CardContent>
             </Card>
+
+            {/* Admin Feedback Submissions List */}
+            {isAdmin && (
+              <Card className="border border-neutral-100 shadow-md overflow-hidden mt-6">
+                <CardHeader className="bg-neutral-50/50 border-b border-neutral-100/80 flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-orange-600" />
+                      Feedback Submissions (Admin View)
+                    </CardTitle>
+                    <CardDescription>
+                      View and read all feedback submitted by students and scholars.
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    size="sm" 
+                    disabled={loadingFeedbacks}
+                    onClick={fetchFeedbacks}
+                    className="rounded-xl font-bold text-xs"
+                  >
+                    {loadingFeedbacks ? 'Refreshing...' : 'Refresh'}
+                  </Button>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {loadingFeedbacks ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                    </div>
+                  ) : adminFeedbacks.length === 0 ? (
+                    <div className="text-center py-10 text-neutral-400 text-sm">
+                      No feedback submitted yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                      {adminFeedbacks.map((f, idx) => (
+                        <div 
+                          key={f.id || idx} 
+                          className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2 hover:bg-neutral-100/40 transition-colors"
+                        >
+                          <div className="flex justify-between items-start gap-4">
+                            <div>
+                              <p className="font-bold text-neutral-900 text-sm">{f.name}</p>
+                              <p className="text-neutral-500 text-xs">{f.email}</p>
+                            </div>
+                            <span className="text-[10px] text-neutral-400 shrink-0 font-medium bg-neutral-100 px-2.5 py-1 rounded-full">
+                              {f.created_at ? new Date(f.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                            </span>
+                          </div>
+                          <p className="text-neutral-700 text-sm font-light leading-relaxed whitespace-pre-wrap">
+                            {f.feedback}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </ScrollArea>

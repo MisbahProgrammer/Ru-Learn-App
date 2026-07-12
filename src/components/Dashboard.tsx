@@ -874,111 +874,111 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
             currentGoal={profile.daily_goal_minutes ?? 10}
             onSave={saveDailyGoal}
           />
-
-          {/* Sidebar Feedback Dialog */}
-          <Dialog open={isSidebarFeedbackOpen} onOpenChange={setIsSidebarFeedbackOpen}>
-            <DialogContent className="sm:max-w-[480px] rounded-3xl p-6 overflow-hidden">
-              <DialogHeader className="pb-4 border-b border-neutral-100">
-                <DialogTitle className="text-lg font-serif italic text-neutral-900 flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-orange-600" /> Share Your Feedback
-                </DialogTitle>
-                <DialogDescription className="text-neutral-500 text-xs mt-1">
-                  Tell us what you want to see next and how you are interacting with the platform. We read every submission!
-                </DialogDescription>
-              </DialogHeader>
-
-              {sidebarFeedbackSuccess ? (
-                <div className="flex flex-col items-center text-center py-8 space-y-3">
-                  <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center border border-green-200">
-                    <CheckCircle2 className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold text-lg text-neutral-900">Thank you for your feedback!</h3>
-                  <p className="text-neutral-500 text-xs max-w-sm leading-relaxed">
-                    Your response has been stored successfully. We appreciate you taking the time to help us improve Russian Scholar!
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => {
-                      setSidebarFeedbackSuccess(false);
-                      setSidebarFeedbackText('');
-                    }}
-                    className="mt-2 rounded-xl text-xs font-semibold"
-                  >
-                    Submit Another Response
-                  </Button>
-                </div>
-              ) : (
-                <form onSubmit={handleSidebarFeedbackSubmit} className="space-y-4 pt-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Name */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-neutral-500">Your Name</label>
-                      <input 
-                        type="text"
-                        required
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
-                        placeholder="Your full name"
-                        value={sidebarFeedbackName}
-                        onChange={(e) => setSidebarFeedbackName(e.target.value)}
-                      />
-                    </div>
-
-                    {/* Email */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-neutral-500">Your Email</label>
-                      <input 
-                        type="email"
-                        required
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
-                        placeholder="you@example.com"
-                        value={sidebarFeedbackEmail}
-                        onChange={(e) => setSidebarFeedbackEmail(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Feedback Message */}
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <label className="text-xs font-bold text-neutral-500">Feedback or Feature Suggestion</label>
-                      <span className="text-[10px] font-semibold text-neutral-400">
-                        {sidebarFeedbackText.length} / 1000
-                      </span>
-                    </div>
-                    <textarea
-                      required
-                      maxLength={1000}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all min-h-[120px] resize-none"
-                      placeholder="Tell us what you like, what bugs you've encountered, or what features you would love to have next..."
-                      value={sidebarFeedbackText}
-                      onChange={(e) => setSidebarFeedbackText(e.target.value.substring(0, 1000))}
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit"
-                    disabled={isSubmittingSidebarFeedback || !sidebarFeedbackText.trim()}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-11 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                  >
-                    {isSubmittingSidebarFeedback ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Sending Feedback...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        <span>Submit Feedback</span>
-                      </>
-                    )}
-                  </Button>
-                </form>
-              )}
-            </DialogContent>
-          </Dialog>
         </>
       )}
+
+      {/* Sidebar Feedback Dialog */}
+      <Dialog open={isSidebarFeedbackOpen} onOpenChange={setIsSidebarFeedbackOpen}>
+        <DialogContent className="sm:max-w-[480px] rounded-3xl p-6 overflow-hidden">
+          <DialogHeader className="pb-4 border-b border-neutral-100">
+            <DialogTitle className="text-lg font-serif italic text-neutral-900 flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-orange-600" /> Share Your Feedback
+            </DialogTitle>
+            <DialogDescription className="text-neutral-500 text-xs mt-1">
+              Tell us what you want to see next and how you are interacting with the platform. We read every submission!
+            </DialogDescription>
+          </DialogHeader>
+
+          {sidebarFeedbackSuccess ? (
+            <div className="flex flex-col items-center text-center py-8 space-y-3">
+              <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center border border-green-200">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-lg text-neutral-900">Thank you for your feedback!</h3>
+              <p className="text-neutral-500 text-xs max-w-sm leading-relaxed">
+                Your response has been stored successfully. We appreciate you taking the time to help us improve Russian Scholar!
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  setSidebarFeedbackSuccess(false);
+                  setSidebarFeedbackText('');
+                }}
+                className="mt-2 rounded-xl text-xs font-semibold"
+              >
+                Submit Another Response
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSidebarFeedbackSubmit} className="space-y-4 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Name */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-neutral-500">Your Name</label>
+                  <input 
+                    type="text"
+                    required
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                    placeholder="Your full name"
+                    value={sidebarFeedbackName}
+                    onChange={(e) => setSidebarFeedbackName(e.target.value)}
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-neutral-500">Your Email</label>
+                  <input 
+                    type="email"
+                    required
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                    placeholder="you@example.com"
+                    value={sidebarFeedbackEmail}
+                    onChange={(e) => setSidebarFeedbackEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Feedback Message */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-neutral-500">Feedback or Feature Suggestion</label>
+                  <span className="text-[10px] font-semibold text-neutral-400">
+                    {sidebarFeedbackText.length} / 1000
+                  </span>
+                </div>
+                <textarea
+                  required
+                  maxLength={1000}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all min-h-[120px] resize-none"
+                  placeholder="Tell us what you like, what bugs you've encountered, or what features you would love to have next..."
+                  value={sidebarFeedbackText}
+                  onChange={(e) => setSidebarFeedbackText(e.target.value.substring(0, 1000))}
+                />
+              </div>
+
+              <Button 
+                type="submit"
+                disabled={isSubmittingSidebarFeedback || !sidebarFeedbackText.trim()}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-11 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                {isSubmittingSidebarFeedback ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Sending Feedback...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>Submit Feedback</span>
+                  </>
+                )}
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
