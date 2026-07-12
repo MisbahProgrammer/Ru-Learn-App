@@ -297,11 +297,11 @@ export const CITIES_GUIDE: CityBlog[] = [
     russianName: 'Владивосток',
     category: 'Pacific Hub',
     description: 'Russia\'s gateway to Asia, a ruggedly beautiful hilly port city overlooking the Sea of Japan.',
-    coverImage: 'https://images.unsplash.com/photo-1579227111342-0199fe10e66b?auto=format&fit=crop&q=70&w=800&fm=webp',
+    coverImage: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=70&w=800&fm=webp',
     galleryImages: [
-      'https://images.unsplash.com/photo-1608962714217-193496924840?auto=format&fit=crop&q=60&w=500&fm=webp',
-      'https://images.unsplash.com/photo-1511316695149-ae1e1276a00a?auto=format&fit=crop&q=60&w=500&fm=webp',
-      'https://images.unsplash.com/photo-1619864205510-fe1783ae59ea?auto=format&fit=crop&q=60&w=500&fm=webp'
+      'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=60&w=500&fm=webp',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=60&w=500&fm=webp'
     ],
     stats: {
       population: '610,000',

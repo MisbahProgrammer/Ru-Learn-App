@@ -302,20 +302,20 @@ export function CityBlogModal({ isOpen, onClose, city }: CityBlogModalProps) {
             <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100 space-y-3">
               <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block">Quick Facts</span>
               
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-3">
-                <div className="bg-white p-2.5 rounded-xl border border-neutral-100/80 shadow-3xs flex items-center gap-2">
-                  <Users className="w-4 h-4 text-neutral-400 shrink-0" />
-                  <div>
-                    <span className="text-[9px] text-neutral-400 block font-bold uppercase">Population</span>
-                    <span className="text-[11px] text-neutral-700 font-bold leading-tight">{city.stats.population}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                <div className="bg-white p-3 rounded-xl border border-neutral-100/80 shadow-3xs flex items-start gap-2.5">
+                  <Users className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[9px] text-neutral-400 block font-bold uppercase tracking-wider">Population</span>
+                    <span className="text-xs text-neutral-800 font-bold leading-normal block break-words">{city.stats.population}</span>
                   </div>
                 </div>
                 
-                <div className="bg-white p-2.5 rounded-xl border border-neutral-100/80 shadow-3xs flex items-center gap-2">
-                  <Coins className="w-4 h-4 text-neutral-400 shrink-0" />
-                  <div>
-                    <span className="text-[9px] text-neutral-400 block font-bold uppercase">Cost</span>
-                    <span className={`text-[11px] font-bold leading-tight ${
+                <div className="bg-white p-3 rounded-xl border border-neutral-100/80 shadow-3xs flex items-start gap-2.5">
+                  <Coins className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[9px] text-neutral-400 block font-bold uppercase tracking-wider">Cost</span>
+                    <span className={`text-xs font-bold leading-normal block break-words ${
                       city.stats.costOfLiving === 'Very High' 
                         ? 'text-red-600' 
                         : city.stats.costOfLiving === 'High' 
@@ -325,19 +325,19 @@ export function CityBlogModal({ isOpen, onClose, city }: CityBlogModalProps) {
                   </div>
                 </div>
 
-                <div className="bg-white p-2.5 rounded-xl border border-neutral-100/80 shadow-3xs flex items-center gap-2">
-                  <CloudSnow className="w-4 h-4 text-blue-400 shrink-0" />
-                  <div>
-                    <span className="text-[9px] text-neutral-400 block font-bold uppercase">Jan Temp</span>
-                    <span className="text-[11px] text-neutral-700 font-bold leading-tight">{city.stats.avgTempWinter}</span>
+                <div className="bg-white p-3 rounded-xl border border-neutral-100/80 shadow-3xs flex items-start gap-2.5">
+                  <CloudSnow className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[9px] text-neutral-400 block font-bold uppercase tracking-wider">Jan Temp</span>
+                    <span className="text-xs text-neutral-700 font-bold leading-normal block break-words">{city.stats.avgTempWinter}</span>
                   </div>
                 </div>
 
-                <div className="bg-white p-2.5 rounded-xl border border-neutral-100/80 shadow-3xs flex items-center gap-2">
-                  <Sun className="w-4 h-4 text-orange-400 shrink-0" />
-                  <div>
-                    <span className="text-[9px] text-neutral-400 block font-bold uppercase">July Temp</span>
-                    <span className="text-[11px] text-neutral-700 font-bold leading-tight">{city.stats.avgTempSummer}</span>
+                <div className="bg-white p-3 rounded-xl border border-neutral-100/80 shadow-3xs flex items-start gap-2.5">
+                  <Sun className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[9px] text-neutral-400 block font-bold uppercase tracking-wider">July Temp</span>
+                    <span className="text-xs text-neutral-700 font-bold leading-normal block break-words">{city.stats.avgTempSummer}</span>
                   </div>
                 </div>
               </div>
