@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { GraduationCap, Mail, Lock, User, Github, Eye, EyeOff, Globe, Phone, Award } from 'lucide-react';
+import { GraduationCap, Mail, Lock, User, Github, Eye, EyeOff, Globe, Phone, Award, X } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 const COUNTRIES = [
@@ -166,19 +166,28 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[420px] border-none shadow-2xl rounded-[32px] p-0 overflow-hidden">
-        <div className="bg-orange-500 p-8 text-white flex flex-col items-center">
-          <GraduationCap className="w-12 h-12 mb-4" />
-          <h2 className="text-2xl font-bold uppercase tracking-widest">Russian Scholar</h2>
-          <p className="text-orange-100 text-sm opacity-80 mt-1">Master Russian Before You Land</p>
+      <DialogContent showCloseButton={false} className="sm:max-w-[420px] border-none shadow-2xl rounded-[32px] p-0 overflow-hidden relative">
+        <div className="bg-orange-500 p-6 md:p-8 text-white flex flex-col items-center relative">
+          <button 
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 text-white/80 hover:text-white transition-all p-1.5 rounded-full hover:bg-white/10 active:scale-95"
+            aria-label="Close dialog"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          
+          <GraduationCap className="w-10 h-10 md:w-12 md:h-12 mb-2 md:mb-4 animate-bounce-slow" />
+          <h2 className="text-xl md:text-2xl font-bold uppercase tracking-widest text-center">Russian Scholar</h2>
+          <p className="text-orange-100 text-xs md:text-sm opacity-80 mt-0.5 md:mt-1 text-center">Master Russian Before You Land</p>
         </div>
         
-        <div className="p-8 space-y-6">
+        <div className="p-6 md:p-8 space-y-4 md:space-y-6">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center">
+            <DialogTitle className="text-xl md:text-2xl font-bold text-center text-neutral-900 dark:text-neutral-100">
               {mode === 'signup' ? 'Create Account' : 'Welcome Back'}
             </DialogTitle>
-            <DialogDescription className="text-center font-light">
+            <DialogDescription className="text-center font-light text-xs md:text-sm text-neutral-500">
               {mode === 'signup' 
                 ? 'Join high-achieving scholars today.' 
                 : 'Continue your learning journey.'}
@@ -186,7 +195,7 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1 pb-2">
+            <div className="space-y-4 max-h-[260px] md:max-h-[350px] overflow-y-auto pr-1 pb-2 scrollbar-thin">
               {mode === 'signup' && (
                 <>
                   <div className="grid grid-cols-2 gap-4">
@@ -222,7 +231,7 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
                         required
-                        className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none relative"
+                        className="w-full pl-10 pr-8 h-11 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 appearance-none relative transition-all"
                       >
                         <option value="" disabled>Select Country</option>
                         {COUNTRIES.map((c) => (
@@ -243,7 +252,7 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
                         <select
                           value={countryCode}
                           onChange={(e) => setCountryCode(e.target.value)}
-                          className="w-full pl-3 pr-6 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none"
+                          className="w-full pl-3 pr-6 h-11 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 appearance-none transition-all"
                         >
                           {COUNTRIES.map((c) => (
                             <option key={`${c.name}-code`} value={c.code}>
@@ -258,7 +267,7 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
                         <Input 
                           placeholder="Phone Number" 
                           type="tel"
-                          className="pl-10 rounded-xl py-2.5 h-auto text-sm"
+                          className="pl-10 rounded-xl"
                           value={phoneInput}
                           onChange={(e) => setPhoneInput(e.target.value)}
                         />
@@ -275,7 +284,7 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
                         value={learningReason}
                         onChange={(e) => setLearningReason(e.target.value)}
                         required
-                        className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none"
+                        className="w-full pl-10 pr-8 h-11 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 appearance-none transition-all"
                       >
                         <option value="" disabled>Select Reason</option>
                         {REASONS.map((r) => (
