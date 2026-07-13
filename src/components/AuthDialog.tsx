@@ -166,7 +166,7 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent showCloseButton={false} className="sm:max-w-[420px] border-none shadow-2xl rounded-[32px] p-0 overflow-hidden max-h-[calc(100dvh-2rem)]">
+      <DialogContent showCloseButton={false} className="sm:max-w-[420px] border-none shadow-2xl rounded-[32px] p-0 overflow-hidden">
         <div className="bg-orange-500 p-6 md:p-8 text-white flex flex-col items-center relative rounded-t-[32px]">
           <button 
             type="button"
@@ -193,9 +193,9 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
                 : 'Continue your learning journey.'}
             </DialogDescription>
           </DialogHeader>
-
+ 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-4 max-h-[calc(100dvh-320px)] min-h-[120px] sm:max-h-[280px] md:max-h-[350px] overflow-y-auto pr-1 pb-2 scrollbar-thin">
+            <div className="space-y-4 pr-1 pb-2">
               {mode === 'signup' && (
                 <>
                   <div className="grid grid-cols-2 gap-4">
