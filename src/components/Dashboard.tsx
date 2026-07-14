@@ -542,7 +542,7 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
                   {/* Streak & Countdown Widget */}
                   <div className="flex flex-col md:flex-row md:items-center gap-4 mt-6">
                     {/* Daily Streak Row */}
-                    <div className="flex items-center gap-3 bg-orange-50/50 border border-orange-100 p-4 rounded-2xl flex-1 max-w-lg shadow-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 bg-orange-50/50 border border-orange-100 p-4 rounded-2xl flex-1 max-w-lg shadow-xs">
                       <div className="flex flex-col shrink-0">
                         <span className="text-sm font-bold text-orange-600 flex items-center gap-1">
                           🔥 {activeStreakVal}-Day Streak
@@ -560,8 +560,8 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
                           </button>
                         </div>
                       </div>
-                      <div className="h-8 w-[1px] bg-neutral-200 mx-2 hidden min-[360px]:block" />
-                      <div className="flex justify-between items-center flex-1 gap-1.5 min-w-[150px]">
+                      <div className="h-[1px] w-full bg-orange-100/50 my-1 sm:h-8 sm:w-[1px] sm:bg-neutral-200 sm:mx-2 sm:my-0" />
+                      <div className="flex justify-between items-center flex-1 gap-1 min-w-0">
                         {weekDays.map((day, idx) => {
                           const dateStr = getWeekDayDateString(idx);
                           const isCompleted = !!(profile?.week_activity?.[dateStr]);
@@ -569,9 +569,9 @@ export function Dashboard({ initialTab = 'home' }: { initialTab?: string }) {
                           const isTodayActiveButNotEarned = isToday && !isCompleted;
 
                           return (
-                            <div key={idx} className="flex flex-col items-center gap-1">
-                              <span className="text-[9px] text-neutral-400 font-semibold">{day}</span>
-                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all relative ${
+                            <div key={idx} className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                              <span className="text-[8px] sm:text-[9px] text-neutral-400 font-semibold">{day}</span>
+                              <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-bold transition-all relative shrink-0 ${
                                 isCompleted 
                                   ? 'bg-emerald-500 text-white shadow-xs border border-emerald-600' 
                                   : isTodayActiveButNotEarned 
