@@ -11,28 +11,29 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useAuth } from '@/App';
 import { GraduationCap, Mail, Lock, User, Github, Eye, EyeOff, Globe, Phone, Award, X } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 const COUNTRIES = [
-  { name: 'Pakistan', flag: '🇵🇰', code: '+92' },
-  { name: 'Russia', flag: '🇷🇺', code: '+7' },
-  { name: 'Germany', flag: '🇩🇪', code: '+49' },
-  { name: 'United States', flag: '🇺🇸', code: '+1' },
-  { name: 'United Kingdom', flag: '🇬🇧', code: '+44' },
-  { name: 'Canada', flag: '🇨🇦', code: '+1' },
   { name: 'Australia', flag: '🇦🇺', code: '+61' },
-  { name: 'India', flag: '🇮🇳', code: '+91' },
+  { name: 'Belarus', flag: '🇧🇾', code: '+375' },
+  { name: 'Brazil', flag: '🇧🇷', code: '+55' },
+  { name: 'Canada', flag: '🇨🇦', code: '+1' },
   { name: 'China', flag: '🇨🇳', code: '+86' },
   { name: 'France', flag: '🇫🇷', code: '+33' },
+  { name: 'Germany', flag: '🇩🇪', code: '+49' },
+  { name: 'India', flag: '🇮🇳', code: '+91' },
+  { name: 'Iran', flag: '🇮🇷', code: '+98' },
   { name: 'Kazakhstan', flag: '🇰🇿', code: '+7' },
-  { name: 'Uzbekistan', flag: '🇺🇿', code: '+998' },
-  { name: 'Belarus', flag: '🇧🇾', code: '+375' },
-  { name: 'Turkey', flag: '🇹🇷', code: '+90' },
-  { name: 'Brazil', flag: '🇧🇷', code: '+55' },
-  { name: 'South Africa', flag: '🇿🇦', code: '+27' },
+  { name: 'Pakistan', flag: '🇵🇰', code: '+92' },
+  { name: 'Russia', flag: '🇷🇺', code: '+7' },
   { name: 'Saudi Arabia', flag: '🇸🇦', code: '+966' },
-  { name: 'Iran', flag: '🇮🇷', code: '+98' }
+  { name: 'South Africa', flag: '🇿🇦', code: '+27' },
+  { name: 'Turkey', flag: '🇹🇷', code: '+90' },
+  { name: 'United Kingdom', flag: '🇬🇧', code: '+44' },
+  { name: 'United States', flag: '🇺🇸', code: '+1' },
+  { name: 'Uzbekistan', flag: '🇺🇿', code: '+998' }
 ];
 
 const REASONS = [
@@ -62,13 +63,14 @@ interface AuthDialogProps {
 }
 
 export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn }: AuthDialogProps) {
+  const { signInAsGuest } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [country, setCountry] = useState('');
-  const [countryCode, setCountryCode] = useState('+92');
+  const [countryCode, setCountryCode] = useState('+1');
   const [phoneInput, setPhoneInput] = useState('');
   const [learningReason, setLearningReason] = useState('');
   const [customReason, setCustomReason] = useState('');
@@ -158,7 +160,14 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
       onClose();
     } catch (error: any) {
       console.error('Auth error:', error);
-      toast.error(error.message || 'An error occurred during authentication.');
+      const isFetchError = error?.message?.includes('Failed to fetch') || String(error).includes('Failed to fetch');
+      if (isFetchError) {
+        toast.error('Network Error: Failed to fetch. This usually means your VITE_SUPABASE_URL is not configured or incorrect, or your internet is offline. You can continue as a Guest (Offline Mode) below!', {
+          duration: 8000
+        });
+      } else {
+        toast.error(error.message || 'An error occurred during authentication.');
+      }
     } finally {
       setLoading(false);
     }
@@ -248,11 +257,11 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-neutral-500 block">Phone Number (Optional)</label>
                     <div className="flex gap-2">
-                      <div className="relative w-28 shrink-0">
+                      <div className="relative w-20 sm:w-24 shrink-0">
                         <select
                           value={countryCode}
                           onChange={(e) => setCountryCode(e.target.value)}
-                          className="w-full pl-3 pr-6 h-11 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 appearance-none transition-all"
+                          className="w-full pl-2 pr-5 h-11 rounded-xl border border-neutral-200 bg-white text-xs sm:text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 appearance-none transition-all cursor-pointer"
                         >
                           {COUNTRIES.map((c) => (
                             <option key={`${c.name}-code`} value={c.code}>
@@ -260,14 +269,14 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
                             </option>
                           ))}
                         </select>
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400 text-[10px]">▼</div>
+                        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400 text-[10px]">▼</div>
                       </div>
-                      <div className="relative flex-1">
+                      <div className="relative flex-1 min-w-0">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                         <Input 
                           placeholder="Phone Number" 
                           type="tel"
-                          className="pl-10 rounded-xl"
+                          className="pl-10 rounded-xl text-xs sm:text-sm h-11"
                           value={phoneInput}
                           onChange={(e) => setPhoneInput(e.target.value)}
                         />
@@ -401,6 +410,17 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
               />
             </svg>
             Google
+          </Button>
+
+          <Button 
+            variant="ghost" 
+            className="w-full h-12 rounded-xl text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 border border-dashed border-neutral-200 gap-2 cursor-pointer transition-all"
+            onClick={() => {
+              signInAsGuest();
+              onClose();
+            }}
+          >
+            ✨ Continue as Guest (Offline Mode)
           </Button>
 
           <p className="text-center text-sm text-neutral-500">

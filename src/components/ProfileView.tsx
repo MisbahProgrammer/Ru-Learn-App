@@ -38,24 +38,24 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { motion } from 'motion/react';
 
 const COUNTRIES = [
-  { name: 'Pakistan', flag: '🇵🇰', code: '+92' },
-  { name: 'Russia', flag: '🇷🇺', code: '+7' },
-  { name: 'Germany', flag: '🇩🇪', code: '+49' },
-  { name: 'United States', flag: '🇺🇸', code: '+1' },
-  { name: 'United Kingdom', flag: '🇬🇧', code: '+44' },
-  { name: 'Canada', flag: '🇨🇦', code: '+1' },
   { name: 'Australia', flag: '🇦🇺', code: '+61' },
-  { name: 'India', flag: '🇮🇳', code: '+91' },
+  { name: 'Belarus', flag: '🇧🇾', code: '+375' },
+  { name: 'Brazil', flag: '🇧🇷', code: '+55' },
+  { name: 'Canada', flag: '🇨🇦', code: '+1' },
   { name: 'China', flag: '🇨🇳', code: '+86' },
   { name: 'France', flag: '🇫🇷', code: '+33' },
+  { name: 'Germany', flag: '🇩🇪', code: '+49' },
+  { name: 'India', flag: '🇮🇳', code: '+91' },
+  { name: 'Iran', flag: '🇮🇷', code: '+98' },
   { name: 'Kazakhstan', flag: '🇰🇿', code: '+7' },
-  { name: 'Uzbekistan', flag: '🇺🇿', code: '+998' },
-  { name: 'Belarus', flag: '🇧🇾', code: '+375' },
-  { name: 'Turkey', flag: '🇹🇷', code: '+90' },
-  { name: 'Brazil', flag: '🇧🇷', code: '+55' },
-  { name: 'South Africa', flag: '🇿🇦', code: '+27' },
+  { name: 'Pakistan', flag: '🇵🇰', code: '+92' },
+  { name: 'Russia', flag: '🇷🇺', code: '+7' },
   { name: 'Saudi Arabia', flag: '🇸🇦', code: '+966' },
-  { name: 'Iran', flag: '🇮🇷', code: '+98' }
+  { name: 'South Africa', flag: '🇿🇦', code: '+27' },
+  { name: 'Turkey', flag: '🇹🇷', code: '+90' },
+  { name: 'United Kingdom', flag: '🇬🇧', code: '+44' },
+  { name: 'United States', flag: '🇺🇸', code: '+1' },
+  { name: 'Uzbekistan', flag: '🇺🇿', code: '+998' }
 ];
 
 const REASONS = [
@@ -146,7 +146,7 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
   // Profile fields state values
   const [displayName, setDisplayName] = useState('');
   const [country, setCountry] = useState('');
-  const [countryCode, setCountryCode] = useState('+92');
+  const [countryCode, setCountryCode] = useState('+1');
   const [phoneInput, setPhoneInput] = useState('');
   const [learningReason, setLearningReason] = useState('');
   const [customReason, setCustomReason] = useState('');
@@ -755,11 +755,11 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-neutral-500">Phone Number (Optional)</label>
                         <div className="flex gap-2">
-                          <div className="relative w-28 shrink-0">
+                          <div className="relative w-20 sm:w-24 shrink-0">
                             <select
                               value={countryCode}
                               onChange={(e) => setCountryCode(e.target.value)}
-                              className="w-full pl-3 pr-6 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none cursor-pointer"
+                              className="w-full pl-2 pr-5 py-2.5 rounded-xl border border-neutral-200 bg-white text-xs sm:text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none cursor-pointer"
                             >
                               {COUNTRIES.map((c) => (
                                 <option key={`${c.name}-profile`} value={c.code}>
@@ -767,11 +767,11 @@ export function ProfileView({ onNavigate }: { onNavigate?: (tab: string) => void
                                 </option>
                               ))}
                             </select>
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400 text-[10px]">▼</div>
+                            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400 text-[10px]">▼</div>
                           </div>
                           <input 
                             type="tel"
-                            className="flex-1 px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                            className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-xs sm:text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
                             placeholder="300 1234567"
                             value={phoneInput}
                             onChange={(e) => setPhoneInput(e.target.value)}

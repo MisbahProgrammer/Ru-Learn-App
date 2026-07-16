@@ -358,73 +358,88 @@ export default function App() {
 
     // Set up auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Handle sign out FIRST before anything else
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setProfile(null);
-        localStorage.removeItem('guest_user');
-        localStorage.removeItem('guest_profile');
-        setLoading(false);
-        navigate('/', { replace: true });
-        markResolved();
-        return; // Stop here, don't run rest of function
-      }
-
-      const activeUser = session?.user || null;
-      if (activeUser) {
-        setEnhancedUser(activeUser);
-        if (event === 'SIGNED_IN') {
-          navigate('/dashboard');
+      try {
+        // Handle sign out FIRST before anything else
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setProfile(null);
+          localStorage.removeItem('guest_user');
+          localStorage.removeItem('guest_profile');
+          setLoading(false);
+          navigate('/', { replace: true });
+          markResolved();
+          return; // Stop here, don't run rest of function
         }
-        await fetchProfile(activeUser.id);
-      } else {
-        // No active Supabase user - check if we have a persistent guest session in localStorage
+
+        const activeUser = session?.user || null;
+        if (activeUser) {
+          setEnhancedUser(activeUser);
+          if (event === 'SIGNED_IN') {
+            navigate('/dashboard');
+          }
+          await fetchProfile(activeUser.id);
+        } else {
+          // No active Supabase user - check if we have a persistent guest session in localStorage
+          const savedUserStr = localStorage.getItem('guest_user');
+          const savedProfileStr = localStorage.getItem('guest_profile');
+          if (savedUserStr && savedProfileStr) {
+            try {
+              const guestUserObj = JSON.parse(savedUserStr);
+              const guestProfileObj = JSON.parse(savedProfileStr);
+              
+              // Validate guest's streak
+              const { streakData, atRisk } = processStreakOnLoad(guestProfileObj);
+              const streakBroke = (guestProfileObj.streak_count || 0) > 0 && streakData.currentStreak === 0;
+              
+              const updatedGuestProfile = {
+                ...guestProfileObj,
+                streak_count: streakData.currentStreak,
+                last_activity_date: streakData.lastActiveDate ? `${streakData.lastActiveDate}T00:00:00.000Z` : null,
+                longest_streak: streakData.longestStreak,
+                week_activity: safeParseWeekActivity(streakData.weekActivity),
+                streakAtRisk: atRisk,
+                xp_points: streakBroke ? 0 : (guestProfileObj.xp_points ?? 0)
+              };
+
+              if (streakBroke) {
+                toast.error("Oh no! Your daily learning streak has broken. Your active XP has been reset to 0! 🔥");
+              }
+              
+              localStorage.setItem('guest_profile', JSON.stringify(updatedGuestProfile));
+              setEnhancedUser(guestUserObj);
+              setProfile(updatedGuestProfile);
+              
+              // If they are on the landing page/login root page, auto redirect to dashboard
+              const path = window.location.pathname;
+              if (path === '/' || path === '' || path === '/login') {
+                navigate('/dashboard');
+              }
+            } catch (e) {
+              console.error('Error reloading persistent guest profile:', e);
+              setUser(null);
+              setProfile(null);
+            }
+          } else {
+            setUser(null);
+            setProfile(null);
+          }
+          setLoading(false);
+        }
+      } catch (authErr: any) {
+        console.error('Graceful catch in onAuthStateChange:', authErr);
+        // On error, let's fall back to guest if one exists to prevent total block
         const savedUserStr = localStorage.getItem('guest_user');
         const savedProfileStr = localStorage.getItem('guest_profile');
         if (savedUserStr && savedProfileStr) {
           try {
-            const guestUserObj = JSON.parse(savedUserStr);
-            const guestProfileObj = JSON.parse(savedProfileStr);
-            
-            // Validate guest's streak
-            const { streakData, atRisk } = processStreakOnLoad(guestProfileObj);
-            const streakBroke = (guestProfileObj.streak_count || 0) > 0 && streakData.currentStreak === 0;
-            
-            const updatedGuestProfile = {
-              ...guestProfileObj,
-              streak_count: streakData.currentStreak,
-              last_activity_date: streakData.lastActiveDate ? `${streakData.lastActiveDate}T00:00:00.000Z` : null,
-              longest_streak: streakData.longestStreak,
-              week_activity: safeParseWeekActivity(streakData.weekActivity),
-              streakAtRisk: atRisk,
-              xp_points: streakBroke ? 0 : (guestProfileObj.xp_points ?? 0)
-            };
-
-            if (streakBroke) {
-              toast.error("Oh no! Your daily learning streak has broken. Your active XP has been reset to 0! 🔥");
-            }
-            
-            localStorage.setItem('guest_profile', JSON.stringify(updatedGuestProfile));
-            setEnhancedUser(guestUserObj);
-            setProfile(updatedGuestProfile);
-            
-            // If they are on the landing page/login root page, auto redirect to dashboard
-            const path = window.location.pathname;
-            if (path === '/' || path === '' || path === '/login') {
-              navigate('/dashboard');
-            }
-          } catch (e) {
-            console.error('Error reloading persistent guest profile:', e);
-            setUser(null);
-            setProfile(null);
-          }
-        } else {
-          setUser(null);
-          setProfile(null);
+            setUser(JSON.parse(savedUserStr));
+            setProfile(JSON.parse(savedProfileStr));
+          } catch (_) {}
         }
         setLoading(false);
+      } finally {
+        markResolved();
       }
-      markResolved();
     });
 
     return () => {

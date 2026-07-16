@@ -22,24 +22,24 @@ import {
 import { format } from 'date-fns';
 
 const COUNTRIES = [
-  { name: 'Pakistan', flag: '🇵🇰', code: '+92' },
-  { name: 'Russia', flag: '🇷🇺', code: '+7' },
-  { name: 'Germany', flag: '🇩🇪', code: '+49' },
-  { name: 'United States', flag: '🇺🇸', code: '+1' },
-  { name: 'United Kingdom', flag: '🇬🇧', code: '+44' },
-  { name: 'Canada', flag: '🇨🇦', code: '+1' },
   { name: 'Australia', flag: '🇦🇺', code: '+61' },
-  { name: 'India', flag: '🇮🇳', code: '+91' },
+  { name: 'Belarus', flag: '🇧🇾', code: '+375' },
+  { name: 'Brazil', flag: '🇧🇷', code: '+55' },
+  { name: 'Canada', flag: '🇨🇦', code: '+1' },
   { name: 'China', flag: '🇨🇳', code: '+86' },
   { name: 'France', flag: '🇫🇷', code: '+33' },
+  { name: 'Germany', flag: '🇩🇪', code: '+49' },
+  { name: 'India', flag: '🇮🇳', code: '+91' },
+  { name: 'Iran', flag: '🇮🇷', code: '+98' },
   { name: 'Kazakhstan', flag: '🇰🇿', code: '+7' },
-  { name: 'Uzbekistan', flag: '🇺🇿', code: '+998' },
-  { name: 'Belarus', flag: '🇧🇾', code: '+375' },
-  { name: 'Turkey', flag: '🇹🇷', code: '+90' },
-  { name: 'Brazil', flag: '🇧🇷', code: '+55' },
-  { name: 'South Africa', flag: '🇿🇦', code: '+27' },
+  { name: 'Pakistan', flag: '🇵🇰', code: '+92' },
+  { name: 'Russia', flag: '🇷🇺', code: '+7' },
   { name: 'Saudi Arabia', flag: '🇸🇦', code: '+966' },
-  { name: 'Iran', flag: '🇮🇷', code: '+98' }
+  { name: 'South Africa', flag: '🇿🇦', code: '+27' },
+  { name: 'Turkey', flag: '🇹🇷', code: '+90' },
+  { name: 'United Kingdom', flag: '🇬🇧', code: '+44' },
+  { name: 'United States', flag: '🇺🇸', code: '+1' },
+  { name: 'Uzbekistan', flag: '🇺🇿', code: '+998' }
 ];
 
 const MOCK_PROFILES = [
