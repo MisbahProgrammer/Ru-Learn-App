@@ -49,22 +49,22 @@ export function LandingPage() {
         ⏳ September 2026 intake is coming — Start preparing now for free before you fly
       </div>
 
-      <header className="absolute top-[48px] sm:top-[38px] left-0 right-0 z-20 px-4 sm:px-8 py-4 sm:py-6 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent">
-        <div className="flex items-center gap-1.5 sm:gap-2 text-white font-bold text-lg sm:text-xl uppercase tracking-widest">
-          <GraduationCap className="text-orange-500 w-5 h-5 sm:w-6 sm:h-6" />
-          <span className="truncate">Russian <span className="hidden min-[400px]:inline">Scholar</span></span>
+      <header className="absolute top-[48px] sm:top-[38px] left-0 right-0 z-20 px-3 sm:px-8 py-3 sm:py-6 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-white font-bold text-sm sm:text-xl uppercase tracking-wider sm:tracking-widest">
+          <GraduationCap className="text-orange-500 w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+          <span className="whitespace-nowrap">Russian Scholar</span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-1 sm:gap-4">
           <Button 
             onClick={() => handleAuth('signin')} 
             variant="ghost" 
-            className="text-white hover:bg-white/10 rounded-full px-3 sm:px-6 text-sm sm:text-base font-medium"
+            className="text-white hover:bg-white/10 rounded-full px-2.5 sm:px-6 text-xs sm:text-base font-medium"
           >
             Login
           </Button>
           <Button 
             onClick={() => handleAuth('signup')} 
-            className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-4 sm:px-6 h-9 sm:h-10 text-sm sm:text-base font-bold shadow-lg shadow-orange-500/20"
+            className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-3.5 sm:px-6 h-8 sm:h-10 text-xs sm:text-base font-bold shadow-lg shadow-orange-500/20"
           >
             Sign Up
           </Button>
