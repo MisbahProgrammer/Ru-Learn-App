@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { useAuth } from '@/App';
 import { GraduationCap, Mail, Lock, User, Github, Eye, EyeOff, Globe, Phone, Award, X } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
@@ -63,7 +62,6 @@ interface AuthDialogProps {
 }
 
 export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn }: AuthDialogProps) {
-  const { signInAsGuest } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -162,8 +160,8 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
       console.error('Auth error:', error);
       const isFetchError = error?.message?.includes('Failed to fetch') || String(error).includes('Failed to fetch');
       if (isFetchError) {
-        toast.error('Network Error: Failed to fetch. This usually means your VITE_SUPABASE_URL is not configured or incorrect, or your internet is offline. You can continue as a Guest (Offline Mode) below!', {
-          duration: 8000
+        toast.error('Network Error: Failed to fetch. Please check your connection or configuration and try again.', {
+          duration: 6000
         });
       } else {
         toast.error(error.message || 'An error occurred during authentication.');
@@ -410,17 +408,6 @@ export function AuthDialog({ isOpen, onClose, mode: initialMode, onGoogleSignIn 
               />
             </svg>
             Google
-          </Button>
-
-          <Button 
-            variant="ghost" 
-            className="w-full h-12 rounded-xl text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 border border-dashed border-neutral-200 gap-2 cursor-pointer transition-all"
-            onClick={() => {
-              signInAsGuest();
-              onClose();
-            }}
-          >
-            ✨ Continue as Guest (Offline Mode)
           </Button>
 
           <p className="text-center text-sm text-neutral-500">

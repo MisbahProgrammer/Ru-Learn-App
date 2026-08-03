@@ -9,7 +9,7 @@ import { AuthDialog } from '@/components/AuthDialog';
 import { useLocation } from 'react-router-dom';
 
 export function LandingPage() {
-  const { signIn, signInAsGuest } = useAuth();
+  const { signIn } = useAuth();
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
   const [authMode, setAuthMode] = useState<'signin' | 'signup' | null>(isLoginPage ? 'signin' : null);
